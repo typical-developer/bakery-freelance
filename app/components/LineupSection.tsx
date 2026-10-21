@@ -1,99 +1,65 @@
-"use client";
-
-import type { MouseEvent } from "react";
+import Link from "next/link";
+import Arrow from "./Arrow";
+import PhotoCard from "./PhotoCard";
+import { FEATURED_IDS, MENU } from "../menu-data";
 import { WHATSAPP } from "../site";
 
-const products = [
-  {
-    name: "Pastry Box",
-    price: "7,500",
-    img: "/images/item-pastry-box.jpg",
-    alt: "A box of assorted La Crave pastries",
-  },
-  {
-    name: "Custom Cake",
-    price: "25,000",
-    img: "/images/item-cake.jpg",
-    alt: "A custom La Crave celebration cake",
-  },
-  {
-    name: "Brownies",
-    price: "5,000",
-    img: "/images/item-brownies.jpg",
-    alt: "A box of fudgy La Crave brownies",
-  },
-];
-
-/* IX2 a-9: the popup centre tracks the cursor, mapped to ±80% / ±160% of its own size. */
-function trackCursor(event: MouseEvent<HTMLAnchorElement>) {
-  const rect = event.currentTarget.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / rect.width) * 160 - 80;
-  const y = ((event.clientY - rect.top) / rect.height) * 320 - 160;
-  event.currentTarget.style.setProperty("--px", `${x.toFixed(1)}%`);
-  event.currentTarget.style.setProperty("--py", `${y.toFixed(1)}%`);
-}
-
 export default function LineupSection() {
+  const featured = FEATURED_IDS.map((id) => MENU.find((item) => item.id === id)!);
   return (
     <section className="section" id="lineup">
-      <div className="default-container">
-        <div className="headline-container-grid">
-          <h2 className="h2-header">today&apos;s sweet lineup</h2>
-          <div className="vertical-flex lineup-cta">
-            <p className="body-base">
-              Fresh out of the oven today. Every box is baked to order — send us
-              a message and we&apos;ll get it to you the same day.
+      <div className="container">
+        <div className="lineup-head">
+          <div className="stack">
+            <span className="eyebrow" data-fade>
+              Fresh today
+            </span>
+            <h2 className="display-2" data-split>
+              today&apos;s sweet lineup
+            </h2>
+          </div>
+          <div className="stack">
+            <p className="lead" data-fade>
+              Fresh out of the oven today. Every box is baked to order. Send us a
+              message and we&apos;ll get it to you the same day.
             </p>
-            <div className="space-lg" />
-            <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn-primary">
-              order on whatsapp
-            </a>
+            <div className="actions" data-fade>
+              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
+                order on whatsapp
+              </a>
+              <Link href="/menu" className="link-arrow">
+                see more
+                <Arrow />
+              </Link>
+            </div>
           </div>
         </div>
-        <div className="space-4xl" />
-        <div className="collection-list">
-          {products.map((product) => (
-            <div key={product.name} className="padding-sm">
-              <a
-                href={WHATSAPP}
-                target="_blank"
-                rel="noreferrer"
-                className="menu-item-link-wrapper"
-                onMouseMove={trackCursor}
-              >
-                <div className="menu-item-card" data-reveal>
-                  <div className="menu-item-bg-div" />
-                  <div className="menu-item-content">
-                    <div className="menu-img-wrapper">
-                      <img
-                        src={product.img}
-                        alt={product.alt}
-                        className="menu-img"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="horizontal-flex">
-                      <div className="header-md">{product.name}</div>
-                      <div className="price-tag">
-                        <div className="body-sm">₦</div>
-                        <div className="header-xs">{product.price}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="washi-tape-wrapper-02">
-                    <img
-                      src="/icons/washi-mint.svg"
-                      alt=""
-                      className="washi-tape"
-                      loading="lazy"
-                    />
-                  </div>
+        <div className="section-gap" />
+        <div className="grid-3">
+          {featured.map((item, index) => (
+            <PhotoCard
+              key={item.id}
+              href={WHATSAPP}
+              external
+              img={item.img}
+              alt={item.alt}
+              sizes="(min-width: 992px) 24rem, 90vw"
+              cursorTag="order now"
+              flip={index % 2 === 1}
+            >
+              <div className="photo-card-body">
+                <div className="photo-card-row">
+                  <h3 className="title-3">{item.name}</h3>
+                  {item.price ? (
+                    <span className="price">
+                      <small>₦</small>
+                      <span>{item.price}</span>
+                    </span>
+                  ) : null}
                 </div>
-                <div className="highlight-text-popup">
-                  <span>#craveworthy</span>
-                </div>
-              </a>
-            </div>
+                <p className="small">{item.blurb}</p>
+              </div>
+            </PhotoCard>
           ))}
         </div>
       </div>

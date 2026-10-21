@@ -1,0 +1,3985 @@
+diff --git a/app/components/AboutSection.tsx b/app/components/AboutSection.tsx
+index 779681d..ab8993e 100644
+--- a/app/components/AboutSection.tsx
++++ b/app/components/AboutSection.tsx
+@@ -1,44 +1,34 @@
++import PhotoCard from "./PhotoCard";
+ import { INSTAGRAM } from "../site";
+ 
+ export default function AboutSection() {
+   return (
+-    <section className="section brown-bg" id="about">
+-      <div className="default-container sections-with-bg">
+-        <div className="grid-2-column">
+-          <div className="padding-sm">
+-            <div className="img-style-01" data-reveal>
+-              <div className="menu-item-bg-div _01" />
+-              <div className="menu-item-content">
+-                <div className="menu-img-wrapper">
+-                  <img
+-                    src="/images/about-cafe.jpg"
+-                    alt="La Crave bakes cooling on the counter"
+-                    className="menu-img"
+-                    loading="lazy"
+-                  />
+-                </div>
+-                <div className="highlight-text">#bakedfreshdaily</div>
+-              </div>
+-            </div>
+-          </div>
+-          <div className="vertical-flex centre-align" data-reveal>
+-            <h2 className="h2-header">
+-              Every craving has a story — ours started with a tray of meat pies
+-            </h2>
+-            <p className="body-base">
+-              La Crave is a small-batch bakery in Port Harcourt. We started with
+-              one tray of meat pies and a WhatsApp link, and grew on word of
+-              mouth — because good pastry is impossible to keep quiet about.
+-              Everything is baked fresh to order, packed with care, and
+-              delivered the same day.
+-            </p>
+-            <div className="space-lg" />
+-            <a
+-              href={INSTAGRAM}
+-              target="_blank"
+-              rel="noreferrer"
+-              className="btn-primary"
+-            >
++    <section className="section section--torn section--peach" id="about">
++      <div className="container split">
++        <div className="about-media">
++          <PhotoCard
++            img="/images/about-cafe.jpg"
++            alt="La Crave bakes cooling on the counter"
++            sizes="(min-width: 992px) 28rem, 90vw"
++            tag="#bakedfreshdaily"
++          />
++        </div>
++        <div className="stack">
++          <span className="eyebrow" data-fade>
++            Our story
++          </span>
++          <h2 className="display-2" data-split>
++            Every craving has a story, and ours started with a tray of meat pies
++          </h2>
++          <p className="lead" data-fade>
++            La Crave is a small-batch bakery in Port Harcourt. We started with
++            one tray of meat pies and a WhatsApp link, and grew on word of
++            mouth, because good pastry is impossible to keep quiet about.
++            Everything is baked fresh to order, packed with care, and delivered
++            the same day.
++          </p>
++          <div className="actions" data-fade>
++            <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="btn">
+               about us
+             </a>
+           </div>
+diff --git a/app/components/Arrow.tsx b/app/components/Arrow.tsx
+new file mode 100644
+index 0000000..0998321
+--- /dev/null
++++ b/app/components/Arrow.tsx
+@@ -0,0 +1,18 @@
++export default function Arrow({ dir = "right", size = 18 }: { dir?: "left" | "right"; size?: number }) {
++  return (
++    <svg
++      width={size}
++      height={size}
++      viewBox="0 0 24 24"
++      fill="none"
++      stroke="currentColor"
++      strokeWidth="2"
++      strokeLinecap="round"
++      strokeLinejoin="round"
++      aria-hidden="true"
++      style={dir === "left" ? { transform: "scaleX(-1)" } : undefined}
++    >
++      <path d="M5 12h14M13 6l6 6-6 6" />
++    </svg>
++  );
++}
+diff --git a/app/components/CategoriesSection.tsx b/app/components/CategoriesSection.tsx
+index 371e5b3..da7cd82 100644
+--- a/app/components/CategoriesSection.tsx
++++ b/app/components/CategoriesSection.tsx
+@@ -1,71 +1,50 @@
+-const categories = [
+-  {
+-    title: "meat pies",
+-    body: "Golden, flaky and generously filled — the one everybody orders by the tray.",
+-    img: "/images/cat-meat-pies.jpg",
+-    alt: "A tray of golden La Crave meat pies",
+-  },
+-  {
+-    title: "custom cakes",
+-    body: "Birthdays, weddings and everything in between, built around your moment.",
+-    img: "/images/cat-cakes.jpg",
+-    alt: "A custom celebration cake by La Crave",
+-  },
+-  {
+-    title: "banana bread & brownies",
+-    body: "Comforting loaves and rich, fudgy squares that melt in your mouth.",
+-    img: "/images/cat-breads.jpg",
+-    alt: "Banana bread and brownies fresh out of the oven",
+-  },
+-];
++import Link from "next/link";
++import Arrow from "./Arrow";
++import PhotoCard from "./PhotoCard";
++import { CATEGORIES } from "../menu-data";
+ 
+ export default function CategoriesSection() {
+   return (
+-    <section className="section" id="menu">
+-      <div className="default-container">
+-        <div className="headline-container-centred" data-fade>
+-          <h2 className="h2-header">
++    <section className="section">
++      <div className="container">
++        <div className="section-head">
++          <span className="eyebrow" data-fade>
++            What we bake
++          </span>
++          <h2 className="display-2" data-split>
+             From fan-favourite meat pies to celebration cakes
+           </h2>
+-          <p className="body-base">
++          <p className="lead" data-fade>
+             From quick bites to show-stopping centrepieces, explore our
+             carefully crafted menu. Whether you&apos;re after a savoury snack, a
+             comforting loaf, or a cake for the occasion, La Crave has something
+             to make your day.
+           </p>
+         </div>
+-        <div className="space-4xl" />
+-        <div className="padding-sm">
+-          <div className="grid-3-column">
+-            {categories.map((category) => (
+-              <div key={category.title} className="menu-item-card" data-reveal>
+-                <div className="menu-item-bg-div" />
+-                <div className="menu-item-content">
+-                  <div className="menu-img-wrapper">
+-                    <img
+-                      src={category.img}
+-                      alt={category.alt}
+-                      className="menu-img"
+-                      loading="lazy"
+-                    />
+-                  </div>
+-                  <div className="vertical-flex">
+-                    <div className="header-lg">{category.title}</div>
+-                    <div className="space-sm" />
+-                    <div className="body-sm">{category.body}</div>
+-                  </div>
+-                </div>
+-                <div className="washi-tape-wrapper-02">
+-                  <img
+-                    src="/icons/washi-mint.svg"
+-                    alt=""
+-                    className="washi-tape"
+-                    loading="lazy"
+-                  />
+-                </div>
++        <div className="section-gap" />
++        <div className="grid-3">
++          {CATEGORIES.map((category, index) => (
++            <PhotoCard
++              key={category.title}
++              href="/menu"
++              img={category.img}
++              alt={category.alt}
++              sizes="(min-width: 992px) 24rem, 90vw"
++              flip={index % 2 === 1}
++            >
++              <div className="photo-card-body">
++                <h3 className="title-3">{category.title}</h3>
++                <p className="small">{category.body}</p>
+               </div>
+-            ))}
+-          </div>
++            </PhotoCard>
++          ))}
++        </div>
++        <div className="section-gap" />
++        <div className="actions" style={{ justifyContent: "center" }} data-fade>
++          <Link href="/menu" className="btn">
++            see the full menu
++            <Arrow />
++          </Link>
+         </div>
+       </div>
+     </section>
+diff --git a/app/components/CtaSection.tsx b/app/components/CtaSection.tsx
+index 08a1187..775fad1 100644
+--- a/app/components/CtaSection.tsx
++++ b/app/components/CtaSection.tsx
+@@ -1,41 +1,38 @@
+-import { WHATSAPP } from "../site";
++import Image from "next/image";
++import { INSTAGRAM, WHATSAPP } from "../site";
+ 
+ export default function CtaSection() {
+   return (
+-    <section className="section brown-bg">
+-      <div className="default-container">
+-        <div className="padding-sm">
+-          <div className="cta-card-wrapper" data-reveal>
+-            <div className="cta-padding-container">
+-              <div className="cta-content-container">
+-                <div className="cta-img-wrapper">
+-                  <img
+-                    src="/images/cta-baker.webp"
+-                    alt="A La Crave baker holding a tray of fresh pastries"
+-                    className="cta-img"
+-                    loading="lazy"
+-                  />
+-                </div>
+-                <div className="cta-content-wrapper">
+-                  <h3 className="cta-header">get the goodies</h3>
+-                  <div className="body-base">
+-                    Slide into our DMs or send a WhatsApp message — we&apos;ll
+-                    take your order from there. Same-day delivery in Port
+-                    Harcourt.
+-                  </div>
+-                  <div className="space-md" />
+-                  <a
+-                    href={WHATSAPP}
+-                    target="_blank"
+-                    rel="noreferrer"
+-                    className="btn-primary"
+-                  >
++    <section className="section section--torn section--peach">
++      <div className="container">
++        <div className="cta-card" data-reveal>
++          <div className="cta-inner">
++            <div className="cta-media">
++              <Image
++                src="/images/cta-baker.webp"
++                alt="A La Crave baker holding a tray of fresh pastries"
++                fill
++                sizes="(min-width: 992px) 28rem, 90vw"
++              />
++            </div>
++            <div className="cta-copy">
++              <div className="stack">
++                <span className="eyebrow">Order today</span>
++                <h2 className="display-2">get the goodies</h2>
++                <p className="lead">
++                  Slide into our DMs or send a WhatsApp message and we&apos;ll
++                  take your order from there. Same-day delivery in Port Harcourt.
++                </p>
++                <div className="actions">
++                  <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
+                     order on whatsapp
+                   </a>
++                  <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="btn btn--ghost">
++                    message on instagram
++                  </a>
+                 </div>
+               </div>
+             </div>
+-            <div className="cta-bg-div" />
+           </div>
+         </div>
+       </div>
+diff --git a/app/components/Footer.tsx b/app/components/Footer.tsx
+index 0521737..58d8345 100644
+--- a/app/components/Footer.tsx
++++ b/app/components/Footer.tsx
+@@ -1,38 +1,36 @@
++import Link from "next/link";
+ import Wordmark from "./Wordmark";
+ import { INSTAGRAM, WHATSAPP } from "../site";
+ 
+ export default function Footer() {
+   return (
+-    <footer className="section footer-bg">
+-      <div className="default-container">
+-        <div className="footer-logo-wrapper">
++    <footer className="section--footer">
++      <div className="container">
++        <div className="footer-top">
+           <Wordmark className="footer-logo" />
++          <p className="lead">Baked fresh in Port Harcourt. Same-day delivery, every day.</p>
++          <ul className="footer-links">
++            <li>
++              <Link href="/menu">Menu</Link>
++            </li>
++            <li>
++              <Link href="/#about">About</Link>
++            </li>
++            <li>
++              <a href={WHATSAPP} target="_blank" rel="noreferrer">
++                Order on WhatsApp
++              </a>
++            </li>
++            <li>
++              <a href={INSTAGRAM} target="_blank" rel="noreferrer">
++                @lacravebakery
++              </a>
++            </li>
++          </ul>
+         </div>
+-        <div className="space-2xl" />
+-        <div className="footer-links-wrapper">
+-          <div className="body-sm">
+-            Order on{" "}
+-            <a
+-              href={WHATSAPP}
+-              target="_blank"
+-              rel="noreferrer"
+-              className="footer-link"
+-            >
+-              WhatsApp
+-            </a>
+-          </div>
+-          <div className="body-sm">
+-            Follow{" "}
+-            <a
+-              href={INSTAGRAM}
+-              target="_blank"
+-              rel="noreferrer"
+-              className="footer-link"
+-            >
+-              @lacravebakery
+-            </a>
+-          </div>
+-          <div className="body-sm">Same-day delivery in PH</div>
++        <div className="footer-base">
++          <span>© 2026 La Crave Bakery</span>
++          <span>Port Harcourt, Nigeria</span>
+         </div>
+       </div>
+     </footer>
+diff --git a/app/components/HeroSection.tsx b/app/components/HeroSection.tsx
+index af266ee..0532079 100644
+--- a/app/components/HeroSection.tsx
++++ b/app/components/HeroSection.tsx
+@@ -1,40 +1,71 @@
++import Link from "next/link";
++import PhotoCard from "./PhotoCard";
++import { WHATSAPP } from "../site";
++
++function Badge() {
++  return (
++    <div className="badge" aria-hidden="true">
++      <svg viewBox="0 0 120 120" data-badge>
++        <defs>
++          <path id="badge-circle" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" />
++        </defs>
++        <circle cx="60" cy="60" r="58" fill="#ffe156" stroke="#2c2c2d" strokeWidth="1.5" />
++        <text
++          fontFamily="var(--font-display), system-ui, sans-serif"
++          fontSize="11.5"
++          fill="#2c2c2d"
++          letterSpacing="1"
++        >
++          <textPath href="#badge-circle" textLength="270" lengthAdjust="spacing">
++            BAKED FRESH DAILY • SAME-DAY DELIVERY •
++          </textPath>
++        </text>
++        <rect x="50" y="50" width="20" height="20" rx="4" fill="#ff6ba1" />
++      </svg>
++    </div>
++  );
++}
++
+ export default function HeroSection() {
+   return (
+-    <section className="section green-bg-hero">
+-      <div className="default-container">
+-        <div className="hero-grid-wrapper">
+-          <div className="hero-text-wrapper">
+-            <div className="vertical-flex">
+-              <h1 className="h1-header">flaky pastries, beautiful cakes</h1>
+-              <p>
+-                La Crave is all about giving you that irresistible sweet fix —
+-                whether you&apos;re biting into a fan-favourite meat pie,
+-                cutting a cake for the big moment, or treating yourself to
+-                banana bread and brownies. Baked fresh in Port Harcourt, same-day
+-                delivery, every single day.
+-              </p>
+-              <div className="space-md" />
+-              <a href="#menu" className="btn-primary">
+-                explore our menu
+-              </a>
+-            </div>
+-          </div>
+-          <div className="padding-sm">
+-            <div className="img-style-01" data-reveal>
+-              <div className="menu-item-bg-div _01" />
+-              <div className="menu-item-content">
+-                <div className="menu-img-wrapper">
+-                  <img
+-                    src="/images/hero-storefront.jpg"
+-                    alt="A tray of freshly baked La Crave meat pies"
+-                    className="menu-img"
+-                    loading="lazy"
+-                  />
+-                </div>
+-                <div className="highlight-text">#craveworthy</div>
+-              </div>
+-            </div>
++    <section className="section--hero">
++      <div className="container hero-grid">
++        <div className="hero-copy">
++          <span className="eyebrow" data-hero-item>
++            Port Harcourt bakery
++          </span>
++          <h1 className="display-1" data-split>
++            flaky pastries, beautiful cakes
++          </h1>
++          <p className="lead" data-hero-item>
++            Fan-favourite meat pies, custom cakes, banana bread and brownies.
++            Baked fresh in Port Harcourt and delivered the same day, every
++            single day.
++          </p>
++          <div className="actions" data-hero-item>
++            <Link href="/menu" className="btn">
++              explore our menu
++            </Link>
++            <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn btn--ghost">
++              order on whatsapp
++            </a>
+           </div>
++          <ul className="hero-meta" data-hero-item>
++            <li>Baked to order</li>
++            <li>Same-day delivery</li>
++            <li>Custom cakes</li>
++          </ul>
++        </div>
++        <div className="hero-media" data-hero-media>
++          <PhotoCard
++            img="/images/hero-storefront.jpg"
++            alt="A tray of freshly baked La Crave meat pies"
++            sizes="(min-width: 992px) 27rem, 90vw"
++            tag="#craveworthy"
++            reveal={false}
++            priority
++          />
++          <Badge />
+         </div>
+       </div>
+     </section>
+diff --git a/app/components/LineupSection.tsx b/app/components/LineupSection.tsx
+index e0632e4..5f9855c 100644
+--- a/app/components/LineupSection.tsx
++++ b/app/components/LineupSection.tsx
+@@ -1,99 +1,65 @@
+-"use client";
+-
+-import type { MouseEvent } from "react";
++import Link from "next/link";
++import Arrow from "./Arrow";
++import PhotoCard from "./PhotoCard";
++import { FEATURED_IDS, MENU } from "../menu-data";
+ import { WHATSAPP } from "../site";
+ 
+-const products = [
+-  {
+-    name: "Pastry Box",
+-    price: "7,500",
+-    img: "/images/item-pastry-box.jpg",
+-    alt: "A box of assorted La Crave pastries",
+-  },
+-  {
+-    name: "Custom Cake",
+-    price: "25,000",
+-    img: "/images/item-cake.jpg",
+-    alt: "A custom La Crave celebration cake",
+-  },
+-  {
+-    name: "Brownies",
+-    price: "5,000",
+-    img: "/images/item-brownies.jpg",
+-    alt: "A box of fudgy La Crave brownies",
+-  },
+-];
+-
+-/* IX2 a-9: the popup centre tracks the cursor, mapped to ±80% / ±160% of its own size. */
+-function trackCursor(event: MouseEvent<HTMLAnchorElement>) {
+-  const rect = event.currentTarget.getBoundingClientRect();
+-  const x = ((event.clientX - rect.left) / rect.width) * 160 - 80;
+-  const y = ((event.clientY - rect.top) / rect.height) * 320 - 160;
+-  event.currentTarget.style.setProperty("--px", `${x.toFixed(1)}%`);
+-  event.currentTarget.style.setProperty("--py", `${y.toFixed(1)}%`);
+-}
+-
+ export default function LineupSection() {
++  const featured = FEATURED_IDS.map((id) => MENU.find((item) => item.id === id)!);
+   return (
+     <section className="section" id="lineup">
+-      <div className="default-container">
+-        <div className="headline-container-grid">
+-          <h2 className="h2-header">today&apos;s sweet lineup</h2>
+-          <div className="vertical-flex lineup-cta">
+-            <p className="body-base">
+-              Fresh out of the oven today. Every box is baked to order — send us
+-              a message and we&apos;ll get it to you the same day.
++      <div className="container">
++        <div className="lineup-head">
++          <div className="stack">
++            <span className="eyebrow" data-fade>
++              Fresh today
++            </span>
++            <h2 className="display-2" data-split>
++              today&apos;s sweet lineup
++            </h2>
++          </div>
++          <div className="stack">
++            <p className="lead" data-fade>
++              Fresh out of the oven today. Every box is baked to order. Send us a
++              message and we&apos;ll get it to you the same day.
+             </p>
+-            <div className="space-lg" />
+-            <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn-primary">
+-              order on whatsapp
+-            </a>
++            <div className="actions" data-fade>
++              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
++                order on whatsapp
++              </a>
++              <Link href="/menu" className="link-arrow">
++                see more
++                <Arrow />
++              </Link>
++            </div>
+           </div>
+         </div>
+-        <div className="space-4xl" />
+-        <div className="collection-list">
+-          {products.map((product) => (
+-            <div key={product.name} className="padding-sm">
+-              <a
+-                href={WHATSAPP}
+-                target="_blank"
+-                rel="noreferrer"
+-                className="menu-item-link-wrapper"
+-                onMouseMove={trackCursor}
+-              >
+-                <div className="menu-item-card" data-reveal>
+-                  <div className="menu-item-bg-div" />
+-                  <div className="menu-item-content">
+-                    <div className="menu-img-wrapper">
+-                      <img
+-                        src={product.img}
+-                        alt={product.alt}
+-                        className="menu-img"
+-                        loading="lazy"
+-                      />
+-                    </div>
+-                    <div className="horizontal-flex">
+-                      <div className="header-md">{product.name}</div>
+-                      <div className="price-tag">
+-                        <div className="body-sm">₦</div>
+-                        <div className="header-xs">{product.price}</div>
+-                      </div>
+-                    </div>
+-                  </div>
+-                  <div className="washi-tape-wrapper-02">
+-                    <img
+-                      src="/icons/washi-mint.svg"
+-                      alt=""
+-                      className="washi-tape"
+-                      loading="lazy"
+-                    />
+-                  </div>
+-                </div>
+-                <div className="highlight-text-popup">
+-                  <span>#craveworthy</span>
++        <div className="section-gap" />
++        <div className="grid-3">
++          {featured.map((item, index) => (
++            <PhotoCard
++              key={item.id}
++              href={WHATSAPP}
++              external
++              img={item.img}
++              alt={item.alt}
++              sizes="(min-width: 992px) 24rem, 90vw"
++              cursorTag="order now"
++              flip={index % 2 === 1}
++            >
++              <div className="photo-card-body">
++                <div className="photo-card-row">
++                  <h3 className="title-3">{item.name}</h3>
++                  {item.price ? (
++                    <span className="price">
++                      <small>₦</small>
++                      <span>{item.price}</span>
++                    </span>
++                  ) : null}
+                 </div>
+-              </a>
+-            </div>
++                <p className="small">{item.blurb}</p>
++              </div>
++            </PhotoCard>
+           ))}
+         </div>
+       </div>
+diff --git a/app/components/Marquee.tsx b/app/components/Marquee.tsx
+new file mode 100644
+index 0000000..a20abca
+--- /dev/null
++++ b/app/components/Marquee.tsx
+@@ -0,0 +1,31 @@
++const items = [
++  "Baked fresh daily",
++  "Meat pies",
++  "Custom cakes",
++  "Banana bread",
++  "Brownies",
++  "Same-day delivery",
++];
++
++function Set({ hidden }: { hidden?: boolean }) {
++  return (
++    <div className="marquee-set" aria-hidden={hidden || undefined}>
++      {[...items, ...items].map((item, index) => (
++        <span className="marquee-item" key={`${item}-${index}`}>
++          {item}
++        </span>
++      ))}
++    </div>
++  );
++}
++
++export default function Marquee() {
++  return (
++    <div className="marquee" aria-hidden="true">
++      <div className="marquee-track" data-marquee>
++        <Set />
++        <Set hidden />
++      </div>
++    </div>
++  );
++}
+diff --git a/app/components/Motion.tsx b/app/components/Motion.tsx
+new file mode 100644
+index 0000000..d3e333c
+--- /dev/null
++++ b/app/components/Motion.tsx
+@@ -0,0 +1,258 @@
++"use client";
++
++import gsap from "gsap";
++import { ScrollTrigger } from "gsap/ScrollTrigger";
++import { SplitText } from "gsap/SplitText";
++import { usePathname } from "next/navigation";
++import { useEffect } from "react";
++
++gsap.registerPlugin(ScrollTrigger, SplitText);
++
++const all = <T extends Element = HTMLElement>(selector: string) =>
++  gsap.utils.toArray<T>(selector);
++const markSet = (elements: Element[]) =>
++  elements.forEach((element) => element.classList.add("is-set"));
++
++/* One place for every GSAP interaction. Re-runs on each route change and
++   respects prefers-reduced-motion (content simply shows, no animation). */
++export default function Motion() {
++  const pathname = usePathname();
++
++  useEffect(() => {
++    const root = document.documentElement;
++    const mm = gsap.matchMedia();
++
++    mm.add("(prefers-reduced-motion: reduce)", () => {
++      root.classList.remove("js");
++    });
++
++    mm.add("(prefers-reduced-motion: no-preference)", () => {
++      root.classList.add("js");
++
++      /* Headings: lines rise out of a mask. */
++      all("[data-split]").forEach((element) => {
++        const hero = element.closest(".section--hero");
++        SplitText.create(element, {
++          type: "lines",
++          mask: "lines",
++          autoSplit: true,
++          onSplit: (self) => {
++            element.classList.add("is-set");
++            return gsap.from(self.lines, {
++              yPercent: 115,
++              duration: 1.1,
++              ease: "power4.out",
++              stagger: 0.09,
++              delay: hero ? 0.15 : 0,
++              scrollTrigger: { trigger: element, start: "top 92%", once: true },
++            });
++          },
++        });
++      });
++
++      /* Hero entrance. */
++      const heroItems = all("[data-hero-item]");
++      if (heroItems.length) {
++        gsap.set(heroItems, { opacity: 0, y: 28 });
++        markSet(heroItems);
++        gsap.to(heroItems, {
++          opacity: 1,
++          y: 0,
++          duration: 1,
++          ease: "power3.out",
++          stagger: 0.1,
++          delay: 0.35,
++          clearProps: "transform,opacity",
++        });
++      }
++      const heroMedia = all("[data-hero-media]");
++      if (heroMedia.length) {
++        gsap.set(heroMedia, { opacity: 0, y: 64, scale: 0.92, rotate: 4 });
++        markSet(heroMedia);
++        gsap.to(heroMedia, {
++          opacity: 1,
++          y: 0,
++          scale: 1,
++          rotate: 0,
++          duration: 1.4,
++          ease: "power3.out",
++          delay: 0.2,
++        });
++        gsap.to(heroMedia, {
++          yPercent: -6,
++          ease: "none",
++          scrollTrigger: {
++            trigger: ".section--hero",
++            start: "top top",
++            end: "bottom top",
++            scrub: true,
++          },
++        });
++      }
++      all("[data-badge]").forEach((badge) =>
++        gsap.to(badge, { rotation: 360, duration: 22, ease: "none", repeat: -1, transformOrigin: "50% 50%" }),
++      );
++
++      /* Cards and blocks: batched scroll reveals. */
++      const cards = all("[data-reveal]");
++      gsap.set(cards, { opacity: 0, y: 56, scale: 0.96 });
++      markSet(cards);
++      ScrollTrigger.batch(cards, {
++        start: "top 90%",
++        once: true,
++        onEnter: (batch) =>
++          gsap.to(batch, {
++            opacity: 1,
++            y: 0,
++            scale: 1,
++            duration: 1,
++            ease: "power3.out",
++            stagger: 0.12,
++            clearProps: "transform,opacity",
++          }),
++      });
++      const fades = all("[data-fade]");
++      gsap.set(fades, { opacity: 0, y: 24 });
++      markSet(fades);
++      ScrollTrigger.batch(fades, {
++        start: "top 92%",
++        once: true,
++        onEnter: (batch) =>
++          gsap.to(batch, {
++            opacity: 1,
++            y: 0,
++            duration: 0.9,
++            ease: "power3.out",
++            stagger: 0.08,
++            clearProps: "transform,opacity",
++          }),
++      });
++
++      /* Marquee: loops forever and speeds up with scroll velocity. */
++      const marqueeTrack = document.querySelector<HTMLElement>("[data-marquee]");
++      if (marqueeTrack) {
++        const loop = gsap.to(marqueeTrack, {
++          xPercent: -50,
++          duration: 40,
++          ease: "none",
++          repeat: -1,
++        });
++        ScrollTrigger.create({
++          onUpdate: (self) => {
++            const boost = gsap.utils.clamp(0, 6, Math.abs(self.getVelocity()) / 400);
++            loop.timeScale(1 + boost);
++            gsap.to(loop, { timeScale: 1, duration: 0.8, overwrite: true });
++          },
++        });
++      }
++
++      /* Photo band parallax. */
++      all("[data-band]").forEach((band) => {
++        const image = band.querySelector("[data-band-img]");
++        if (!image) return;
++        gsap.fromTo(
++          image,
++          { yPercent: -7 },
++          {
++            yPercent: 7,
++            ease: "none",
++            scrollTrigger: { trigger: band, start: "top bottom", end: "bottom top", scrub: true },
++          },
++        );
++      });
++
++      /* Navbar: hides when scrolling down, returns when scrolling up. */
++      const nav = document.querySelector<HTMLElement>(".navbar");
++      if (nav) {
++        let hidden = false;
++        ScrollTrigger.create({
++          start: 0,
++          end: "max",
++          onUpdate: (self) => {
++            nav.classList.toggle("is-scrolled", self.scroll() > 12);
++            if (nav.classList.contains("is-open")) return;
++            const shouldHide = self.direction === 1 && self.scroll() > 240;
++            if (shouldHide === hidden) return;
++            hidden = shouldHide;
++            gsap.to(nav, {
++              yPercent: hidden ? -160 : 0,
++              duration: 0.45,
++              ease: "power3.out",
++              overwrite: "auto",
++            });
++          },
++        });
++      }
++
++      const refresh = () => ScrollTrigger.refresh();
++      window.addEventListener("load", refresh);
++      const frame = requestAnimationFrame(refresh);
++      return () => {
++        window.removeEventListener("load", refresh);
++        cancelAnimationFrame(frame);
++      };
++    });
++
++    /* Pointer-only extras: magnetic buttons and the cursor-following tag. */
++    mm.add(
++      "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)",
++      () => {
++        const cleanups: (() => void)[] = [];
++
++        all(".btn").forEach((button) => {
++          const x = gsap.quickTo(button, "x", { duration: 0.5, ease: "power3" });
++          const y = gsap.quickTo(button, "y", { duration: 0.5, ease: "power3" });
++          const move = (event: PointerEvent) => {
++            const rect = button.getBoundingClientRect();
++            x((event.clientX - (rect.left + rect.width / 2)) * 0.25);
++            y((event.clientY - (rect.top + rect.height / 2)) * 0.25);
++          };
++          const leave = () => {
++            x(0);
++            y(0);
++          };
++          button.addEventListener("pointermove", move);
++          button.addEventListener("pointerleave", leave);
++          cleanups.push(() => {
++            button.removeEventListener("pointermove", move);
++            button.removeEventListener("pointerleave", leave);
++          });
++        });
++
++        all("[data-cursor-tag]").forEach((card) => {
++          const tag = card.querySelector<HTMLElement>(".cursor-tag");
++          if (!tag) return;
++          gsap.set(tag, { xPercent: -50, yPercent: -150, scale: 0.6 });
++          const x = gsap.quickTo(tag, "x", { duration: 0.45, ease: "power3" });
++          const y = gsap.quickTo(tag, "y", { duration: 0.45, ease: "power3" });
++          const move = (event: PointerEvent) => {
++            const rect = card.getBoundingClientRect();
++            x(event.clientX - rect.left);
++            y(event.clientY - rect.top);
++          };
++          const enter = (event: PointerEvent) => {
++            const rect = card.getBoundingClientRect();
++            gsap.set(tag, { x: event.clientX - rect.left, y: event.clientY - rect.top });
++            gsap.to(tag, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)", overwrite: "auto" });
++          };
++          const leave = () =>
++            gsap.to(tag, { opacity: 0, scale: 0.6, duration: 0.3, ease: "power2.out", overwrite: "auto" });
++          card.addEventListener("pointermove", move);
++          card.addEventListener("pointerenter", enter);
++          card.addEventListener("pointerleave", leave);
++          cleanups.push(() => {
++            card.removeEventListener("pointermove", move);
++            card.removeEventListener("pointerenter", enter);
++            card.removeEventListener("pointerleave", leave);
++          });
++        });
++
++        return () => cleanups.forEach((cleanup) => cleanup());
++      },
++    );
++
++    return () => mm.revert();
++  }, [pathname]);
++
++  return null;
++}
+diff --git a/app/components/Navbar.tsx b/app/components/Navbar.tsx
+index cc4ee87..a59d5e6 100644
+--- a/app/components/Navbar.tsx
++++ b/app/components/Navbar.tsx
+@@ -1,48 +1,61 @@
+ "use client";
+ 
+-import { useState } from "react";
++import Link from "next/link";
++import { usePathname } from "next/navigation";
++import { useEffect, useState } from "react";
+ import Wordmark from "./Wordmark";
+ import { INSTAGRAM, WHATSAPP } from "../site";
+ 
+ export default function Navbar() {
+   const [open, setOpen] = useState(false);
++  const pathname = usePathname();
++  const onMenu = pathname.startsWith("/menu");
++
++  useEffect(() => {
++    if (!open) return;
++    const onKey = (event: KeyboardEvent) => {
++      if (event.key === "Escape") setOpen(false);
++    };
++    window.addEventListener("keydown", onKey);
++    return () => window.removeEventListener("keydown", onKey);
++  }, [open]);
+ 
+   return (
+     <header className={open ? "navbar is-open" : "navbar"}>
+-      <div className="nav-content-wrapper">
+-        <a href="#top" className="brand-logo-mobile" aria-label="La Crave home">
+-          <Wordmark className="logo-mark logo-mark-mobile" />
+-        </a>
++      <div className="nav-inner">
++        <Link href="/" className="brand brand--mobile" aria-label="La Crave home">
++          <Wordmark className="logo-mark" />
++        </Link>
+         <nav
+           id="nav-menu"
+-          className="nav-menu-item-wrapper"
++          className="nav-menu"
++          aria-label="Main"
+           onClick={() => setOpen(false)}
+         >
+-          <div className="nav-menu-item">
+-            <a href="#about" className="nav-link">
++          <div className="nav-group">
++            <Link href="/#about" className="nav-link">
+               About
+-            </a>
+-            <a href="#menu" className="nav-link">
++            </Link>
++            <Link
++              href="/menu"
++              className="nav-link"
++              aria-current={onMenu ? "page" : undefined}
++            >
+               Menu
+-            </a>
++            </Link>
+           </div>
+-          <a href="#top" className="brand-logo-web" aria-label="La Crave home">
++          <Link href="/" className="brand brand--desktop" aria-label="La Crave home">
+             <Wordmark className="logo-mark" />
+-          </a>
+-          <div className="nav-menu-item">
+-            <a
+-              href={INSTAGRAM}
+-              target="_blank"
+-              rel="noreferrer"
+-              className="nav-link"
+-            >
++          </Link>
++          <div className="nav-group">
++            <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="nav-link">
+               Contact
+             </a>
+             <a
+               href={WHATSAPP}
+               target="_blank"
+               rel="noreferrer"
+-              className="nav-link"
++              className="nav-link nav-link--cta"
+             >
+               Order
+             </a>
+@@ -50,8 +63,8 @@ export default function Navbar() {
+         </nav>
+         <button
+           type="button"
+-          className="nav-hamburger-icon"
+-          aria-label="menu"
++          className="nav-toggle"
++          aria-label={open ? "Close menu" : "Open menu"}
+           aria-controls="nav-menu"
+           aria-expanded={open}
+           onClick={() => setOpen((value) => !value)}
+diff --git a/app/components/ParallaxBand.tsx b/app/components/ParallaxBand.tsx
+index deded5b..b90cc9b 100644
+--- a/app/components/ParallaxBand.tsx
++++ b/app/components/ParallaxBand.tsx
+@@ -1,12 +1,14 @@
++import Image from "next/image";
++
+ export default function ParallaxBand() {
+   return (
+-    <div className="parallax-image-wrapper" data-parallax>
+-      <div className="parallax-image-div">
+-        <img
++    <div className="band" data-band>
++      <div className="band-img" data-band-img>
++        <Image
+           src="/images/parallax-baker.jpg"
+           alt="Freshly baked La Crave pastries on the counter"
+-          className="parallax-image"
+-          loading="lazy"
++          fill
++          sizes="100vw"
+         />
+       </div>
+     </div>
+diff --git a/app/components/PhotoCard.tsx b/app/components/PhotoCard.tsx
+new file mode 100644
+index 0000000..a14ce12
+--- /dev/null
++++ b/app/components/PhotoCard.tsx
+@@ -0,0 +1,75 @@
++import Image from "next/image";
++import Link from "next/link";
++import type { ReactNode } from "react";
++
++type Props = {
++  img: string;
++  alt: string;
++  sizes: string;
++  href?: string;
++  external?: boolean;
++  tag?: string;
++  cursorTag?: string;
++  flip?: boolean;
++  reveal?: boolean;
++  priority?: boolean;
++  children?: ReactNode;
++};
++
++/** The one card used across the site: paper stack, tape, photo, then content. */
++export default function PhotoCard({
++  img,
++  alt,
++  sizes,
++  href,
++  external,
++  tag,
++  cursorTag,
++  flip,
++  reveal = true,
++  priority,
++  children,
++}: Props) {
++  const className = `photo-card${flip ? " photo-card--alt" : ""}`;
++  const motion = {
++    ...(reveal ? { "data-reveal": "" } : {}),
++    ...(cursorTag ? { "data-cursor-tag": "" } : {}),
++  };
++  const content = (
++    <>
++      <span className="washi" aria-hidden="true" />
++      <div className="photo-card-inner">
++        <div className="photo-card-media">
++          <Image src={img} alt={alt} fill sizes={sizes} priority={priority} />
++          {tag ? <span className="tag">{tag}</span> : null}
++        </div>
++        {children}
++      </div>
++      {cursorTag ? (
++        <span className="cursor-tag" aria-hidden="true">
++          {cursorTag}
++        </span>
++      ) : null}
++    </>
++  );
++
++  if (!href) {
++    return (
++      <div className={className} {...motion}>
++        {content}
++      </div>
++    );
++  }
++  if (external) {
++    return (
++      <a className={className} href={href} target="_blank" rel="noreferrer" {...motion}>
++        {content}
++      </a>
++    );
++  }
++  return (
++    <Link className={className} href={href} {...motion}>
++      {content}
++    </Link>
++  );
++}
+diff --git a/app/components/SiteEffects.tsx b/app/components/SiteEffects.tsx
+deleted file mode 100644
+index 1985185..0000000
+--- a/app/components/SiteEffects.tsx
++++ /dev/null
+@@ -1,57 +0,0 @@
+-"use client";
+-
+-import { useEffect } from "react";
+-
+-/* Recreates the Webflow IX2 scroll interactions:
+-   - "flipbook" (a-15) and "fadeIn" reveal when an element scrolls into view
+-   - "parallax image scroll" (a-14/a-21) moves the band as it passes the viewport */
+-export default function SiteEffects() {
+-  useEffect(() => {
+-    const revealTargets = document.querySelectorAll("[data-reveal], [data-fade]");
+-    const show = (element: Element) => element.classList.add("is-in");
+-    const observer = new IntersectionObserver(
+-      (entries) => {
+-        for (const entry of entries) {
+-          if (entry.isIntersecting) {
+-            show(entry.target);
+-            observer.unobserve(entry.target);
+-          }
+-        }
+-      },
+-      { threshold: 0 },
+-    );
+-    revealTargets.forEach((element) => observer.observe(element));
+-
+-    const band = document.querySelector<HTMLElement>("[data-parallax]");
+-    let frame = 0;
+-    const update = () => {
+-      frame = 0;
+-      if (!band) return;
+-      const rect = band.getBoundingClientRect();
+-      const progress = Math.min(
+-        1,
+-        Math.max(
+-          0,
+-          (window.innerHeight - rect.top) / (window.innerHeight + rect.height),
+-        ),
+-      );
+-      band.style.setProperty("--par", `${(progress * 60 - 30).toFixed(2)}%`);
+-      band.style.setProperty("--par-scale", (1.2 - 0.2 * progress).toFixed(4));
+-    };
+-    const onScroll = () => {
+-      if (!frame) frame = requestAnimationFrame(update);
+-    };
+-    update();
+-    window.addEventListener("scroll", onScroll, { passive: true });
+-    window.addEventListener("resize", onScroll);
+-
+-    return () => {
+-      observer.disconnect();
+-      window.removeEventListener("scroll", onScroll);
+-      window.removeEventListener("resize", onScroll);
+-      if (frame) cancelAnimationFrame(frame);
+-    };
+-  }, []);
+-
+-  return null;
+-}
+diff --git a/app/components/TestimonialsSection.tsx b/app/components/TestimonialsSection.tsx
+index b6b1c82..38187e1 100644
+--- a/app/components/TestimonialsSection.tsx
++++ b/app/components/TestimonialsSection.tsx
+@@ -1,139 +1,219 @@
+ "use client";
+ 
+-import { useState } from "react";
++import gsap from "gsap";
++import Image from "next/image";
++import {
++  useEffect,
++  useRef,
++  useState,
++  useSyncExternalStore,
++  type KeyboardEvent,
++  type PointerEvent,
++} from "react";
++import Arrow from "./Arrow";
+ 
+-const slides = [
+-  [
+-    {
+-      title: "Meat pie perfection",
+-      body: "I ordered a tray for the office and they disappeared in ten minutes. The crust is unreal.",
+-      who: "Ngozi A., Office Regular",
+-      img: "/images/testimonial-1.jpg",
+-      alt: "A customer holding a La Crave meat pie",
+-    },
+-    {
+-      title: "My birthday cake!",
+-      body: "I sent a blurry screenshot from Pinterest and got back exactly what I imagined — but better.",
+-      who: "Temi O., Birthday Girl",
+-      img: "/images/testimonial-2.jpg",
+-      alt: "A customer with her La Crave birthday cake",
+-    },
+-  ],
+-  [
+-    {
+-      title: "Brownies that slap",
+-      body: "Ordered one box to share. Ate most of it in the car. Zero regrets.",
+-      who: "Ike W., Brownie Addict",
+-      img: "/images/testimonial-3.jpg",
+-      alt: "A customer holding a box of La Crave brownies",
+-    },
+-    {
+-      title: "Better than my mum's",
+-      body: "The banana bread is dangerously soft. My family finished it before dinner.",
+-      who: "Ada K., Banana Bread Fan",
+-      img: "/images/testimonial-4.jpg",
+-      alt: "A customer with a loaf of La Crave banana bread",
+-    },
+-  ],
+-  [
+-    {
+-      title: "Delivered same day",
+-      body: "Messaged in the morning, had warm meat pies by afternoon. That's service.",
+-      who: "Tunde B., Same-Day Regular",
+-      img: "/images/testimonial-5.jpg",
+-      alt: "A customer receiving a same-day La Crave delivery",
+-    },
+-    {
+-      title: "Cake of the year",
+-      body: "Our wedding cake got more compliments than the dress code.",
+-      who: "Chiara & Sam, Newlyweds",
+-      img: "/images/testimonial-6.jpg",
+-      alt: "A wedding cake made by La Crave",
+-    },
+-  ],
++/* Sample copy: swap for real customer messages before launch. */
++const testimonials = [
++  {
++    title: "Meat pie perfection",
++    body: "I ordered a tray for the office and they disappeared in ten minutes. The crust is unreal.",
++    who: "Ngozi A., Office Regular",
++    img: "/images/testimonial-1.jpg",
++    alt: "A customer holding a La Crave meat pie",
++  },
++  {
++    title: "My birthday cake!",
++    body: "I sent a blurry screenshot from Pinterest and got back exactly what I imagined, but better.",
++    who: "Temi O., Birthday Girl",
++    img: "/images/testimonial-2.jpg",
++    alt: "A customer with her La Crave birthday cake",
++  },
++  {
++    title: "Brownies that slap",
++    body: "Ordered one box to share. Ate most of it in the car. Zero regrets.",
++    who: "Ike W., Brownie Addict",
++    img: "/images/testimonial-3.jpg",
++    alt: "A customer holding a box of La Crave brownies",
++  },
++  {
++    title: "Better than my mum's",
++    body: "The banana bread is dangerously soft. My family finished it before dinner.",
++    who: "Ada K., Banana Bread Fan",
++    img: "/images/testimonial-4.jpg",
++    alt: "A customer with a loaf of La Crave banana bread",
++  },
++  {
++    title: "Delivered same day",
++    body: "Messaged in the morning, had warm meat pies by afternoon. That's service.",
++    who: "Tunde B., Same-Day Regular",
++    img: "/images/testimonial-5.jpg",
++    alt: "A customer receiving a same-day La Crave delivery",
++  },
++  {
++    title: "Cake of the year",
++    body: "Our wedding cake got more compliments than the dress code.",
++    who: "Chiara & Sam, Newlyweds",
++    img: "/images/testimonial-6.jpg",
++    alt: "A wedding cake made by La Crave",
++  },
+ ];
+ 
++const QUERY = "(max-width: 991px)";
++const subscribe = (notify: () => void) => {
++  const mq = window.matchMedia(QUERY);
++  mq.addEventListener("change", notify);
++  return () => mq.removeEventListener("change", notify);
++};
++const isCompact = () => window.matchMedia(QUERY).matches;
++
+ export default function TestimonialsSection() {
++  const compact = useSyncExternalStore(subscribe, isCompact, () => false);
++  const perView = compact ? 1 : 2;
++  const pages: (typeof testimonials)[] = [];
++  for (let i = 0; i < testimonials.length; i += perView) {
++    pages.push(testimonials.slice(i, i + perView));
++  }
++
+   const [index, setIndex] = useState(0);
+-  const step = (delta: number) =>
+-    setIndex((value) => (value + delta + slides.length) % slides.length);
++  const current = Math.min(index, pages.length - 1);
++  const track = useRef<HTMLDivElement>(null);
++  const ready = useRef(false);
++  const startX = useRef<number | null>(null);
++
++  useEffect(() => {
++    if (!track.current) return;
++    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++    const duration = !ready.current || reduce ? 0 : 0.8;
++    ready.current = true;
++    const tween = gsap.to(track.current, {
++      xPercent: -100 * current,
++      duration,
++      ease: "power3.inOut",
++      overwrite: true,
++    });
++    return () => {
++      tween.kill();
++    };
++  }, [current, pages.length]);
++
++  const go = (target: number) =>
++    setIndex((target + pages.length) % pages.length);
++  const onKeyDown = (event: KeyboardEvent) => {
++    if (event.key === "ArrowLeft") go(current - 1);
++    if (event.key === "ArrowRight") go(current + 1);
++  };
++  const onPointerDown = (event: PointerEvent) => {
++    startX.current = event.clientX;
++  };
++  const onPointerUp = (event: PointerEvent) => {
++    if (startX.current === null) return;
++    const delta = event.clientX - startX.current;
++    startX.current = null;
++    if (Math.abs(delta) > 50) go(current + (delta < 0 ? 1 : -1));
++  };
+ 
+   return (
+     <section className="section">
+-      <div className="default-container">
+-        <div className="headline-container-centred">
+-          <h2 className="h2-header">Love letters AND Crumb trails</h2>
+-          <p>
++      <div className="container">
++        <div className="section-head">
++          <span className="eyebrow" data-fade>
++            Kind words
++          </span>
++          <h2 className="display-2" data-split>
++            Love letters AND crumb trails
++          </h2>
++          <p className="lead" data-fade>
+             Every box comes with a story. Here are a few of the messages that
+             landed in our DMs after the wrappers came off.
+           </p>
+         </div>
+-        <div className="space-2xl" />
++        <div className="section-gap" />
+         <div
+-          className="testimonial-slider"
++          className="carousel"
+           role="region"
+-          aria-label="carousel"
++          aria-roledescription="carousel"
++          aria-label="Customer messages"
++          onKeyDown={onKeyDown}
+           data-fade
+         >
+-          <div className="mask" style={{ "--slide": index } as React.CSSProperties}>
+-            {slides.map((slide, slideIndex) => (
+-              <div
+-                key={slideIndex}
+-                className="slide"
+-                role="group"
+-                aria-label={`${slideIndex + 1} of ${slides.length}`}
+-                aria-hidden={slideIndex !== index}
+-              >
+-                <div className="padding-sm">
+-                  <div className="grid-2-column">
+-                    {slide.map((card) => (
+-                      <div key={card.who} className="testimonial-card">
+-                        <div className="testimonial-bg-div" />
+-                        <div className="testimonial-content">
+-                          <div className="testimonial-img-wrapper">
+-                            <img
++          <div
++            className="carousel-viewport"
++            onPointerDown={onPointerDown}
++            onPointerUp={onPointerUp}
++            onPointerCancel={() => (startX.current = null)}
++          >
++            <div className="carousel-track" ref={track}>
++              {pages.map((page, pageIndex) => (
++                <div
++                  key={pageIndex}
++                  className="carousel-slide"
++                  role="group"
++                  aria-roledescription="slide"
++                  aria-label={`${pageIndex + 1} of ${pages.length}`}
++                  aria-hidden={pageIndex !== current}
++                >
++                  <div
++                    className="carousel-cards"
++                    style={{ "--per-view": perView } as React.CSSProperties}
++                  >
++                    {page.map((card, cardIndex) => (
++                      <figure
++                        key={card.who}
++                        className={`photo-card quote-card${cardIndex % 2 === 1 ? " photo-card--alt" : ""}`}
++                        style={{ margin: 0 }}
++                      >
++                        <div className="photo-card-inner">
++                          <div className="photo-card-media">
++                            <Image
+                               src={card.img}
+                               alt={card.alt}
+-                              className="testimonial-img"
+-                              loading="lazy"
++                              fill
++                              sizes="(min-width: 992px) 20rem, 90vw"
+                             />
+                           </div>
+-                          <div className="vertical-flex">
+-                            <div className="highlight-text">{card.title}</div>
+-                            <div className="space-md" />
+-                            <p className="body-base">{card.body}</p>
+-                            <div className="space-md" />
+-                            <div className="header-xs">{card.who}</div>
+-                          </div>
++                          <figcaption className="quote-body">
++                            <span className="pill">{card.title}</span>
++                            <p>{card.body}</p>
++                            <span className="quote-who">{card.who}</span>
++                          </figcaption>
+                         </div>
+-                      </div>
++                      </figure>
+                     ))}
+                   </div>
+                 </div>
+-              </div>
+-            ))}
++              ))}
++            </div>
++          </div>
++          <div className="carousel-controls">
++            <button
++              type="button"
++              className="round-btn"
++              aria-label="Previous slide"
++              onClick={() => go(current - 1)}
++            >
++              <Arrow dir="left" />
++            </button>
++            <div className="dots">
++              {pages.map((_, pageIndex) => (
++                <button
++                  key={pageIndex}
++                  type="button"
++                  className="dot"
++                  aria-label={`Go to slide ${pageIndex + 1}`}
++                  aria-current={pageIndex === current}
++                  onClick={() => go(pageIndex)}
++                />
++              ))}
++            </div>
++            <button
++              type="button"
++              className="round-btn"
++              aria-label="Next slide"
++              onClick={() => go(current + 1)}
++            >
++              <Arrow />
++            </button>
+           </div>
+-          <button
+-            type="button"
+-            className="left-arrow"
+-            aria-label="previous slide"
+-            onClick={() => step(-1)}
+-          >
+-            <img src="/icons/arrow-left.svg" alt="" className="arrow-icon" loading="lazy" />
+-          </button>
+-          <button
+-            type="button"
+-            className="right-arrow"
+-            aria-label="next slide"
+-            onClick={() => step(1)}
+-          >
+-            <img
+-              src="/icons/arrow-right.svg"
+-              alt=""
+-              className="arrow-icon"
+-              loading="lazy"
+-            />
+-          </button>
+         </div>
+       </div>
+     </section>
+diff --git a/app/globals.css b/app/globals.css
+index 7fa62c7..74d722e 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -1,9 +1,33 @@
+ /* ------------------------------------------------------------------
+    La Crave Bakery
+-   Ported 1:1 from the Twista Webflow template (custom.css + the parts
+-   of Webflow's own stylesheet its helper classes relied on).
++   Design system: 8pt spacing scale, one container, one section rhythm,
++   generous whitespace, a clear type hierarchy, 44px minimum targets.
+    ------------------------------------------------------------------ */
+ 
++:root {
++  --bg: #fff3e3;
++  --ink: #2c2c2d;
++  --ink-2: #55555a;
++  --pink: #ff6ba1;
++  --mint: #a2e3c4;
++  --yellow: #ffe156;
++  --peach: #ffc8a2;
++  --white: #fff;
++
++  --container: 78rem;
++  --gutter: clamp(1.25rem, 5vw, 2.5rem);
++  --section-y: clamp(5rem, 10vw, 8.5rem);
++  --torn-y: clamp(7rem, 14vw, 11rem);
++
++  --radius-lg: 1.25rem;
++  --radius-md: 0.875rem;
++  --shadow-sm: 0 1px 2px rgb(29 29 31 / 0.06), 0 4px 12px rgb(29 29 31 / 0.06);
++  --shadow-md: 0 2px 6px rgb(29 29 31 / 0.08), 0 14px 32px rgb(29 29 31 / 0.1);
++  --shadow-lg: 0 4px 10px rgb(29 29 31 / 0.08), 0 24px 48px rgb(29 29 31 / 0.14);
++
++  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
++}
++
+ /* ---------- base ---------- */
+ *,
+ ::before,
+@@ -11,968 +35,1009 @@
+   box-sizing: border-box;
+ }
+ html {
+-  height: 100%;
+   -webkit-text-size-adjust: 100%;
++  scroll-padding-top: 6rem;
+ }
+ body {
+-  min-height: 100%;
+   margin: 0;
++  min-height: 100vh;
++  background: var(--bg);
++  color: var(--ink);
++  font-family: var(--font-body), system-ui, sans-serif;
++  font-size: 1rem;
++  line-height: 1.6;
++  -webkit-font-smoothing: antialiased;
++  text-rendering: optimizeLegibility;
+ }
+-section,
+-footer,
+-nav,
+-header,
+ main {
+   display: block;
++  overflow-x: clip;
++}
++h1,
++h2,
++h3,
++p {
++  margin: 0;
+ }
+ h1,
+ h2,
+ h3 {
+-  font-weight: 700;
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-weight: 400;
++  text-wrap: balance;
+ }
+ p {
+-  margin-top: 0;
++  text-wrap: pretty;
+ }
+ a {
+-  background-color: transparent;
++  color: inherit;
++  text-decoration: none;
++}
++img {
++  display: block;
++  max-width: 100%;
+ }
+ button {
+   font: inherit;
+   color: inherit;
+-  background-color: transparent;
++  background: none;
+   border: 0;
+   padding: 0;
+   cursor: pointer;
+-  overflow: visible;
+-}
+-
+-:root {
+-  --bg-color: #fff3e3;
+-  --black-100: #2c2c2d;
+-  --accent-200: #ff6ba1;
+-  --neutral-100: #646466;
+-  --accent-100: #a2e3c4;
+-  --accent-300: #ffe156;
+-  --accent-400: #ffc8a2;
+-  /* Webflow IX2 easings. "bounce" is Penner's easeOutBounce, "outQuart" is -(t-1)^4+1,
+-     sampled into linear() below where supported. */
+-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+-  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+-}
+-
+-/* ---------- template styles ---------- */
+-body {
+-  background-color: var(--bg-color);
+-  color: var(--black-100);
+-  font-family: var(--font-body), Arial, sans-serif;
+-  font-size: 1rem;
+-  line-height: 160%;
+-}
+-h1 {
+-  letter-spacing: 2px;
+-  margin-top: 1.25rem;
+-  margin-bottom: 0.75rem;
+-  font-family: var(--font-display), Arial, sans-serif;
+-  line-height: 110%;
+ }
+-h2 {
+-  letter-spacing: 1px;
+-  margin-top: 1rem;
+-  margin-bottom: 0.75rem;
+-  font-family: var(--font-display), Arial, sans-serif;
+-  line-height: 110%;
++::selection {
++  background: var(--pink);
++  color: var(--ink);
+ }
+-h3 {
+-  margin-top: 1rem;
+-  margin-bottom: 0.75rem;
+-  font-family: var(--font-display), Arial, sans-serif;
+-  line-height: 110%;
++:focus-visible {
++  outline: 3px solid var(--ink);
++  outline-offset: 3px;
++  border-radius: 6px;
+ }
+-p {
+-  margin-bottom: 0.75rem;
++
++/* ---------- type scale ---------- */
++.display-1 {
++  font-size: clamp(3.25rem, 7.2vw, 5.75rem);
++  line-height: 1.04;
++  letter-spacing: 0.01em;
++}
++.display-2 {
++  font-size: clamp(2.5rem, 5.2vw, 4rem);
++  line-height: 1.08;
++  letter-spacing: 0.01em;
++}
++.title-3 {
++  font-size: 1.875rem;
++  line-height: 1.1;
++  letter-spacing: 0.01em;
++}
++.lead {
++  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
++  line-height: 1.6;
++  color: var(--ink-2);
++  max-width: 34rem;
++}
++.small {
++  font-size: 0.9375rem;
++  line-height: 1.55;
++  color: var(--ink-2);
++}
++.eyebrow {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.625rem;
++  font-size: 0.8125rem;
++  font-weight: 600;
++  letter-spacing: 0.1em;
++  text-transform: uppercase;
++  color: var(--ink);
+ }
+-a {
+-  color: var(--black-100);
+-  text-decoration: none;
++.eyebrow::before {
++  content: "";
++  width: 0.5rem;
++  height: 0.5rem;
++  border-radius: 2px;
++  background: var(--pink);
+ }
+-img {
+-  object-fit: cover;
+-  max-width: 100%;
+-  display: inline-block;
++
++/* ---------- layout ---------- */
++.container {
++  width: 100%;
++  max-width: var(--container);
++  margin-inline: auto;
++  padding-inline: var(--gutter);
++  position: relative;
+ }
+ .section {
+-  padding-top: 12rem;
+-  padding-bottom: 12rem;
+   position: relative;
+-  overflow: hidden;
++  padding-block: var(--section-y);
+ }
+-.section.green-bg-hero {
+-  background-image: url("/backgrounds/torn-mint-bottom.svg");
+-  background-position: 50% 100%;
++.section--torn {
++  padding-block: var(--torn-y);
++  background-position: 50%;
+   background-repeat: no-repeat;
+   background-size: cover;
+ }
+-.section.brown-bg {
++.section--peach {
+   background-image: url("/backgrounds/torn-peach.svg");
+-  background-position: 50%;
++}
++.section--hero {
++  padding-top: clamp(8.5rem, 15vw, 12rem);
++  padding-bottom: clamp(7rem, 14vw, 12rem);
++  background-image: url("/backgrounds/torn-mint-bottom.svg");
++  background-position: 50% 100%;
+   background-repeat: no-repeat;
+   background-size: cover;
+-  background-attachment: scroll;
+ }
+-.section.footer-bg {
++.section--footer {
++  padding-top: clamp(7rem, 14vw, 11rem);
++  padding-bottom: 2.5rem;
+   background-image: url("/backgrounds/torn-mint-top.svg");
+   background-position: 50% 0;
+   background-repeat: no-repeat;
+   background-size: cover;
+-  padding-bottom: 1rem;
+-}
+-.space-md {
+-  width: 100%;
+-  height: 1rem;
+-}
+-.header-lg {
+-  font-family: var(--font-display), Arial, sans-serif;
+-  font-size: 2.5rem;
+-  line-height: 120%;
+-}
+-.body-base {
+-  margin-bottom: 0;
+-}
+-.space-2xl {
+-  width: 100%;
+-  height: 4rem;
++  position: relative;
++  z-index: 2;
+ }
+-.headline-container-centred {
++.section-head {
++  display: grid;
++  gap: 1.25rem;
++  justify-items: center;
+   text-align: center;
+-  max-width: 40rem;
+-  margin-left: auto;
+-  margin-right: auto;
+-}
+-.padding-sm {
+-  padding: 0.75rem;
+-}
+-.space-lg {
+-  width: 100%;
+-  height: 2rem;
+-}
+-.space-sm {
+-  width: 100%;
+-  height: 0.5rem;
++  max-width: 44rem;
++  margin-inline: auto;
+ }
+-.space-4xl {
+-  width: 100%;
+-  height: 8rem;
++.section-head .lead {
++  margin-inline: auto;
+ }
+-.default-container {
+-  width: 100%;
+-  max-width: 80rem;
+-  padding-left: 1rem;
+-  padding-right: 1rem;
+-  position: relative;
++.section-gap {
++  height: clamp(3rem, 6vw, 5rem);
+ }
+-.default-container.sections-with-bg {
+-  margin-top: 6rem;
+-  margin-bottom: 6rem;
++.stack {
++  display: grid;
++  gap: 1.5rem;
++  justify-items: start;
+ }
+-.padding-lg {
+-  padding: 1.5rem;
++.actions {
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  gap: 0.75rem 1.5rem;
+ }
+-.body-sm {
+-  font-size: 0.875rem;
++.split {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: clamp(3rem, 7vw, 6rem);
++  align-items: center;
+ }
+-.header-xs {
+-  font-size: 1.25rem;
+-  font-weight: 600;
+-  line-height: 120%;
+-}
+-.header-md {
+-  letter-spacing: 0.5px;
+-  font-family: var(--font-display), Arial, sans-serif;
+-  font-size: 2rem;
+-  font-weight: 700;
+-  line-height: 120%;
+-}
+-.hero-grid-wrapper {
+-  grid-column-gap: 8rem;
+-  grid-row-gap: 8rem;
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr;
+-  grid-auto-columns: 1fr;
+-  place-items: center stretch;
++.grid-3 {
+   display: grid;
++  grid-template-columns: repeat(3, minmax(0, 1fr));
++  gap: clamp(2rem, 4vw, 3rem);
+ }
+-.vertical-flex {
+-  flex-flow: column;
+-  justify-content: flex-start;
+-  align-items: flex-start;
++.grid-3--center {
+   display: flex;
+-}
+-.vertical-flex.centre-align {
++  flex-wrap: wrap;
+   justify-content: center;
+-  align-items: flex-start;
+ }
+-.h1-header {
+-  font-size: 6rem;
++.grid-3--center > * {
++  flex: 0 0 calc((100% - 2 * clamp(2rem, 4vw, 3rem)) / 3);
+ }
+-.menu-item-content {
+-  z-index: 3;
+-  grid-column-gap: 1.5rem;
+-  grid-row-gap: 1.5rem;
+-  background-color: #fff;
+-  flex-flow: column;
++
++/* ---------- buttons and links ---------- */
++.btn {
++  display: inline-flex;
++  align-items: center;
+   justify-content: center;
+-  align-items: flex-start;
+-  width: 100%;
+-  height: 100%;
+-  padding: 1.5rem 1.5rem 5rem;
+-  display: flex;
+-  position: relative;
+-  box-shadow: 0 3px 8px #1d1d1f29;
++  gap: 0.5rem;
++  min-height: 3rem;
++  padding: 0.5rem 1.5rem;
++  border: 1.5px solid var(--ink);
++  border-radius: 999px;
++  background: var(--yellow);
++  color: var(--ink);
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1.125rem;
++  letter-spacing: 0.02em;
++  line-height: 1;
++  box-shadow: 0 3px 0 var(--ink);
++  transition:
++    translate 0.25s var(--ease-out),
++    box-shadow 0.25s var(--ease-out),
++    background-color 0.2s;
+ }
+-.highlight-text {
+-  background-color: var(--accent-200);
+-  color: #fff;
+-  letter-spacing: 0.5px;
+-  border-radius: 4px;
+-  padding: 0.25rem 0.5rem;
+-  font-family: var(--font-display), Arial, sans-serif;
++.btn:hover {
++  translate: 0 2px;
++  box-shadow: 0 1px 0 var(--ink);
+ }
+-.menu-img {
+-  width: 100%;
+-  height: 100%;
++.btn:active {
++  translate: 0 3px;
++  box-shadow: 0 0 0 var(--ink);
+ }
+-.img-style-01 {
+-  height: 35rem;
+-  position: relative;
++.btn--pink {
++  background: var(--pink);
+ }
+-.menu-item-bg-div {
+-  background-color: #fff;
+-  width: 100%;
+-  position: absolute;
+-  inset: 0%;
+-  transform: rotate(-3deg);
+-  box-shadow: 0 3px 8px #1d1d1f29;
++.btn--ghost {
++  background: transparent;
++  box-shadow: none;
+ }
+-.menu-item-bg-div._01 {
+-  transform: rotate(3deg);
++.btn--ghost:hover {
++  background: var(--white);
++  translate: none;
++  box-shadow: none;
+ }
+-.hero-text-wrapper {
+-  justify-content: flex-start;
+-  align-items: center;
+-  min-width: 100%;
+-  max-width: 100%;
+-  min-height: 100%;
+-  max-height: 100%;
+-  place-self: center;
+-  display: flex;
++.btn--sm {
++  min-height: 2.75rem;
++  padding-inline: 1.25rem;
++  font-size: 1rem;
+ }
+-.menu-img-wrapper {
+-  width: 100%;
+-  height: 100%;
+-  overflow: hidden;
++.link-arrow {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
++  min-height: 2.75rem;
++  font-weight: 600;
++  text-decoration: underline;
++  text-decoration-thickness: 1.5px;
++  text-underline-offset: 0.3em;
+ }
+-.btn-primary {
+-  display: inline-block;
+-  cursor: pointer;
+-  border: 1px solid var(--black-100);
+-  background-color: var(--accent-300);
+-  box-shadow: 5px 5px 0 0 var(--black-100);
+-  color: var(--black-100);
+-  padding: 0.75rem 1rem;
+-  font-family: var(--font-display), Arial, sans-serif;
+-  font-size: 1.125rem;
+-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
++.link-arrow svg {
++  transition: translate 0.25s var(--ease-out);
+ }
+-.btn-primary:hover {
+-  box-shadow: none;
+-  transform: translate(5px, 5px);
++.link-arrow:hover svg {
++  translate: 4px 0;
+ }
++
++/* ---------- navbar ---------- */
+ .navbar {
+-  z-index: 99;
+-  border: 1px solid var(--black-100);
+-  background-color: var(--bg-color);
+-  border-radius: 200px;
+-  max-width: 40rem;
+-  margin-top: 0.5rem;
+-  margin-left: auto;
+-  margin-right: auto;
+-  padding: 1rem;
+-  position: absolute;
+-  inset: 0% 0% auto;
++  position: fixed;
++  z-index: 100;
++  top: 0.75rem;
++  left: 0;
++  right: 0;
++  width: calc(100% - 2rem);
++  max-width: 44rem;
++  margin-inline: auto;
++  padding: 0.5rem 0.75rem;
++  border: 1px solid rgb(44 44 45 / 0.14);
++  border-radius: 999px;
++  background: rgb(255 243 227 / 0.78);
++  -webkit-backdrop-filter: saturate(180%) blur(16px);
++  backdrop-filter: saturate(180%) blur(16px);
++  transition:
++    box-shadow 0.3s,
++    border-color 0.3s;
+ }
+-.brand-logo-mobile {
+-  z-index: 2;
+-  justify-content: center;
+-  align-items: center;
+-  padding-top: 0.5rem;
+-  padding-bottom: 0.5rem;
+-  padding-left: 0;
+-  display: none;
++.navbar.is-scrolled {
++  box-shadow: var(--shadow-md);
++  border-color: rgb(44 44 45 / 0.22);
+ }
+-.nav-content-wrapper {
+-  justify-content: flex-end;
+-  align-items: center;
+-  margin-left: auto;
+-  margin-right: auto;
++.nav-inner {
+   display: flex;
+-}
+-.nav-menu-item-wrapper {
++  align-items: center;
+   justify-content: space-between;
++}
++.nav-menu {
++  display: flex;
+   align-items: center;
++  justify-content: space-between;
+   width: 100%;
++}
++.nav-group {
+   display: flex;
++  align-items: center;
++  gap: 0.25rem;
++  flex: 1 1 0;
+ }
+-.nav-hamburger-icon {
+-  background-color: transparent;
+-  width: 4rem;
+-  height: 4rem;
+-  overflow: hidden;
+-  display: none;
++.nav-group:last-child {
++  justify-content: flex-end;
+ }
+ .nav-link {
+-  color: var(--black-100);
+-  text-align: center;
+-  border-radius: 100px;
+-  margin-left: 8px;
+-  padding: 0.5rem 1.5rem;
+-  font-size: 1rem;
+-  text-decoration: none;
+-  transition:
+-    background-color 0.15s,
+-    color 0.15s,
+-    opacity 0.15s;
+-}
+-.nav-link:hover {
+-  background-color: var(--accent-300);
+-  opacity: 1;
+-  color: var(--black-100);
+-}
+-.grid-3-column {
+-  grid-column-gap: 3rem;
+-  grid-row-gap: 3rem;
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr 1fr;
+-  grid-auto-columns: 1fr;
+-  display: grid;
++  display: inline-flex;
++  align-items: center;
++  min-height: 2.75rem;
++  padding-inline: 1.125rem;
++  border-radius: 999px;
++  font-size: 0.9375rem;
++  font-weight: 600;
++  transition: background-color 0.2s;
++}
++.nav-link:hover,
++.nav-link[aria-current="page"] {
++  background: rgb(44 44 45 / 0.07);
++}
++.nav-link--cta {
++  background: var(--yellow);
++  border: 1.5px solid var(--ink);
++}
++.nav-link--cta:hover {
++  background: var(--yellow);
++  filter: brightness(0.96);
++}
++.brand {
++  display: inline-flex;
++  align-items: center;
++  padding-inline: 0.75rem;
++  min-height: 2.75rem;
++}
++.logo-mark {
++  display: block;
++  width: auto;
++  height: 1.5rem;
+ }
+-.menu-item-card {
+-  height: 35rem;
++.brand--mobile,
++.nav-toggle {
++  display: none;
++}
++.nav-toggle {
+   position: relative;
++  width: 2.75rem;
++  height: 2.75rem;
++  border-radius: 50%;
+ }
+-.washi-tape-wrapper-02 {
+-  z-index: 4;
+-  width: 160px;
+-  margin-left: auto;
+-  margin-right: auto;
++.nav-toggle::before,
++.nav-toggle::after {
++  content: "";
+   position: absolute;
+-  inset: -5% 0% auto;
+-  transform: rotate(4deg);
+-}
+-.h2-header {
+-  font-size: 4rem;
+-}
+-.grid-2-column {
+-  grid-column-gap: 6rem;
+-  grid-row-gap: 6rem;
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr;
+-  grid-auto-columns: 1fr;
+-  display: grid;
++  left: 50%;
++  top: 50%;
++  width: 1.25rem;
++  height: 2px;
++  margin-left: -0.625rem;
++  border-radius: 2px;
++  background: var(--ink);
++  transition: transform 0.35s var(--ease-out);
+ }
+-.highlight-text-popup {
+-  z-index: 99;
+-  background-color: var(--accent-200);
+-  color: #fff;
+-  letter-spacing: 0.5px;
+-  border-radius: 4px;
+-  padding: 0.25rem 0.5rem;
+-  font-family: var(--font-display), Arial, sans-serif;
+-  position: absolute;
++.nav-toggle::before {
++  transform: translateY(-4px);
+ }
+-.headline-container-grid {
+-  grid-column-gap: 1rem;
+-  grid-row-gap: 1rem;
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr 1fr;
+-  grid-auto-columns: 1fr;
+-  display: grid;
++.nav-toggle::after {
++  transform: translateY(4px);
++}
++.navbar.is-open .nav-toggle::before {
++  transform: rotate(45deg);
++}
++.navbar.is-open .nav-toggle::after {
++  transform: rotate(-45deg);
+ }
+-.lineup-cta {
+-  grid-area: 1 / 3 / 2 / 4;
++
++/* ---------- hero ---------- */
++.hero-grid {
++  display: grid;
++  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
++  gap: clamp(3rem, 7vw, 6rem);
++  align-items: center;
+ }
+-.collection-list {
+-  grid-column-gap: 3rem;
+-  grid-row-gap: 3rem;
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr 1fr;
+-  grid-auto-columns: 1fr;
++.hero-copy {
+   display: grid;
++  gap: 1.75rem;
++  justify-items: start;
+ }
+-.price-tag {
+-  grid-column-gap: 0.25rem;
+-  grid-row-gap: 0.25rem;
++.hero-meta {
+   display: flex;
++  flex-wrap: wrap;
++  gap: 0.5rem 1.5rem;
++  margin: 0;
++  padding: 0;
++  list-style: none;
++  font-size: 0.875rem;
++  font-weight: 600;
++  color: var(--ink-2);
+ }
+-.horizontal-flex {
+-  grid-column-gap: 1rem;
+-  grid-row-gap: 1rem;
+-  justify-content: space-between;
+-  align-items: flex-end;
+-  width: 100%;
+-  display: flex;
++.hero-meta li {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
+ }
+-.testimonial-slider {
++.hero-meta li::before {
++  content: "";
++  width: 0.375rem;
++  height: 0.375rem;
++  border-radius: 50%;
++  background: var(--pink);
++}
++.hero-media {
+   position: relative;
+-  background-color: transparent;
+-  height: 100%;
++  width: min(100%, 27rem);
++  justify-self: end;
+ }
+-.slide {
+-  vertical-align: top;
++.badge {
++  position: absolute;
++  z-index: 5;
++  top: -2.25rem;
++  right: 0.75rem;
++  width: 7.5rem;
++  height: 7.5rem;
++  pointer-events: none;
++}
++.badge svg {
+   width: 100%;
+   height: 100%;
+-  display: inline-block;
+-  position: relative;
+-  white-space: normal;
+-  text-align: left;
+-}
+-.testimonial-card {
+-  height: 40rem;
+-  position: relative;
++  overflow: visible;
+ }
+-.mask {
+-  z-index: 1;
++
++/* ---------- marquee ---------- */
++.marquee {
+   position: relative;
+-  left: 0;
+-  right: 0;
+-  display: block;
+-  height: 100%;
+-  padding-bottom: 3rem;
++  z-index: 3;
++  margin-block: -3.5rem -2.5rem;
++  transform: rotate(-1.5deg);
++  background: var(--yellow);
++  border-block: 1.5px solid var(--ink);
+   overflow: hidden;
+   white-space: nowrap;
+-  transform: translateX(calc(var(--slide, 0) * -100%));
+-  transition: transform 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53);
+ }
+-.testimonial-img-wrapper {
+-  justify-content: center;
+-  align-items: stretch;
+-  width: 100%;
++.marquee-track {
+   display: flex;
+-  overflow: hidden;
+-}
+-.testimonial-img {
+-  width: 100%;
+-  height: 100%;
++  width: max-content;
++  will-change: transform;
+ }
+-.parallax-image-wrapper {
+-  z-index: -9;
+-  min-height: 120svh;
+-  max-height: 120svh;
+-  margin-top: -8rem;
+-  margin-bottom: -3rem;
++.marquee-set {
+   display: flex;
+-  position: relative;
+-  overflow: hidden;
++  align-items: center;
++  flex: none;
+ }
+-.parallax-image-div {
+-  -webkit-text-fill-color: inherit;
+-  background-image: url("/backgrounds/torn-peach-top.svg");
+-  background-position: 0 0;
+-  background-size: auto;
+-  background-clip: content-box;
+-  width: 100%;
++.marquee-item {
++  display: inline-flex;
++  align-items: center;
++  gap: 1.5rem;
++  padding: 0.875rem 0 0.875rem 1.5rem;
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1.5rem;
++  letter-spacing: 0.04em;
++  text-transform: uppercase;
++}
++.marquee-item::after {
++  content: "";
++  width: 0.625rem;
++  height: 0.625rem;
++  border-radius: 2px;
++  background: var(--pink);
+ }
+-.parallax-image {
+-  width: 100%;
+-  height: 100%;
++
++/* ---------- photo cards ---------- */
++.photo-card {
++  position: relative;
++  isolation: isolate;
++  display: block;
++  --tilt: 2.5deg;
+ }
+-.left-arrow,
+-.right-arrow {
+-  cursor: pointer;
+-  -webkit-user-select: none;
+-  user-select: none;
+-  margin: auto;
+-  font-size: 40px;
++.photo-card::before {
++  content: "";
+   position: absolute;
++  inset: 0;
++  z-index: -1;
++  border-radius: var(--radius-lg);
++  background: var(--white);
++  box-shadow: var(--shadow-sm);
++  transform: rotate(var(--tilt));
++  transition: transform 0.6s var(--ease-out);
++}
++.photo-card--alt {
++  --tilt: -2.5deg;
++}
++.photo-card-inner {
++  position: relative;
++  display: flex;
++  flex-direction: column;
++  height: 100%;
++  padding: 0.75rem;
++  border-radius: var(--radius-lg);
++  background: var(--white);
++  box-shadow: var(--shadow-md);
++  transition:
++    transform 0.6s var(--ease-out),
++    box-shadow 0.6s var(--ease-out);
++}
++.photo-card-media {
++  position: relative;
++  aspect-ratio: 4 / 5;
++  border-radius: var(--radius-md);
+   overflow: hidden;
++  background: #f1e3d0;
+ }
+-.left-arrow {
+-  z-index: 3;
+-  width: 2.5rem;
+-  height: 2.5rem;
+-  color: var(--black-100);
+-  justify-content: center;
+-  align-items: center;
+-  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
++.photo-card-media img {
++  object-fit: cover;
++  transition: scale 0.9s var(--ease-out);
++}
++.photo-card-body {
++  display: grid;
++  gap: 0.5rem;
++  padding: 1.25rem 0.75rem 0.75rem;
++}
++.photo-card-row {
+   display: flex;
+-  inset: auto 5% 0% 0%;
++  align-items: baseline;
++  justify-content: space-between;
++  gap: 1rem;
++}
++.price {
++  display: inline-flex;
++  align-items: baseline;
++  gap: 0.125rem;
++  font-weight: 600;
++  white-space: nowrap;
++}
++.price small {
++  font-size: 0.875rem;
++  color: var(--ink-2);
++}
++.price span {
++  font-size: 1.25rem;
++}
++.price--ask {
++  font-size: 0.875rem;
++  font-weight: 600;
++  color: var(--ink-2);
++}
++.group-label {
++  font-size: 0.75rem;
++  font-weight: 600;
++  letter-spacing: 0.1em;
++  text-transform: uppercase;
++  color: var(--ink-2);
+ }
+-.left-arrow:hover {
+-  transform: translate(0, 4px);
++.tag {
++  position: absolute;
++  z-index: 2;
++  left: 1.25rem;
++  bottom: 1.25rem;
++  padding: 0.25rem 0.75rem;
++  border-radius: 999px;
++  background: var(--pink);
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1rem;
++  letter-spacing: 0.03em;
++  line-height: 1.5;
+ }
+-.right-arrow {
++.washi {
++  position: absolute;
+   z-index: 4;
+-  width: 2.5rem;
+-  height: 2.5rem;
+-  color: var(--black-100);
+-  justify-content: center;
+-  align-items: center;
+-  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+-  display: flex;
+-  inset: auto 0% 0% 5%;
++  top: -1rem;
++  left: 50%;
++  width: 7.5rem;
++  aspect-ratio: 601 / 220;
++  margin-left: -3.75rem;
++  background: url("/icons/washi-mint.svg") center / contain no-repeat;
++  transform: rotate(-4deg);
++  pointer-events: none;
+ }
+-.right-arrow:hover {
+-  transform: translate(0, 4px);
++a.photo-card:hover .photo-card-inner,
++a.photo-card:focus-visible .photo-card-inner {
++  transform: translateY(-8px);
++  box-shadow: var(--shadow-lg);
+ }
+-.logo-mark {
+-  display: block;
+-  width: auto;
+-  height: 23px;
++a.photo-card:hover::before,
++a.photo-card:focus-visible::before {
++  transform: rotate(0deg);
+ }
+-.footer-logo {
+-  width: 100%;
+-  height: auto;
+-  display: inline-block;
+-  vertical-align: middle;
+-}
+-.footer-links-wrapper {
+-  grid-column-gap: 16px;
+-  grid-row-gap: 16px;
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr 1fr;
+-  grid-auto-columns: 1fr;
+-  place-items: center;
++a.photo-card:hover .photo-card-media img {
++  scale: 1.05;
++}
++.cursor-tag {
++  position: absolute;
++  z-index: 6;
++  left: 0;
++  top: 0;
++  padding: 0.25rem 0.75rem;
++  border-radius: 999px;
++  background: var(--pink);
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1rem;
++  letter-spacing: 0.03em;
++  white-space: nowrap;
++  opacity: 0;
++  pointer-events: none;
++}
++
++/* ---------- section specifics ---------- */
++.lineup-head {
+   display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: clamp(1.5rem, 5vw, 4rem);
++  align-items: end;
+ }
+-.footer-link {
+-  text-decoration: underline;
+-  transition: all 0.3s;
++.lineup-head .stack {
++  justify-items: start;
+ }
+-.footer-link:hover {
+-  font-weight: 600;
++.about-media {
++  width: min(100%, 28rem);
++  justify-self: center;
+ }
+-.menu-item-link-wrapper {
+-  justify-content: center;
+-  align-items: center;
+-  display: flex;
++.about-media .photo-card-media {
++  aspect-ratio: 4 / 5;
++}
++
++/* ---------- testimonials ---------- */
++.carousel {
+   position: relative;
+-  transition: transform 0.5s var(--ease-bounce);
+ }
+-.menu-item-link-wrapper:hover {
+-  transform: scale(1.02);
++.carousel-viewport {
++  margin-inline: -1rem;
++  overflow: hidden;
++  touch-action: pan-y;
+ }
+-.cta-card-wrapper {
+-  flex-flow: row;
+-  justify-content: center;
+-  align-items: flex-end;
+-  max-width: 60rem;
+-  height: 40rem;
+-  margin-left: auto;
+-  margin-right: auto;
+-  position: relative;
++.carousel-track {
++  display: flex;
++  will-change: transform;
+ }
+-.cta-content-wrapper {
+-  z-index: 99;
+-  margin-right: 10%;
++.carousel-slide {
++  flex: 0 0 100%;
++  min-width: 0;
++  padding: 1.75rem 1rem 2rem;
+ }
+-.cta-bg-div {
+-  background-color: #fff;
+-  position: absolute;
+-  inset: 0%;
+-  transform: rotate(3deg);
+-  box-shadow: 0 2px 5px #0003;
++.carousel-cards {
++  display: grid;
++  grid-template-columns: repeat(var(--per-view, 2), minmax(0, 1fr));
++  gap: clamp(2rem, 4vw, 3rem);
+ }
+-.cta-img-wrapper {
+-  z-index: 1;
+-  justify-content: center;
+-  align-items: center;
+-  width: 100%;
+-  height: 100%;
++.quote-card .photo-card-inner {
++  flex-direction: row;
++  gap: 1.5rem;
++  align-items: stretch;
++}
++.quote-card .photo-card-media {
++  flex: 0 0 42%;
++  aspect-ratio: auto;
++  min-height: 20rem;
++}
++.quote-body {
+   display: flex;
+-  overflow: hidden;
++  flex-direction: column;
++  align-items: flex-start;
++  justify-content: center;
++  gap: 1rem;
++  padding: 0.75rem 0.75rem 0.75rem 0;
+ }
+-.cta-img {
+-  width: 100%;
++.quote-body p {
++  font-size: 1.0625rem;
++  line-height: 1.6;
+ }
+-.cta-content-container {
+-  z-index: 3;
+-  background-color: var(--accent-300);
+-  grid-template-rows: auto;
+-  grid-template-columns: 1fr 1fr;
+-  grid-auto-columns: 1fr;
+-  justify-content: flex-start;
++.quote-who {
++  font-size: 0.9375rem;
++  font-weight: 600;
++}
++.pill {
++  display: inline-block;
++  padding: 0.25rem 0.75rem;
++  border-radius: 999px;
++  background: var(--pink);
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1rem;
++  letter-spacing: 0.03em;
++  line-height: 1.5;
++}
++.carousel-controls {
++  display: flex;
+   align-items: center;
+-  width: 100%;
+-  height: 100%;
+-  display: grid;
++  justify-content: center;
++  gap: 1.5rem;
++  margin-top: 1rem;
+ }
+-.cta-padding-container {
+-  z-index: 9;
+-  background-color: #fff;
+-  width: 100%;
+-  height: 100%;
+-  padding: 1.5rem;
+-  position: relative;
+-  box-shadow: 0 2px 5px #0003;
++.round-btn {
++  display: inline-grid;
++  place-items: center;
++  width: 3rem;
++  height: 3rem;
++  border: 1.5px solid var(--ink);
++  border-radius: 50%;
++  background: var(--white);
++  transition:
++    background-color 0.2s,
++    translate 0.25s var(--ease-out);
+ }
+-.cta-header {
+-  font-size: 4rem;
++.round-btn:hover {
++  background: var(--yellow);
+ }
+-.testimonial-bg-div {
+-  background-color: #fff;
+-  position: absolute;
+-  inset: 0%;
+-  transform: rotate(3deg);
+-  box-shadow: 0 3px 8px #1d1d1f29;
++.round-btn:active {
++  translate: 0 2px;
+ }
+-.testimonial-content {
+-  z-index: 3;
+-  grid-column-gap: 1.5rem;
+-  grid-row-gap: 1.5rem;
+-  background-color: #fff;
+-  flex-flow: column;
+-  width: 100%;
+-  height: 100%;
+-  padding: 1.5rem 1.5rem 5rem;
++.dots {
+   display: flex;
+-  position: relative;
+-  box-shadow: 0 3px 8px #1d1d1f29;
++  align-items: center;
++  gap: 0.25rem;
+ }
+-.arrow-icon {
+-  width: 100%;
+-  height: 100%;
++.dot {
++  display: grid;
++  place-items: center;
++  width: 1.75rem;
++  height: 2.75rem;
++}
++.dot::before {
++  content: "";
++  width: 0.5rem;
++  height: 0.5rem;
++  border-radius: 999px;
++  background: rgb(44 44 45 / 0.25);
++  transition:
++    width 0.4s var(--ease-out),
++    background-color 0.3s;
++}
++.dot[aria-current="true"]::before {
++  width: 1.5rem;
++  background: var(--ink);
+ }
+ 
+-/* ---------- interactions (Webflow IX2) ---------- */
+-/* a-15 "flipbook": rotating card sheets flip in on scroll (rotateY -90deg -> 0, 1000ms bounce) */
+-[data-reveal] {
+-  transition: transform 1s var(--ease-bounce);
++/* ---------- cta ---------- */
++.cta-card {
++  position: relative;
++  isolation: isolate;
++  max-width: 60rem;
++  margin-inline: auto;
++}
++.cta-card::before {
++  content: "";
++  position: absolute;
++  inset: 0;
++  z-index: -1;
++  border-radius: var(--radius-lg);
++  background: var(--yellow);
++  transform: rotate(2deg);
++  box-shadow: var(--shadow-sm);
++}
++.cta-inner {
++  display: grid;
++  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
++  gap: clamp(1.5rem, 4vw, 3rem);
++  align-items: center;
++  padding: 0.75rem;
++  border-radius: var(--radius-lg);
++  background: var(--white);
++  box-shadow: var(--shadow-md);
+ }
+-html.js [data-reveal]:not(.is-in) {
+-  transform: rotateY(-90deg);
++.cta-media {
++  position: relative;
++  aspect-ratio: 4 / 5;
++  border-radius: var(--radius-md);
++  overflow: hidden;
+ }
+-/* fadeIn: opacity 0 -> 1, 1000ms outQuart */
+-[data-fade] {
+-  transition: opacity 1s var(--ease-out-quart);
++.cta-media img {
++  object-fit: cover;
+ }
+-html.js [data-fade]:not(.is-in) {
+-  opacity: 0;
++.cta-copy {
++  padding: 1rem 1.5rem 1rem 0;
+ }
+-/* a-7/a-8/a-9 "menu item hover": card scale 1.02, popup opacity + scale, popup follows the mouse */
+-.highlight-text-popup {
+-  opacity: 0;
+-  transform: translate3d(var(--px, 0%), var(--py, 0%), 0);
+-  transition:
+-    opacity 0.5s ease,
+-    transform 0.5s ease-out;
+-  pointer-events: none;
++.cta-copy .stack {
++  gap: 1.25rem;
+ }
+-.highlight-text-popup span {
+-  display: inline-block;
+-  transform: scale(0);
+-  transition: transform 0.5s var(--ease-bounce);
++
++/* ---------- parallax band ---------- */
++.band {
++  position: relative;
++  z-index: 0;
++  height: clamp(24rem, 70vh, 44rem);
++  margin-bottom: -5rem;
++  overflow: hidden;
+ }
+-.menu-item-link-wrapper:hover .highlight-text-popup {
+-  opacity: 1;
++.band-img {
++  position: absolute;
++  inset: -12% 0;
+ }
+-.menu-item-link-wrapper:hover .highlight-text-popup span {
+-  transform: scale(1);
+-  transition-duration: 0.8s;
++.band-img img {
++  object-fit: cover;
+ }
+-/* a-14/a-21 parallax band: image translateY -30% -> 30%, inner image scale 1.2 -> 1 */
+-.parallax-image-div {
+-  will-change: transform;
+-  transform: translate3d(0, var(--par, 0%), 0);
+-  transition: transform 0.5s ease-out;
++
++/* ---------- menu page ---------- */
++.steps {
++  display: grid;
++  grid-template-columns: repeat(3, minmax(0, 1fr));
++  gap: clamp(2rem, 4vw, 3rem);
++  margin: 0;
++  padding: 0;
++  list-style: none;
++  counter-reset: step;
+ }
+-.parallax-image {
+-  will-change: transform;
+-  transform: scale(var(--par-scale, 1));
+-  transition: transform 0.5s ease-out;
++.step {
++  display: grid;
++  align-content: start;
++  gap: 0.75rem;
++  justify-items: start;
++  padding: 2rem;
++  border-radius: var(--radius-lg);
++  background: var(--white);
++  box-shadow: var(--shadow-sm);
++}
++.step::before {
++  counter-increment: step;
++  content: counter(step);
++  display: grid;
++  place-items: center;
++  width: 2.5rem;
++  height: 2.5rem;
++  border-radius: 50%;
++  background: var(--mint);
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1.25rem;
+ }
+-/* a-23/a-24 navbar button: the Lottie hamburger is replaced by two bars morphing into an X */
+-.nav-hamburger-icon::before,
+-.nav-hamburger-icon::after {
+-  content: "";
+-  width: 1.5rem;
+-  height: 2px;
+-  background-color: var(--black-100);
+-  transition: transform 0.4s ease;
++
++/* ---------- footer ---------- */
++.footer-top {
++  display: grid;
++  justify-items: center;
++  gap: 2.5rem;
++  text-align: center;
+ }
+-.nav-hamburger-icon::before {
+-  transform: translateY(-4px);
++.footer-logo {
++  width: min(100%, 28rem);
++  height: auto;
+ }
+-.nav-hamburger-icon::after {
+-  transform: translateY(4px);
++.footer-links {
++  display: flex;
++  flex-wrap: wrap;
++  justify-content: center;
++  gap: 0.25rem 2rem;
++  margin: 0;
++  padding: 0;
++  list-style: none;
++  font-weight: 600;
+ }
+-.navbar.is-open .nav-hamburger-icon::before {
+-  transform: rotate(45deg);
++.footer-links a {
++  display: inline-flex;
++  align-items: center;
++  min-height: 2.75rem;
++  text-decoration: underline;
++  text-decoration-thickness: 1.5px;
++  text-underline-offset: 0.3em;
+ }
+-.navbar.is-open .nav-hamburger-icon::after {
+-  transform: rotate(-45deg);
++.footer-base {
++  margin-top: 4rem;
++  padding-top: 1.5rem;
++  border-top: 1px solid rgb(44 44 45 / 0.18);
++  display: flex;
++  flex-wrap: wrap;
++  justify-content: space-between;
++  gap: 0.5rem 1.5rem;
++  font-size: 0.875rem;
++  color: var(--ink-2);
+ }
+-.navbar.is-open .nav-menu-item-wrapper {
+-  animation: nav-drop 0.4s ease;
++
++/* ---------- motion: hidden states (only when GSAP will reveal them) ---------- */
++html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-hero-media]):not(.is-set) {
++  opacity: 0;
++  animation: anim-failsafe 0.01s 3.5s forwards;
+ }
+-@keyframes nav-drop {
+-  from {
+-    opacity: 0;
+-    transform: translateY(-0.5rem);
++@keyframes anim-failsafe {
++  to {
++    opacity: 1;
+   }
+ }
+-@media screen and (max-width: 991px) {
+-  .section {
+-    padding-top: 8rem;
+-    padding-bottom: 8rem;
+-  }
+-  .section.green-bg-hero {
+-    padding-bottom: 12rem;
+-  }
+-  .space-2xl {
+-    height: 3.5rem;
+-  }
+-  .space-4xl {
+-    height: 6rem;
+-  }
+-  .default-container {
+-    max-width: 80rem;
+-  }
+-  .hero-grid-wrapper {
+-    grid-column-gap: 6rem;
+-    grid-row-gap: 6rem;
+-    grid-template-columns: 1fr;
+-  }
+-  .navbar {
+-    padding-top: 0;
+-    padding-bottom: 0;
+-    padding-left: 1.5rem;
+-  }
+-  .brand-logo-mobile {
+-    transition: transform 0.3s;
+-    display: block;
++
++/* ---------- responsive ---------- */
++@media (max-width: 991px) {
++  .grid-3 {
++    grid-template-columns: minmax(0, 1fr);
++    max-width: 30rem;
++    margin-inline: auto;
++    gap: 3.5rem;
+   }
+-  .brand-logo-mobile:hover {
+-    transform: scale(0.94);
++  .grid-3--center > * {
++    flex: 1 1 100%;
+   }
+-  .nav-content-wrapper {
+-    justify-content: space-between;
+-    padding: 0;
++  .steps {
++    grid-template-columns: minmax(0, 1fr);
++    max-width: 30rem;
++    margin-inline: auto;
+   }
+-  .nav-menu-item-wrapper {
+-    display: none;
+-    border: 1px solid var(--black-100);
+-    background-color: var(--bg-color);
+-    border-radius: 8px;
+-    margin-top: 0.5rem;
+-    padding-top: 1rem;
+-    padding-left: 1rem;
+-    padding-right: 1rem;
+-  }
+-  .navbar.is-open .nav-menu-item-wrapper {
+-    display: flex;
+-    position: absolute;
+-    top: 100%;
+-    left: 0;
+-    right: 0;
+-  }
+-  .nav-hamburger-icon {
+-    background-color: transparent;
+-    flex-flow: column;
+-    justify-content: center;
+-    align-items: center;
+-    padding: 0.75rem 0.5rem 0;
+-    transition: transform 0.3s;
+-    display: flex;
++  .hero-grid,
++  .split,
++  .lineup-head {
++    grid-template-columns: minmax(0, 1fr);
+   }
+-  .nav-hamburger-icon:hover {
+-    transform: scale(0.94);
++  .hero-media {
++    width: min(100%, 24rem);
++    justify-self: center;
+   }
+-  .nav-link {
+-    margin-bottom: 1.5rem;
+-    margin-left: 0;
++  .hero-grid {
++    gap: 4.5rem;
+   }
+-  .brand-logo-web {
+-    display: none;
++  .split {
++    gap: 3.5rem;
+   }
+-  .grid-3-column {
+-    grid-column-gap: 6rem;
+-    grid-row-gap: 6rem;
+-    grid-template-columns: 1fr;
++  .split--flip > :first-child {
++    order: 2;
+   }
+-  .menu-item-card {
+-    width: 100%;
++  .lineup-head {
++    align-items: start;
+   }
+-  .grid-2-column {
+-    grid-template-columns: 1fr;
++  .quote-card .photo-card-inner {
++    flex-direction: column;
++    gap: 0.5rem;
+   }
+-  .headline-container-grid {
+-    grid-column-gap: 0rem;
+-    grid-row-gap: 0rem;
+-    grid-template-columns: 1fr;
++  .quote-card .photo-card-media {
++    flex-basis: auto;
++    aspect-ratio: 4 / 3.4;
++    min-height: 0;
+   }
+-  .lineup-cta {
+-    grid-area: span 1 / span 1 / span 1 / span 1;
++  .quote-body {
++    padding: 1.25rem 0.75rem 0.75rem;
+   }
+-  .collection-list {
+-    grid-column-gap: 6rem;
+-    grid-row-gap: 6rem;
+-    grid-template-columns: 1fr;
++  .cta-inner {
++    grid-template-columns: minmax(0, 1fr);
+   }
+-  .menu-item-link-wrapper {
+-    width: 100%;
++  .cta-media {
++    aspect-ratio: 4 / 3.2;
+   }
+-  .cta-content-wrapper {
+-    margin-right: 5%;
++  .cta-copy {
++    padding: 0.5rem 0.75rem 1rem;
+   }
+ }
+-@media screen and (max-width: 767px) {
+-  .section {
+-    padding-top: 5rem;
+-    padding-bottom: 5rem;
+-  }
+-  .section.green-bg-hero {
+-    padding-top: 6rem;
+-  }
+-  .default-container {
+-    max-width: 80rem;
+-  }
+-  .h1-header {
+-    font-size: 4rem;
+-  }
+-  .menu-item-content {
+-    padding: 1rem 1rem 4rem;
++@media (max-width: 759px) {
++  .navbar {
++    border-radius: 1.75rem;
++    padding: 0.375rem 0.5rem 0.375rem 0.75rem;
+   }
+-  .img-style-01 {
+-    height: 30rem;
++  .nav-inner {
++    min-height: 2.75rem;
+   }
+-  .navbar {
+-    margin-left: 1rem;
+-    margin-right: 1rem;
++  .brand--desktop {
++    display: none;
+   }
+-  .nav-content-wrapper {
++  .brand--mobile {
++    display: inline-flex;
+     padding-left: 0;
+-    padding-right: 0;
+   }
+-  .nav-link {
+-    padding-left: 20px;
+-    padding-right: 20px;
+-  }
+-  .menu-item-card {
+-    height: 30rem;
++  .nav-toggle {
++    display: block;
+   }
+-  .h2-header {
+-    font-size: 3rem;
++  .nav-menu {
++    display: none;
+   }
+-  .parallax-image-wrapper {
+-    min-height: auto;
+-    margin-top: -4rem;
+-    margin-bottom: -2rem;
++  .navbar.is-open .nav-menu {
++    display: flex;
++    flex-direction: column;
++    align-items: stretch;
++    gap: 0.25rem;
++    padding: 0.5rem 0 0.5rem;
++    animation: nav-drop 0.4s var(--ease-out);
+   }
+-  .left-arrow {
+-    right: 12%;
++  .nav-group {
++    flex-direction: column;
++    align-items: stretch;
++    gap: 0.25rem;
+   }
+-  .right-arrow {
+-    left: 12%;
++  .nav-link {
++    justify-content: center;
++    min-height: 3rem;
++    font-size: 1rem;
+   }
+-  .footer-links-wrapper {
+-    grid-template-columns: 1fr;
++  .nav-inner {
++    flex-wrap: wrap;
+   }
+-  .cta-card-wrapper {
+-    justify-content: space-between;
++  .nav-menu {
++    order: 3;
++    flex-basis: 100%;
+   }
+-  .cta-content-wrapper {
+-    margin-bottom: 10%;
+-    margin-left: 5%;
++  .badge {
++    width: 5.75rem;
++    height: 5.75rem;
++    top: -1.5rem;
++    right: 0.5rem;
+   }
+-  .cta-img-wrapper {
++  .footer-base {
+     justify-content: center;
+-    align-items: flex-start;
+-  }
+-  .cta-content-container {
+-    flex-flow: column;
+-    grid-template-columns: 1fr;
+-    justify-content: flex-start;
+-    align-items: flex-start;
+-    position: relative;
++    text-align: center;
+   }
+-  .cta-padding-container {
+-    padding: 1rem;
+-  }
+-  .cta-header {
+-    font-size: 3rem;
++  .marquee-item {
++    font-size: 1.25rem;
+   }
+ }
+-@media screen and (max-width: 479px) {
+-  .section.green-bg-hero {
+-    padding-bottom: 8rem;
+-  }
+-  .section.brown-bg {
+-    background-position: 50%;
+-    background-size: cover;
+-  }
+-  .space-4xl {
+-    height: 5rem;
+-  }
+-  .h1-header {
+-    font-size: 3.5rem;
+-  }
+-  .img-style-01 {
+-    height: 25rem;
+-  }
+-  .navbar {
+-    margin-left: 0.5rem;
+-    margin-right: 0.5rem;
+-    padding-left: 0;
+-    padding-right: 0;
+-  }
+-  .nav-content-wrapper {
+-    padding: 0 0 0 1rem;
+-  }
+-  .nav-link {
+-    margin-bottom: 0.5rem;
+-  }
+-  .washi-tape-wrapper-02 {
+-    width: 120px;
+-  }
+-  .h2-header {
+-    font-size: 2.5rem;
+-  }
+-  .collection-list {
+-    grid-row-gap: 6rem;
+-  }
+-  .horizontal-flex {
+-    flex-flow: wrap;
+-  }
+-  .left-arrow {
+-    right: 16%;
+-  }
+-  .right-arrow {
+-    left: 16%;
+-  }
+-  .cta-card-wrapper {
+-    height: 30rem;
+-  }
+-  .cta-header {
+-    font-size: 2rem;
++@keyframes nav-drop {
++  from {
++    opacity: 0;
++    transform: translateY(-0.5rem);
+   }
+ }
+-@media screen and (prefers-reduced-motion: reduce) {
+-  [data-reveal],
+-  [data-fade],
+-  .mask,
+-  .parallax-image-div,
+-  .parallax-image {
+-    transition-duration: 0.01s;
++@media (hover: none) {
++  a.photo-card:hover .photo-card-inner {
++    transform: none;
++    box-shadow: var(--shadow-md);
+   }
+ }
+-
+-/* Exact IX2 easing curves, sampled into linear() for browsers that support it. */
+-@supports (transition-timing-function: linear(0, 1)) {
+-  :root {
+-    --ease-bounce: linear(0, 0.0047, 0.0189, 0.0425, 0.0756, 0.1182, 0.1702, 0.2316, 0.3025, 0.3829, 0.4727,
+-      0.5719, 0.6806, 0.7988, 0.9264, 0.9697, 0.91, 0.8597, 0.8189, 0.7875, 0.7656, 0.7532, 0.7502, 0.7566,
+-      0.7725, 0.7979, 0.8327, 0.8769, 0.9306, 0.9938, 0.9727, 0.9516, 0.94, 0.9379, 0.9452, 0.9619, 0.9881,
+-      0.991, 0.9845, 0.9875, 1);
+-    --ease-out-quart: linear(0, 0.1855, 0.3439, 0.478, 0.5904, 0.6836, 0.7599, 0.8215, 0.8704, 0.9085,
+-      0.9375, 0.959, 0.9744, 0.985, 0.9919, 0.9961, 0.9984, 0.9995, 0.9999, 1, 1);
++@media (prefers-reduced-motion: reduce) {
++  *,
++  ::before,
++  ::after {
++    transition-duration: 0.01s !important;
++    animation-duration: 0.01s !important;
+   }
+ }
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 8ff401d..a72ab82 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,7 +1,10 @@
+-import type { Metadata } from "next";
++import type { Metadata, Viewport } from "next";
+ import localFont from "next/font/local";
+ import "./globals.css";
+-import SiteEffects from "./components/SiteEffects";
++import Footer from "./components/Footer";
++import Motion from "./components/Motion";
++import Navbar from "./components/Navbar";
++import ParallaxBand from "./components/ParallaxBand";
+ 
+ const tanker = localFont({
+   src: "./fonts/Tanker-400.woff",
+@@ -20,18 +23,24 @@ const beVietnamPro = localFont({
+ });
+ 
+ export const metadata: Metadata = {
+-  title: "La Crave Bakery — flaky pastries, beautiful cakes",
++  title: {
++    default: "La Crave Bakery | flaky pastries, beautiful cakes",
++    template: "%s | La Crave Bakery",
++  },
+   description:
+     "Fan-favourite meat pies, custom cakes, banana bread and brownies, baked fresh in Port Harcourt. Same-day delivery.",
+   openGraph: {
+-    title: "La Crave Bakery — flaky pastries, beautiful cakes",
++    title: "La Crave Bakery | flaky pastries, beautiful cakes",
+     description:
+       "Fan-favourite meat pies, custom cakes, banana bread and brownies, baked fresh in Port Harcourt.",
+-    url: "https://www.instagram.com/lacravebakery/",
+     siteName: "La Crave Bakery",
+   },
+ };
+ 
++export const viewport: Viewport = {
++  themeColor: "#fff3e3",
++};
++
+ export default function RootLayout({ children }: LayoutProps<"/">) {
+   return (
+     <html
+@@ -43,13 +52,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
+         {/* Scroll-in animations start hidden, so only hide them when JS can reveal them. */}
+         <script
+           dangerouslySetInnerHTML={{
+-            __html: 'document.documentElement.classList.add("js")',
++            __html:
++              'if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js")',
+           }}
+         />
+       </head>
+       <body id="top">
+-        {children}
+-        <SiteEffects />
++        <Navbar />
++        <main>{children}</main>
++        <ParallaxBand />
++        <Footer />
++        <Motion />
+       </body>
+     </html>
+   );
+diff --git a/app/menu-data.ts b/app/menu-data.ts
+new file mode 100644
+index 0000000..2483976
+--- /dev/null
++++ b/app/menu-data.ts
+@@ -0,0 +1,79 @@
++export type MenuItem = {
++  id: string;
++  name: string;
++  group: string;
++  blurb: string;
++  /** Naira, formatted. Leave undefined to show "Message for price". */
++  price?: string;
++  img: string;
++  alt: string;
++};
++
++export const MENU: MenuItem[] = [
++  {
++    id: "meat-pies",
++    name: "Meat Pies",
++    group: "Savoury",
++    blurb: "Golden, flaky and generously filled. The one everybody orders by the tray.",
++    img: "/images/cat-meat-pies.jpg",
++    alt: "A tray of golden La Crave meat pies",
++  },
++  {
++    id: "pastry-box",
++    name: "Pastry Box",
++    group: "Savoury",
++    blurb: "An assorted box of our flaky bakes, packed with care and ready to share.",
++    price: "7,500",
++    img: "/images/item-pastry-box.jpg",
++    alt: "A box of assorted La Crave pastries",
++  },
++  {
++    id: "custom-cake",
++    name: "Custom Cake",
++    group: "Cakes",
++    blurb: "Birthdays, weddings and everything in between, built around your moment.",
++    price: "25,000",
++    img: "/images/item-cake.jpg",
++    alt: "A custom La Crave celebration cake",
++  },
++  {
++    id: "banana-bread",
++    name: "Banana Bread",
++    group: "Loaves and squares",
++    blurb: "A comforting, soft loaf that is dangerously easy to finish in one sitting.",
++    img: "/images/cat-breads.jpg",
++    alt: "Banana bread fresh out of the oven",
++  },
++  {
++    id: "brownies",
++    name: "Brownies",
++    group: "Loaves and squares",
++    blurb: "Rich, fudgy squares that melt in your mouth.",
++    price: "5,000",
++    img: "/images/item-brownies.jpg",
++    alt: "A box of fudgy La Crave brownies",
++  },
++];
++
++export const FEATURED_IDS = ["pastry-box", "custom-cake", "brownies"];
++
++export const CATEGORIES = [
++  {
++    title: "Meat pies",
++    body: "Golden, flaky and generously filled. The one everybody orders by the tray.",
++    img: "/images/cat-meat-pies.jpg",
++    alt: "A tray of golden La Crave meat pies",
++  },
++  {
++    title: "Custom cakes",
++    body: "Birthdays, weddings and everything in between, built around your moment.",
++    img: "/images/cat-cakes.jpg",
++    alt: "A custom celebration cake by La Crave",
++  },
++  {
++    title: "Banana bread and brownies",
++    body: "Comforting loaves and rich, fudgy squares that melt in your mouth.",
++    img: "/images/cat-breads.jpg",
++    alt: "Banana bread and brownies fresh out of the oven",
++  },
++];
+diff --git a/app/menu/page.tsx b/app/menu/page.tsx
+new file mode 100644
+index 0000000..ed802da
+--- /dev/null
++++ b/app/menu/page.tsx
+@@ -0,0 +1,119 @@
++import type { Metadata } from "next";
++import Link from "next/link";
++import Arrow from "../components/Arrow";
++import CtaSection from "../components/CtaSection";
++import PhotoCard from "../components/PhotoCard";
++import { MENU } from "../menu-data";
++import { WHATSAPP } from "../site";
++
++export const metadata: Metadata = {
++  title: "Menu",
++  description:
++    "Meat pies, pastry boxes, custom cakes, banana bread and brownies from La Crave Bakery, baked fresh to order in Port Harcourt.",
++};
++
++const steps = [
++  {
++    title: "Send us a message",
++    body: "Slide into our DMs or message us on WhatsApp with what you are craving and when you need it.",
++  },
++  {
++    title: "We bake it fresh",
++    body: "Everything is baked to order and packed with care, so it reaches you at its best.",
++  },
++  {
++    title: "Same-day delivery",
++    body: "We deliver across Port Harcourt the same day, every day.",
++  },
++];
++
++export default function MenuPage() {
++  return (
++    <>
++      <section className="section--hero">
++        <div className="container">
++          <div className="section-head">
++            <span className="eyebrow" data-hero-item>
++              The menu
++            </span>
++            <h1 className="display-1" data-split>
++              baked fresh, made to order
++            </h1>
++            <p className="lead" data-hero-item>
++              Everything we make, in one place. Pick your favourites and send us
++              a message. We will take it from there.
++            </p>
++            <div className="actions" style={{ justifyContent: "center" }} data-hero-item>
++              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
++                order on whatsapp
++              </a>
++              <Link href="/" className="link-arrow">
++                <Arrow dir="left" />
++                back home
++              </Link>
++            </div>
++          </div>
++        </div>
++      </section>
++
++      <section className="section">
++        <div className="container">
++          <div className="grid-3 grid-3--center">
++            {MENU.map((item, index) => (
++              <PhotoCard
++                key={item.id}
++                href={WHATSAPP}
++                external
++                img={item.img}
++                alt={item.alt}
++                sizes="(min-width: 992px) 24rem, 90vw"
++                cursorTag="order now"
++                flip={index % 2 === 1}
++              >
++                <div className="photo-card-body">
++                  <span className="group-label">{item.group}</span>
++                  <div className="photo-card-row">
++                    <h2 className="title-3">{item.name}</h2>
++                    {item.price ? (
++                      <span className="price">
++                        <small>₦</small>
++                        <span>{item.price}</span>
++                      </span>
++                    ) : (
++                      <span className="price price--ask">Message for price</span>
++                    )}
++                  </div>
++                  <p className="small">{item.blurb}</p>
++                </div>
++              </PhotoCard>
++            ))}
++          </div>
++        </div>
++      </section>
++
++      <section className="section" style={{ paddingTop: 0 }}>
++        <div className="container">
++          <div className="section-head">
++            <span className="eyebrow" data-fade>
++              How it works
++            </span>
++            <h2 className="display-2" data-split>
++              from your message to your door
++            </h2>
++          </div>
++          <div className="section-gap" />
++          <ol className="steps">
++            {steps.map((step) => (
++              <li className="step" key={step.title} data-reveal>
++                <h3 className="title-3">{step.title}</h3>
++                <p className="small">{step.body}</p>
++              </li>
++            ))}
++          </ol>
++        </div>
++      </section>
++
++      <CtaSection />
++    </>
++  );
++}
+diff --git a/app/page.tsx b/app/page.tsx
+index 3ed076e..f7a0b51 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -1,25 +1,21 @@
+ import AboutSection from "./components/AboutSection";
+ import CategoriesSection from "./components/CategoriesSection";
+ import CtaSection from "./components/CtaSection";
+-import Footer from "./components/Footer";
+ import HeroSection from "./components/HeroSection";
+ import LineupSection from "./components/LineupSection";
+-import Navbar from "./components/Navbar";
+-import ParallaxBand from "./components/ParallaxBand";
++import Marquee from "./components/Marquee";
+ import TestimonialsSection from "./components/TestimonialsSection";
+ 
+ export default function Home() {
+   return (
+     <>
+-      <Navbar />
+       <HeroSection />
++      <Marquee />
+       <CategoriesSection />
+       <AboutSection />
+       <LineupSection />
+       <TestimonialsSection />
+       <CtaSection />
+-      <ParallaxBand />
+-      <Footer />
+     </>
+   );
+ }
+diff --git a/package-lock.json b/package-lock.json
+index d81fdb2..4347e2d 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -8,6 +8,7 @@
+       "name": "bakery-freelance",
+       "version": "0.1.0",
+       "dependencies": {
++        "gsap": "^3.15.0",
+         "next": "16.4.2",
+         "react": "19.3.0",
+         "react-dom": "19.3.0"
+@@ -616,9 +617,6 @@
+       "cpu": [
+         "arm"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -635,9 +633,6 @@
+       "cpu": [
+         "arm64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -654,9 +649,6 @@
+       "cpu": [
+         "ppc64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -673,9 +665,6 @@
+       "cpu": [
+         "riscv64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -692,9 +681,6 @@
+       "cpu": [
+         "s390x"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -711,9 +697,6 @@
+       "cpu": [
+         "x64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -730,9 +713,6 @@
+       "cpu": [
+         "arm64"
+       ],
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -749,9 +729,6 @@
+       "cpu": [
+         "x64"
+       ],
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "LGPL-3.0-or-later",
+       "optional": true,
+       "os": [
+@@ -768,9 +745,6 @@
+       "cpu": [
+         "arm"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -793,9 +767,6 @@
+       "cpu": [
+         "arm64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -818,9 +789,6 @@
+       "cpu": [
+         "ppc64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -843,9 +811,6 @@
+       "cpu": [
+         "riscv64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -868,9 +833,6 @@
+       "cpu": [
+         "s390x"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -893,9 +855,6 @@
+       "cpu": [
+         "x64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -918,9 +877,6 @@
+       "cpu": [
+         "arm64"
+       ],
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -943,9 +899,6 @@
+       "cpu": [
+         "x64"
+       ],
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "Apache-2.0",
+       "optional": true,
+       "os": [
+@@ -1213,9 +1166,6 @@
+       "cpu": [
+         "arm64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1232,9 +1182,6 @@
+       "cpu": [
+         "arm64"
+       ],
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1251,9 +1198,6 @@
+       "cpu": [
+         "x64"
+       ],
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1270,9 +1214,6 @@
+       "cpu": [
+         "x64"
+       ],
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1841,9 +1782,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1858,9 +1796,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1875,9 +1810,6 @@
+         "loong64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1892,9 +1824,6 @@
+         "loong64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1909,9 +1838,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1926,9 +1852,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1943,9 +1866,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1960,9 +1880,6 @@
+         "s390x"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1977,9 +1894,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1994,9 +1908,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3745,6 +3656,12 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/gsap": {
++      "version": "3.15.0",
++      "resolved": "https://registry.npmjs.org/gsap/-/gsap-3.15.0.tgz",
++      "integrity": "sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==",
++      "license": "Standard 'no charge' license: https://gsap.com/standard-license."
++    },
+     "node_modules/has-bigints": {
+       "version": "1.1.0",
+       "resolved": "https://registry.npmjs.org/has-bigints/-/has-bigints-1.1.0.tgz",
+diff --git a/package.json b/package.json
+index 3b39f5f..14c2dcb 100644
+--- a/package.json
++++ b/package.json
+@@ -9,6 +9,7 @@
+     "lint": "eslint"
+   },
+   "dependencies": {
++    "gsap": "^3.15.0",
+     "next": "16.4.2",
+     "react": "19.3.0",
+     "react-dom": "19.3.0"

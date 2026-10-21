@@ -1,12 +1,14 @@
+import Image from "next/image";
+
 export default function ParallaxBand() {
   return (
-    <div className="parallax-image-wrapper" data-parallax>
-      <div className="parallax-image-div">
-        <img
+    <div className="band" data-band>
+      <div className="band-img" data-band-img>
+        <Image
           src="/images/parallax-baker.jpg"
           alt="Freshly baked La Crave pastries on the counter"
-          className="parallax-image"
-          loading="lazy"
+          fill
+          sizes="100vw"
         />
       </div>
     </div>

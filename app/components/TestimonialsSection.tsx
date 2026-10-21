@@ -1,139 +1,219 @@
 "use client";
 
-import { useState } from "react";
+import gsap from "gsap";
+import Image from "next/image";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
+import Arrow from "./Arrow";
 
-const slides = [
-  [
-    {
-      title: "Meat pie perfection",
-      body: "I ordered a tray for the office and they disappeared in ten minutes. The crust is unreal.",
-      who: "Ngozi A., Office Regular",
-      img: "/images/testimonial-1.jpg",
-      alt: "A customer holding a La Crave meat pie",
-    },
-    {
-      title: "My birthday cake!",
-      body: "I sent a blurry screenshot from Pinterest and got back exactly what I imagined — but better.",
-      who: "Temi O., Birthday Girl",
-      img: "/images/testimonial-2.jpg",
-      alt: "A customer with her La Crave birthday cake",
-    },
-  ],
-  [
-    {
-      title: "Brownies that slap",
-      body: "Ordered one box to share. Ate most of it in the car. Zero regrets.",
-      who: "Ike W., Brownie Addict",
-      img: "/images/testimonial-3.jpg",
-      alt: "A customer holding a box of La Crave brownies",
-    },
-    {
-      title: "Better than my mum's",
-      body: "The banana bread is dangerously soft. My family finished it before dinner.",
-      who: "Ada K., Banana Bread Fan",
-      img: "/images/testimonial-4.jpg",
-      alt: "A customer with a loaf of La Crave banana bread",
-    },
-  ],
-  [
-    {
-      title: "Delivered same day",
-      body: "Messaged in the morning, had warm meat pies by afternoon. That's service.",
-      who: "Tunde B., Same-Day Regular",
-      img: "/images/testimonial-5.jpg",
-      alt: "A customer receiving a same-day La Crave delivery",
-    },
-    {
-      title: "Cake of the year",
-      body: "Our wedding cake got more compliments than the dress code.",
-      who: "Chiara & Sam, Newlyweds",
-      img: "/images/testimonial-6.jpg",
-      alt: "A wedding cake made by La Crave",
-    },
-  ],
+/* Sample copy: swap for real customer messages before launch. */
+const testimonials = [
+  {
+    title: "Meat pie perfection",
+    body: "I ordered a tray for the office and they disappeared in ten minutes. The crust is unreal.",
+    who: "Ngozi A., Office Regular",
+    img: "/images/testimonial-1.jpg",
+    alt: "A customer holding a La Crave meat pie",
+  },
+  {
+    title: "My birthday cake!",
+    body: "I sent a blurry screenshot from Pinterest and got back exactly what I imagined, but better.",
+    who: "Temi O., Birthday Girl",
+    img: "/images/testimonial-2.jpg",
+    alt: "A customer with her La Crave birthday cake",
+  },
+  {
+    title: "Brownies that slap",
+    body: "Ordered one box to share. Ate most of it in the car. Zero regrets.",
+    who: "Ike W., Brownie Addict",
+    img: "/images/testimonial-3.jpg",
+    alt: "A customer holding a box of La Crave brownies",
+  },
+  {
+    title: "Better than my mum's",
+    body: "The banana bread is dangerously soft. My family finished it before dinner.",
+    who: "Ada K., Banana Bread Fan",
+    img: "/images/testimonial-4.jpg",
+    alt: "A customer with a loaf of La Crave banana bread",
+  },
+  {
+    title: "Delivered same day",
+    body: "Messaged in the morning, had warm meat pies by afternoon. That's service.",
+    who: "Tunde B., Same-Day Regular",
+    img: "/images/testimonial-5.jpg",
+    alt: "A customer receiving a same-day La Crave delivery",
+  },
+  {
+    title: "Cake of the year",
+    body: "Our wedding cake got more compliments than the dress code.",
+    who: "Chiara & Sam, Newlyweds",
+    img: "/images/testimonial-6.jpg",
+    alt: "A wedding cake made by La Crave",
+  },
 ];
 
+const QUERY = "(max-width: 991px)";
+const subscribe = (notify: () => void) => {
+  const mq = window.matchMedia(QUERY);
+  mq.addEventListener("change", notify);
+  return () => mq.removeEventListener("change", notify);
+};
+const isCompact = () => window.matchMedia(QUERY).matches;
+
 export default function TestimonialsSection() {
+  const compact = useSyncExternalStore(subscribe, isCompact, () => false);
+  const perView = compact ? 1 : 2;
+  const pages: (typeof testimonials)[] = [];
+  for (let i = 0; i < testimonials.length; i += perView) {
+    pages.push(testimonials.slice(i, i + perView));
+  }
+
   const [index, setIndex] = useState(0);
-  const step = (delta: number) =>
-    setIndex((value) => (value + delta + slides.length) % slides.length);
+  const current = Math.min(index, pages.length - 1);
+  const track = useRef<HTMLDivElement>(null);
+  const ready = useRef(false);
+  const startX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!track.current) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = !ready.current || reduce ? 0 : 0.8;
+    ready.current = true;
+    const tween = gsap.to(track.current, {
+      xPercent: -100 * current,
+      duration,
+      ease: "power3.inOut",
+      overwrite: true,
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [current, pages.length]);
+
+  const go = (target: number) =>
+    setIndex((target + pages.length) % pages.length);
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "ArrowLeft") go(current - 1);
+    if (event.key === "ArrowRight") go(current + 1);
+  };
+  const onPointerDown = (event: PointerEvent) => {
+    startX.current = event.clientX;
+  };
+  const onPointerUp = (event: PointerEvent) => {
+    if (startX.current === null) return;
+    const delta = event.clientX - startX.current;
+    startX.current = null;
+    if (Math.abs(delta) > 50) go(current + (delta < 0 ? 1 : -1));
+  };
 
   return (
     <section className="section">
-      <div className="default-container">
-        <div className="headline-container-centred">
-          <h2 className="h2-header">Love letters AND Crumb trails</h2>
-          <p>
+      <div className="container">
+        <div className="section-head">
+          <span className="eyebrow" data-fade>
+            Kind words
+          </span>
+          <h2 className="display-2" data-split>
+            Love letters AND crumb trails
+          </h2>
+          <p className="lead" data-fade>
             Every box comes with a story. Here are a few of the messages that
             landed in our DMs after the wrappers came off.
           </p>
         </div>
-        <div className="space-2xl" />
+        <div className="section-gap" />
         <div
-          className="testimonial-slider"
+          className="carousel"
           role="region"
-          aria-label="carousel"
+          aria-roledescription="carousel"
+          aria-label="Customer messages"
+          onKeyDown={onKeyDown}
           data-fade
         >
-          <div className="mask" style={{ "--slide": index } as React.CSSProperties}>
-            {slides.map((slide, slideIndex) => (
-              <div
-                key={slideIndex}
-                className="slide"
-                role="group"
-                aria-label={`${slideIndex + 1} of ${slides.length}`}
-                aria-hidden={slideIndex !== index}
-              >
-                <div className="padding-sm">
-                  <div className="grid-2-column">
-                    {slide.map((card) => (
-                      <div key={card.who} className="testimonial-card">
-                        <div className="testimonial-bg-div" />
-                        <div className="testimonial-content">
-                          <div className="testimonial-img-wrapper">
-                            <img
+          <div
+            className="carousel-viewport"
+            onPointerDown={onPointerDown}
+            onPointerUp={onPointerUp}
+            onPointerCancel={() => (startX.current = null)}
+          >
+            <div className="carousel-track" ref={track}>
+              {pages.map((page, pageIndex) => (
+                <div
+                  key={pageIndex}
+                  className="carousel-slide"
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${pageIndex + 1} of ${pages.length}`}
+                  aria-hidden={pageIndex !== current}
+                >
+                  <div
+                    className="carousel-cards"
+                    style={{ "--per-view": perView } as React.CSSProperties}
+                  >
+                    {page.map((card, cardIndex) => (
+                      <figure
+                        key={card.who}
+                        className={`photo-card quote-card${cardIndex % 2 === 1 ? " photo-card--alt" : ""}`}
+                        style={{ margin: 0 }}
+                      >
+                        <div className="photo-card-inner">
+                          <div className="photo-card-media">
+                            <Image
                               src={card.img}
                               alt={card.alt}
-                              className="testimonial-img"
-                              loading="lazy"
+                              fill
+                              sizes="(min-width: 992px) 20rem, 90vw"
                             />
                           </div>
-                          <div className="vertical-flex">
-                            <div className="highlight-text">{card.title}</div>
-                            <div className="space-md" />
-                            <p className="body-base">{card.body}</p>
-                            <div className="space-md" />
-                            <div className="header-xs">{card.who}</div>
-                          </div>
+                          <figcaption className="quote-body">
+                            <span className="pill">{card.title}</span>
+                            <p>{card.body}</p>
+                            <span className="quote-who">{card.who}</span>
+                          </figcaption>
                         </div>
-                      </div>
+                      </figure>
                     ))}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <button
-            type="button"
-            className="left-arrow"
-            aria-label="previous slide"
-            onClick={() => step(-1)}
-          >
-            <img src="/icons/arrow-left.svg" alt="" className="arrow-icon" loading="lazy" />
-          </button>
-          <button
-            type="button"
-            className="right-arrow"
-            aria-label="next slide"
-            onClick={() => step(1)}
-          >
-            <img
-              src="/icons/arrow-right.svg"
-              alt=""
-              className="arrow-icon"
-              loading="lazy"
-            />
-          </button>
+          <div className="carousel-controls">
+            <button
+              type="button"
+              className="round-btn"
+              aria-label="Previous slide"
+              onClick={() => go(current - 1)}
+            >
+              <Arrow dir="left" />
+            </button>
+            <div className="dots">
+              {pages.map((_, pageIndex) => (
+                <button
+                  key={pageIndex}
+                  type="button"
+                  className="dot"
+                  aria-label={`Go to slide ${pageIndex + 1}`}
+                  aria-current={pageIndex === current}
+                  onClick={() => go(pageIndex)}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              className="round-btn"
+              aria-label="Next slide"
+              onClick={() => go(current + 1)}
+            >
+              <Arrow />
+            </button>
+          </div>
         </div>
       </div>
     </section>

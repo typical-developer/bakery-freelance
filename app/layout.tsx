@@ -1,7 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import SiteEffects from "./components/SiteEffects";
+import Footer from "./components/Footer";
+import Motion from "./components/Motion";
+import Navbar from "./components/Navbar";
+import ParallaxBand from "./components/ParallaxBand";
 
 const tanker = localFont({
   src: "./fonts/Tanker-400.woff",
@@ -20,16 +23,22 @@ const beVietnamPro = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "La Crave Bakery — flaky pastries, beautiful cakes",
+  title: {
+    default: "La Crave Bakery | flaky pastries, beautiful cakes",
+    template: "%s | La Crave Bakery",
+  },
   description:
     "Fan-favourite meat pies, custom cakes, banana bread and brownies, baked fresh in Port Harcourt. Same-day delivery.",
   openGraph: {
-    title: "La Crave Bakery — flaky pastries, beautiful cakes",
+    title: "La Crave Bakery | flaky pastries, beautiful cakes",
     description:
       "Fan-favourite meat pies, custom cakes, banana bread and brownies, baked fresh in Port Harcourt.",
-    url: "https://www.instagram.com/lacravebakery/",
     siteName: "La Crave Bakery",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#fff3e3",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -43,13 +52,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Scroll-in animations start hidden, so only hide them when JS can reveal them. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: 'document.documentElement.classList.add("js")',
+            __html:
+              'if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js")',
           }}
         />
       </head>
       <body id="top">
-        {children}
-        <SiteEffects />
+        <Navbar />
+        <main>{children}</main>
+        <ParallaxBand />
+        <Footer />
+        <Motion />
       </body>
     </html>
   );

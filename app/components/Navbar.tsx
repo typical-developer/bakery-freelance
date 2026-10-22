@@ -32,6 +32,7 @@ export default function Navbar() {
           aria-label="Main"
           onClick={() => setOpen(false)}
         >
+          <span className="nav-glide" aria-hidden="true" />
           <div className="nav-group">
             <Link href="/#about" className="nav-link">
               About

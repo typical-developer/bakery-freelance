@@ -20,7 +20,7 @@ function Badge() {
             BAKED FRESH DAILY • SAME-DAY DELIVERY •
           </textPath>
         </text>
-        <rect x="50" y="50" width="20" height="20" rx="4" fill="#ff6ba1" />
+        <rect x="50" y="50" width="20" height="20" rx="4" style={{ fill: "var(--brand)" }} />
       </svg>
     </div>
   );

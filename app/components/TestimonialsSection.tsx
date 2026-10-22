@@ -88,11 +88,22 @@ export default function TestimonialsSection() {
     const tween = gsap.to(track.current, {
       xPercent: -100 * current,
       duration,
-      ease: "power3.inOut",
-      overwrite: true,
+      ease: "expo.inOut",
+      overwrite: "auto",
     });
+    /* The cards on the incoming slide get dealt in as it arrives. */
+    const incoming = track.current.children[current]?.querySelectorAll(".photo-card");
+    const settle =
+      duration && incoming?.length
+        ? gsap.fromTo(
+            incoming,
+            { y: 56, rotate: (index: number) => (index % 2 ? -4 : 4) },
+            { y: 0, rotate: 0, duration: 1.3, delay: 0.25, ease: "expo.out", stagger: 0.09, clearProps: "transform" },
+          )
+        : null;
     return () => {
       tween.kill();
+      settle?.progress(1).kill();
     };
   }, [current, pages.length]);
 
@@ -102,14 +113,30 @@ export default function TestimonialsSection() {
     if (event.key === "ArrowLeft") go(current - 1);
     if (event.key === "ArrowRight") go(current + 1);
   };
+  const dragging = useRef(false);
   const onPointerDown = (event: PointerEvent) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
     startX.current = event.clientX;
+    dragging.current = false;
   };
-  const onPointerUp = (event: PointerEvent) => {
+  const onPointerMove = (event: PointerEvent) => {
+    if (startX.current === null || !track.current) return;
+    const delta = event.clientX - startX.current;
+    if (!dragging.current && Math.abs(delta) < 6) return;
+    if (!dragging.current && event.pointerType === "mouse") {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    dragging.current = true;
+    /* Resist a little so the slide feels weighted, not glued to the pointer. */
+    gsap.to(track.current, { x: delta * 0.8, duration: 0.25, ease: "power3.out", overwrite: "auto" });
+  };
+  const release = (event: PointerEvent) => {
     if (startX.current === null) return;
     const delta = event.clientX - startX.current;
     startX.current = null;
-    if (Math.abs(delta) > 50) go(current + (delta < 0 ? 1 : -1));
+    dragging.current = false;
+    if (track.current) gsap.to(track.current, { x: 0, duration: 0.9, ease: "expo.out", overwrite: "auto" });
+    if (Math.abs(delta) > 60) go(current + (delta < 0 ? 1 : -1));
   };
 
   return (
@@ -139,8 +166,9 @@ export default function TestimonialsSection() {
           <div
             className="carousel-viewport"
             onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerCancel={() => (startX.current = null)}
+            onPointerMove={onPointerMove}
+            onPointerUp={release}
+            onPointerCancel={release}
           >
             <div className="carousel-track" ref={track}>
               {pages.map((page, pageIndex) => (

@@ -20,7 +20,7 @@ export default function AboutSection() {
           <h2 className="display-2" data-split>
             Every craving has a story, and ours started with a tray of meat pies
           </h2>
-          <p className="lead" data-fade>
+          <p className="lead" data-scrub>
             La Crave is a small-batch bakery in Port Harcourt. We started with
             one tray of meat pies and a WhatsApp link, and grew on word of
             mouth, because good pastry is impossible to keep quiet about.

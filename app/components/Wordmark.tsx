@@ -24,7 +24,7 @@ export default function Wordmark({ className }: { className?: string }) {
         width="11.84"
         height="11.84"
         rx="2.88"
-        fill="#ff6ba1"
+        style={{ fill: "var(--brand)" }}
       />
     </svg>
   );

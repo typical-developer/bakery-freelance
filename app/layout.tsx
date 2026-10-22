@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import ContactWidget from "./components/ContactWidget";
 import Footer from "./components/Footer";
 import Motion from "./components/Motion";
 import Navbar from "./components/Navbar";
@@ -49,11 +50,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
-        {/* Scroll-in animations start hidden, so only hide them when JS can reveal them. */}
+        {/* Scroll-in animations start hidden, so only hide them when JS can reveal them.
+            The intro plays once per browser session. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              'if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js")',
+              '(function(){var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("js");try{if(!sessionStorage.getItem("lc-intro")){sessionStorage.setItem("lc-intro","1");d.classList.add("intro-on")}}catch(e){}})()',
           }}
         />
       </head>
@@ -62,6 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main>{children}</main>
         <ParallaxBand />
         <Footer />
+        <ContactWidget />
         <Motion />
       </body>
     </html>

@@ -8,7 +8,11 @@
   --bg: #fff3e3;
   --ink: #2c2c2d;
   --ink-2: #55555a;
-  --pink: #ff6ba1;
+  /* Brand colour. Used for the small, recurring marks (the square, tags, tape,
+     the contact widget), never for large flat areas, so it stays a signature. */
+  --brand: #d41ac5;
+  --on-brand: #fff;
+  --pink: var(--brand);
   --mint: #a2e3c4;
   --yellow: #ffe156;
   --peach: #ffc8a2;
@@ -36,12 +40,17 @@
 }
 html {
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
   scroll-padding-top: 6rem;
+}
+html.intro-on {
+  overflow: hidden;
+  scrollbar-gutter: stable;
 }
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--bg) url("/backgrounds/grain.svg") 0 0 / 15rem 15rem;
   color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 1rem;
@@ -86,8 +95,8 @@ button {
   cursor: pointer;
 }
 ::selection {
-  background: var(--pink);
-  color: var(--ink);
+  background: var(--brand);
+  color: var(--on-brand);
 }
 :focus-visible {
   outline: 3px solid var(--ink);
@@ -138,6 +147,7 @@ button {
   height: 0.5rem;
   border-radius: 2px;
   background: var(--pink);
+  transform: scale(var(--sq-s, 1)) rotate(var(--sq-r, 0deg));
 }
 
 /* ---------- layout ---------- */
@@ -159,23 +169,38 @@ button {
   background-size: cover;
 }
 .section--peach {
-  background-image: url("/backgrounds/torn-peach.svg");
+  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-peach.svg");
+  background-size:
+    15rem 15rem,
+    cover;
+  background-repeat: repeat, no-repeat;
+  background-position:
+    0 0,
+    50%;
 }
 .section--hero {
   padding-top: clamp(8.5rem, 15vw, 12rem);
   padding-bottom: clamp(7rem, 14vw, 12rem);
-  background-image: url("/backgrounds/torn-mint-bottom.svg");
-  background-position: 50% 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
+  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-bottom.svg");
+  background-position:
+    0 0,
+    50% 100%;
+  background-repeat: repeat, no-repeat;
+  background-size:
+    15rem 15rem,
+    cover;
 }
 .section--footer {
   padding-top: clamp(7rem, 14vw, 11rem);
-  padding-bottom: 2.5rem;
-  background-image: url("/backgrounds/torn-mint-top.svg");
-  background-position: 50% 0;
-  background-repeat: no-repeat;
-  background-size: cover;
+  padding-bottom: 5.5rem;
+  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-top.svg");
+  background-position:
+    0 0,
+    50% 0;
+  background-repeat: repeat, no-repeat;
+  background-size:
+    15rem 15rem,
+    cover;
   position: relative;
   z-index: 2;
 }
@@ -241,6 +266,7 @@ button {
   letter-spacing: 0.02em;
   line-height: 1;
   box-shadow: 0 3px 0 var(--ink);
+  transform: translate(calc(var(--mx, 0) * 1px), calc(var(--my, 0) * 1px));
   transition:
     translate 0.25s var(--ease-out),
     box-shadow 0.25s var(--ease-out),
@@ -255,7 +281,11 @@ button {
   box-shadow: 0 0 0 var(--ink);
 }
 .btn--pink {
-  background: var(--pink);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.btn--white {
+  background: var(--white);
 }
 .btn--ghost {
   background: transparent;
@@ -280,6 +310,18 @@ button {
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 0.3em;
+}
+.link-arrow,
+.footer-links a {
+  text-decoration-color: rgb(44 44 45 / 0.5);
+  transition:
+    text-decoration-color 0.25s,
+    text-underline-offset 0.35s var(--ease-out);
+}
+.link-arrow:hover,
+.footer-links a:hover {
+  text-decoration-color: var(--pink);
+  text-underline-offset: 0.45em;
 }
 .link-arrow svg {
   transition: translate 0.25s var(--ease-out);
@@ -318,10 +360,23 @@ button {
   justify-content: space-between;
 }
 .nav-menu {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+}
+.nav-glide {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: 999px;
+  background: rgb(44 44 45 / 0.08);
+  opacity: 0;
+  pointer-events: none;
 }
 .nav-group {
   display: flex;
@@ -333,6 +388,8 @@ button {
   justify-content: flex-end;
 }
 .nav-link {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
@@ -345,6 +402,10 @@ button {
 .nav-link:hover,
 .nav-link[aria-current="page"] {
   background: rgb(44 44 45 / 0.07);
+}
+.navbar.has-glide .nav-link:not(.nav-link--cta):hover,
+.navbar.has-glide .nav-link[aria-current="page"]:not(.nav-link--cta) {
+  background: transparent;
 }
 .nav-link--cta {
   background: var(--yellow);
@@ -513,8 +574,26 @@ button {
   transform: rotate(var(--tilt));
   transition: transform 0.6s var(--ease-out);
 }
+.photo-card::after {
+  content: "";
+  position: absolute;
+  inset: 0.5rem 0.75rem -0.375rem;
+  z-index: -2;
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  transform: rotate(calc(var(--tilt) * -1.7));
+  transition: transform 0.6s var(--ease-out);
+}
 .photo-card--alt {
   --tilt: -2.5deg;
+}
+.photo-card--alt .washi {
+  background-image: url("/icons/washi-brand.svg");
+}
+.hero-media .photo-card::after {
+  background: var(--brand);
+  inset: 0.25rem 0.5rem -0.5rem;
 }
 .photo-card-inner {
   position: relative;
@@ -524,7 +603,7 @@ button {
   padding: 0.75rem;
   border-radius: var(--radius-lg);
   background: var(--white);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgb(44 44 45 / 0.04);
   transition:
     transform 0.6s var(--ease-out),
     box-shadow 0.6s var(--ease-out);
@@ -554,6 +633,7 @@ button {
 .price {
   display: inline-flex;
   align-items: baseline;
+  font-variant-numeric: tabular-nums;
   gap: 0.125rem;
   font-weight: 600;
   white-space: nowrap;
@@ -584,7 +664,8 @@ button {
   bottom: 1.25rem;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  background: var(--pink);
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1rem;
   letter-spacing: 0.03em;
@@ -611,8 +692,16 @@ a.photo-card:hover::before,
 a.photo-card:focus-visible::before {
   transform: rotate(0deg);
 }
+a.photo-card:hover::after,
+a.photo-card:focus-visible::after {
+  transform: rotate(calc(var(--tilt) * -0.6));
+}
 a.photo-card:hover .photo-card-media img {
   scale: 1.05;
+}
+a.photo-card:focus-visible {
+  outline-offset: 8px;
+  border-radius: var(--radius-lg);
 }
 .cursor-tag {
   position: absolute;
@@ -621,7 +710,8 @@ a.photo-card:hover .photo-card-media img {
   top: 0;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  background: var(--pink);
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1rem;
   letter-spacing: 0.03em;
@@ -655,7 +745,20 @@ a.photo-card:hover .photo-card-media img {
 .carousel-viewport {
   margin-inline: -1rem;
   overflow: hidden;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.carousel-viewport img {
+  -webkit-user-drag: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .carousel-viewport {
+    cursor: grab;
+  }
+  .carousel-viewport:active {
+    cursor: grabbing;
+  }
 }
 .carousel-track {
   display: flex;
@@ -701,7 +804,8 @@ a.photo-card:hover .photo-card-media img {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  background: var(--pink);
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1rem;
   letter-spacing: 0.03em;
@@ -772,7 +876,17 @@ a.photo-card:hover .photo-card-media img {
   z-index: -1;
   border-radius: var(--radius-lg);
   background: var(--yellow);
-  transform: rotate(2deg);
+  transform: rotate(var(--tilt, 2deg));
+  box-shadow: var(--shadow-sm);
+}
+.cta-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: var(--radius-lg);
+  background: var(--brand);
+  transform: rotate(calc(var(--tilt, 2deg) * -1.5));
   box-shadow: var(--shadow-sm);
 }
 .cta-inner {
@@ -808,6 +922,16 @@ a.photo-card:hover .photo-card-media img {
   height: clamp(24rem, 70vh, 44rem);
   margin-bottom: -5rem;
   overflow: hidden;
+}
+.band-tear {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: max(3.25rem, 4.2vw);
+  background: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
+  pointer-events: none;
 }
 .band-img {
   position: absolute;
@@ -848,6 +972,7 @@ a.photo-card:hover .photo-card-media img {
   background: var(--mint);
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.25rem;
+  transform: scale(var(--pop, 1)) rotate(var(--pop-r, 0deg));
 }
 
 /* ---------- footer ---------- */
@@ -891,8 +1016,153 @@ a.photo-card:hover .photo-card-media img {
   color: var(--ink-2);
 }
 
+/* ---------- contact widget ---------- */
+.widget {
+  position: fixed;
+  z-index: 90;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: grid;
+  justify-items: end;
+  gap: 0.75rem;
+}
+.widget-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3.25rem;
+  padding: 0.5rem 1.375rem 0.5rem 1rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  box-shadow: 0 3px 0 var(--ink);
+  transition:
+    translate 0.25s var(--ease-out),
+    box-shadow 0.25s var(--ease-out);
+}
+.widget-toggle:hover {
+  translate: 0 2px;
+  box-shadow: 0 1px 0 var(--ink);
+}
+.widget-toggle:active {
+  translate: 0 3px;
+  box-shadow: 0 0 0 var(--ink);
+}
+.widget-toggle:focus-visible {
+  outline-color: var(--ink);
+}
+.widget-toggle svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: transform 0.5s var(--ease-out);
+}
+.widget[data-open="true"] .widget-toggle svg {
+  transform: rotate(90deg) scale(0.9);
+}
+.widget-toggle::after {
+  /* a soft ring that breathes every few seconds, to say "we're here" */
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  border: 1.5px solid var(--brand);
+  opacity: 0;
+  pointer-events: none;
+  animation: widget-ping 4.5s var(--ease-out) 3s infinite;
+}
+@keyframes widget-ping {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  40%,
+  100% {
+    opacity: 0;
+    transform: scale(1.25, 1.55);
+  }
+}
+.widget-panel {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  visibility: hidden;
+}
+.widget[data-open="true"] .widget-panel {
+  visibility: visible;
+}
+.widget-panel .btn {
+  white-space: nowrap;
+}
+
+/* ---------- intro (once per session) and route curtain ---------- */
+.intro,
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  place-items: center;
+  pointer-events: none;
+  will-change: transform;
+}
+html.intro-on .intro {
+  display: grid;
+  pointer-events: auto;
+  /* If scripts fail, the lid still lifts. */
+  animation: intro-failsafe 0.01s 5s forwards;
+}
+.intro {
+  background: var(--yellow);
+  border-radius: 0 0 50% 50% / 0 0 7vh 7vh;
+}
+.intro-mark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.02em;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: clamp(3.5rem, 14vw, 9rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.intro-square {
+  width: 0.147em;
+  height: 0.147em;
+  border-radius: 0.036em;
+  background: var(--pink);
+}
+@keyframes intro-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+.curtain {
+  display: grid;
+  visibility: hidden;
+  background: var(--brand);
+  border-radius: 50% 50% 0 0 / 7vh 7vh 0 0;
+}
+.curtain-square {
+  width: clamp(3rem, 8vw, 4.5rem);
+  aspect-ratio: 1;
+  border: 1.5px solid var(--ink);
+  border-radius: 22%;
+  background: var(--yellow);
+}
+
 /* ---------- motion: hidden states (only when GSAP will reveal them) ---------- */
-html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-hero-media]):not(.is-set) {
+html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-item], [data-hero-media]):not(.is-set) {
   opacity: 0;
   animation: anim-failsafe 0.01s 3.5s forwards;
 }
@@ -982,6 +1252,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-he
   .nav-menu {
     display: none;
   }
+  .nav-glide {
+    display: none;
+  }
   .navbar.is-open .nav-menu {
     display: flex;
     flex-direction: column;
@@ -1034,6 +1307,13 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-he
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .intro,
+  .curtain {
+    display: none !important;
+  }
+  .widget-toggle::after {
+    display: none;
+  }
   *,
   ::before,
   ::after {

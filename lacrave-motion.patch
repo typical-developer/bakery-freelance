@@ -1,0 +1,1628 @@
+diff --git a/app/components/AboutSection.tsx b/app/components/AboutSection.tsx
+index ab8993e..81491a5 100644
+--- a/app/components/AboutSection.tsx
++++ b/app/components/AboutSection.tsx
+@@ -20,7 +20,7 @@ export default function AboutSection() {
+           <h2 className="display-2" data-split>
+             Every craving has a story, and ours started with a tray of meat pies
+           </h2>
+-          <p className="lead" data-fade>
++          <p className="lead" data-scrub>
+             La Crave is a small-batch bakery in Port Harcourt. We started with
+             one tray of meat pies and a WhatsApp link, and grew on word of
+             mouth, because good pastry is impossible to keep quiet about.
+diff --git a/app/components/ContactWidget.tsx b/app/components/ContactWidget.tsx
+new file mode 100644
+index 0000000..4f167b0
+--- /dev/null
++++ b/app/components/ContactWidget.tsx
+@@ -0,0 +1,111 @@
++"use client";
++
++import gsap from "gsap";
++import { useEffect, useRef, useState } from "react";
++import { INSTAGRAM, WHATSAPP } from "../site";
++
++/** Floating contact widget in the brand colour. One tap opens the two ways
++    to reach the bakery; the options pop out of the button one by one. */
++export default function ContactWidget() {
++  const [open, setOpen] = useState(false);
++  const root = useRef<HTMLDivElement>(null);
++  const toggle = useRef<HTMLButtonElement>(null);
++  const ready = useRef(false);
++
++  /* Arrives after the intro, like the rest of the page. */
++  useEffect(() => {
++    const button = toggle.current;
++    if (!button || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
++    const tween = gsap.from(button, {
++      scale: 0,
++      rotate: -25,
++      transformOrigin: "100% 100%",
++      duration: 0.9,
++      ease: "back.out(2)",
++      delay: document.documentElement.classList.contains("intro-on") ? 2.4 : 1,
++      clearProps: "transform",
++    });
++    return () => {
++      tween.revert();
++    };
++  }, []);
++
++  /* Options pop out when opened. */
++  useEffect(() => {
++    const items = root.current?.querySelectorAll(".widget-panel > li");
++    if (!items?.length) return;
++    const first = !ready.current;
++    ready.current = true;
++    if (first || !open || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
++    const tween = gsap.fromTo(
++      items,
++      { y: 18, scale: 0.88, opacity: 0, transformOrigin: "100% 100%" },
++      { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)", stagger: -0.07, clearProps: "transform,opacity" },
++    );
++    return () => {
++      tween.progress(1).kill();
++    };
++  }, [open]);
++
++  /* Escape or a tap elsewhere closes it. */
++  useEffect(() => {
++    if (!open) return;
++    const onKey = (event: KeyboardEvent) => {
++      if (event.key === "Escape") {
++        setOpen(false);
++        toggle.current?.focus();
++      }
++    };
++    const onDown = (event: PointerEvent) => {
++      if (!root.current?.contains(event.target as Node)) setOpen(false);
++    };
++    window.addEventListener("keydown", onKey);
++    window.addEventListener("pointerdown", onDown);
++    return () => {
++      window.removeEventListener("keydown", onKey);
++      window.removeEventListener("pointerdown", onDown);
++    };
++  }, [open]);
++
++  return (
++    <div className="widget" ref={root} data-open={open}>
++      <ul className="widget-panel" id="contact-panel" aria-hidden={!open}>
++        <li>
++          <a
++            href={WHATSAPP}
++            target="_blank"
++            rel="noreferrer"
++            className="btn"
++            tabIndex={open ? 0 : -1}
++          >
++            order on whatsapp
++          </a>
++        </li>
++        <li>
++          <a
++            href={INSTAGRAM}
++            target="_blank"
++            rel="noreferrer"
++            className="btn btn--white"
++            tabIndex={open ? 0 : -1}
++          >
++            dm on instagram
++          </a>
++        </li>
++      </ul>
++      <button
++        ref={toggle}
++        type="button"
++        className="widget-toggle"
++        aria-expanded={open}
++        aria-controls="contact-panel"
++        onClick={() => setOpen((value) => !value)}
++      >
++        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
++          <path d="M20 12a7.5 7.5 0 0 1-10.9 6.7L4 20l1.4-4.4A7.5 7.5 0 1 1 20 12Z" />
++        </svg>
++        message us
++      </button>
++    </div>
++  );
++}
+diff --git a/app/components/HeroSection.tsx b/app/components/HeroSection.tsx
+index 0532079..888641a 100644
+--- a/app/components/HeroSection.tsx
++++ b/app/components/HeroSection.tsx
+@@ -20,7 +20,7 @@ function Badge() {
+             BAKED FRESH DAILY • SAME-DAY DELIVERY •
+           </textPath>
+         </text>
+-        <rect x="50" y="50" width="20" height="20" rx="4" fill="#ff6ba1" />
++        <rect x="50" y="50" width="20" height="20" rx="4" style={{ fill: "var(--brand)" }} />
+       </svg>
+     </div>
+   );
+diff --git a/app/components/Motion.tsx b/app/components/Motion.tsx
+index d3e333c..6328cd0 100644
+--- a/app/components/Motion.tsx
++++ b/app/components/Motion.tsx
+@@ -1,115 +1,394 @@
+ "use client";
+ 
+ import gsap from "gsap";
++import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+ import { ScrollTrigger } from "gsap/ScrollTrigger";
+ import { SplitText } from "gsap/SplitText";
+-import { usePathname } from "next/navigation";
+-import { useEffect } from "react";
++import { usePathname, useRouter } from "next/navigation";
++import { useEffect, useRef } from "react";
+ 
+-gsap.registerPlugin(ScrollTrigger, SplitText);
++gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, SplitText);
+ 
+ const all = <T extends Element = HTMLElement>(selector: string) =>
+   gsap.utils.toArray<T>(selector);
+ const markSet = (elements: Element[]) =>
+   elements.forEach((element) => element.classList.add("is-set"));
+ 
++/* ------------------------------------------------------------------
++   Route curtain. A brand-colour sheet (with the yellow square) slides up over the
++   page, the route changes underneath, then the sheet lifts away.
++   State lives at module level so it survives the effect re-run that
++   happens when the pathname changes.
++   ------------------------------------------------------------------ */
++const navState = { covering: false, timer: null as gsap.core.Tween | null };
++
++const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
++  const square = curtain.querySelector(".curtain-square");
++  gsap.set(curtain, { visibility: "visible", yPercent: 100 });
++  gsap
++    .timeline({ onComplete: onCovered })
++    .to(curtain, { yPercent: 0, duration: 0.75, ease: "expo.inOut" })
++    .fromTo(
++      square,
++      { scale: 0, rotate: -90 },
++      { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" },
++      0.3,
++    );
++};
++
++const liftCurtain = (curtain: HTMLElement) => {
++  const square = curtain.querySelector(".curtain-square");
++  gsap
++    .timeline({ onComplete: () => gsap.set(curtain, { visibility: "hidden" }) })
++    .to(square, { scale: 0, rotate: 90, duration: 0.4, ease: "power3.in" })
++    .to(curtain, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 0.15);
++};
++
++/* ------------------------------------------------------------------
++   Reveal recipes. Everything below is built from the brand's own
++   objects: paper sheets, washi tape and the pink square.
++   ------------------------------------------------------------------ */
++
++/** A photo card is "dealt" onto the table: it lands, the paper sheet behind
++    it fans out to its tilt, the photo settles and the tape sticks on last. */
++const dealCard = (card: HTMLElement, delay: number) => {
++  const side = card.classList.contains("photo-card--alt") ? -1 : 1;
++  const tilt = getComputedStyle(card).getPropertyValue("--tilt").trim() || "2.5deg";
++  const photo = card.querySelector<HTMLElement>(".photo-card-media img");
++  const tape = card.querySelector<HTMLElement>(".washi");
++
++  const tl = gsap.timeline({ delay });
++  tl.fromTo(
++    card,
++    { opacity: 0, y: 96, rotate: 7 * side, scale: 0.94 },
++    { opacity: 1, y: 0, rotate: 0, scale: 1, duration: 1.4, ease: "expo.out", clearProps: "transform,opacity" },
++    0,
++  ).fromTo(
++    card,
++    { "--tilt": "0deg" },
++    { "--tilt": tilt, duration: 1.2, ease: "back.out(1.7)", clearProps: "--tilt" },
++    0.2,
++  );
++  if (photo) {
++    tl.fromTo(photo, { scale: 1.22 }, { scale: 1, duration: 1.9, ease: "expo.out", clearProps: "transform" }, 0);
++  }
++  if (tape) {
++    tl.fromTo(
++      tape,
++      { scale: 0, rotate: -30, opacity: 0 },
++      { scale: 1, rotate: -4, opacity: 1, duration: 0.7, ease: "back.out(2.6)", clearProps: "transform,opacity" },
++      0.55,
++    );
++  }
++};
++
++/** The yellow sheet behind the CTA swings out, then the copy follows. */
++const dealCta = (card: HTMLElement, delay: number) => {
++  const photo = card.querySelector<HTMLElement>(".cta-media img");
++  const copy = card.querySelectorAll(".cta-copy .stack > *");
++  const tl = gsap.timeline({ delay });
++  tl.fromTo(
++    card,
++    { opacity: 0, y: 80, scale: 0.95 },
++    { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: "expo.out", clearProps: "transform,opacity" },
++    0,
++  ).fromTo(
++    card,
++    { "--tilt": "0deg" },
++    { "--tilt": "2deg", duration: 1.4, ease: "back.out(1.8)", clearProps: "--tilt" },
++    0.15,
++  );
++  if (photo) {
++    tl.fromTo(photo, { scale: 1.2 }, { scale: 1, duration: 1.9, ease: "expo.out", clearProps: "transform" }, 0);
++  }
++  tl.from(copy, { y: 28, opacity: 0, duration: 1, stagger: 0.08, ease: "expo.out", clearProps: "transform,opacity" }, 0.4);
++};
++
++/** Menu steps: the card rises and its number pops in like a sticker. */
++const dealStep = (step: HTMLElement, delay: number) => {
++  gsap
++    .timeline({ delay })
++    .fromTo(
++      step,
++      { opacity: 0, y: 56 },
++      { opacity: 1, y: 0, duration: 1.1, ease: "expo.out", clearProps: "transform,opacity" },
++      0,
++    )
++    .fromTo(
++      step,
++      { "--pop": 0, "--pop-r": "-120deg" },
++      { "--pop": 1, "--pop-r": "0deg", duration: 0.9, ease: "back.out(2.6)", clearProps: "--pop,--pop-r" },
++      0.3,
++    );
++};
++
++const rise = (element: HTMLElement, delay: number) =>
++  gsap.fromTo(
++    element,
++    { opacity: 0, y: 56 },
++    { opacity: 1, y: 0, duration: 1.1, ease: "expo.out", delay, clearProps: "transform,opacity" },
++  );
++
++const reveal = (element: HTMLElement, delay: number) => {
++  if (element.classList.contains("photo-card")) dealCard(element, delay);
++  else if (element.classList.contains("cta-card")) dealCta(element, delay);
++  else if (element.classList.contains("step")) dealStep(element, delay);
++  else rise(element, delay);
++};
++
+ /* One place for every GSAP interaction. Re-runs on each route change and
+    respects prefers-reduced-motion (content simply shows, no animation). */
+ export default function Motion() {
+   const pathname = usePathname();
++  const router = useRouter();
++  const intro = useRef<HTMLDivElement>(null);
++  const curtain = useRef<HTMLDivElement>(null);
++
++  /* Route transitions + smooth in-page anchors. Registered once. */
++  useEffect(() => {
++    const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)");
++
++    const onClick = (event: MouseEvent) => {
++      if (
++        !motionOk.matches ||
++        event.defaultPrevented ||
++        event.button !== 0 ||
++        event.metaKey ||
++        event.ctrlKey ||
++        event.shiftKey ||
++        event.altKey
++      ) {
++        return;
++      }
++      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href]");
++      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
++      const url = new URL(link.href, window.location.href);
++      if (url.origin !== window.location.origin) return;
++
++      const href = url.pathname + url.search + url.hash;
++      const samePage = url.pathname === window.location.pathname && url.search === window.location.search;
++
++      if (navState.covering) {
++        event.preventDefault();
++        return;
++      }
++
++      if (samePage) {
++        /* Same page: glide to the section (or to the top) instead of jumping. */
++        const target = url.hash ? document.getElementById(decodeURIComponent(url.hash.slice(1))) : null;
++        if (url.hash && !target) return;
++        event.preventDefault();
++        if (url.hash !== window.location.hash) router.push(href, { scroll: false });
++        gsap.to(window, {
++          scrollTo: target ? { y: target, offsetY: 96, autoKill: true } : { y: 0, autoKill: true },
++          duration: 1.3,
++          ease: "expo.inOut",
++          overwrite: true,
++        });
++        return;
++      }
++
++      const el = curtain.current;
++      if (!el) return;
++      event.preventDefault();
++      navState.covering = true;
++      coverCurtain(el, () => {
++        if (!url.hash) window.scrollTo(0, 0);
++        router.push(href);
++      });
++      /* If the route never arrives, don't leave the person staring at pink. */
++      navState.timer = gsap.delayedCall(6, () => {
++        if (!navState.covering) return;
++        navState.covering = false;
++        liftCurtain(el);
++      });
++    };
++
++    /* Capture phase so we run before Next's own <Link> handler, which skips
++       any click that has already been default-prevented. */
++    document.addEventListener("click", onClick, true);
++    return () => document.removeEventListener("click", onClick, true);
++  }, [router]);
+ 
+   useEffect(() => {
+     const root = document.documentElement;
+     const mm = gsap.matchMedia();
+ 
+     mm.add("(prefers-reduced-motion: reduce)", () => {
+-      root.classList.remove("js");
++      root.classList.remove("js", "intro-on");
+     });
+ 
+     mm.add("(prefers-reduced-motion: no-preference)", () => {
+       root.classList.add("js");
++      const cleanups: (() => void)[] = [];
+ 
+-      /* Headings: lines rise out of a mask. */
++      const playIntro = root.classList.contains("intro-on");
++      const covered = navState.covering;
++      /* When hero content should start, relative to now. */
++      const heroAt = playIntro ? 1.2 : covered ? 0.55 : 0.1;
++
++      /* ---------- intro: the tray lid ---------- */
++      if (playIntro && intro.current) {
++        const word = intro.current.querySelector<HTMLElement>("[data-intro-word]");
++        const mark = intro.current.querySelector<HTMLElement>(".intro-mark");
++        const square = intro.current.querySelector<HTMLElement>(".intro-square");
++        if (word && mark && square) {
++          const split = SplitText.create(word, { type: "chars", mask: "chars" });
++          gsap
++            .timeline({ onComplete: () => root.classList.remove("intro-on") })
++            .from(split.chars, { yPercent: 118, duration: 0.95, ease: "expo.out", stagger: 0.05 }, 0.1)
++            .from(square, { scale: 0, rotate: -120, duration: 0.8, ease: "back.out(2.4)" }, 0.55)
++            .to(mark, { yPercent: -60, duration: 0.9, ease: "expo.inOut" }, 1)
++            .to(intro.current, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 1);
++        }
++      }
++
++      /* ---------- route curtain lifts once the new page is mounted ---------- */
++      if (covered && curtain.current) {
++        navState.covering = false;
++        navState.timer?.kill();
++        liftCurtain(curtain.current);
++      }
++
++      /* ---------- headings: words rise out of a line mask ---------- */
+       all("[data-split]").forEach((element) => {
+         const hero = element.closest(".section--hero");
+         SplitText.create(element, {
+-          type: "lines",
++          type: "lines,words",
+           mask: "lines",
+           autoSplit: true,
+           onSplit: (self) => {
+             element.classList.add("is-set");
+-            return gsap.from(self.lines, {
+-              yPercent: 115,
+-              duration: 1.1,
+-              ease: "power4.out",
+-              stagger: 0.09,
+-              delay: hero ? 0.15 : 0,
++            return gsap.from(self.words, {
++              yPercent: 120,
++              rotate: 5,
++              transformOrigin: "0% 100%",
++              duration: 1.3,
++              ease: "expo.out",
++              stagger: 0.055,
++              delay: hero ? heroAt : 0,
+               scrollTrigger: { trigger: element, start: "top 92%", once: true },
+             });
+           },
+         });
+       });
+ 
+-      /* Hero entrance. */
++      /* ---------- scroll-linked paragraph: words ink in as you read ---------- */
++      all("[data-scrub]").forEach((element) => {
++        SplitText.create(element, {
++          type: "words",
++          autoSplit: true,
++          onSplit: (self) => {
++            element.classList.add("is-set");
++            return gsap.fromTo(
++              self.words,
++              { opacity: 0.2 },
++              {
++                opacity: 1,
++                ease: "none",
++                stagger: 0.12,
++                /* Finishes before the paragraph reaches mid-screen, so it is
++                   fully readable when someone jumps straight to #about. */
++                scrollTrigger: { trigger: element, start: "top 90%", end: "bottom 74%", scrub: true },
++              },
++            );
++          },
++        });
++      });
++
++      /* ---------- eyebrows: the pink square pops in ---------- */
++      const eyebrows = all(".eyebrow");
++      gsap.set(eyebrows, { "--sq-s": 0, "--sq-r": "-90deg" });
++      eyebrows.forEach((eyebrow) => {
++        const hero = eyebrow.closest(".section--hero");
++        ScrollTrigger.create({
++          trigger: eyebrow,
++          start: "top 92%",
++          once: true,
++          onEnter: () =>
++            gsap.to(eyebrow, {
++              "--sq-s": 1,
++              "--sq-r": "0deg",
++              duration: 0.9,
++              ease: "back.out(3)",
++              delay: hero ? heroAt + 0.3 : 0.25,
++            }),
++        });
++      });
++
++      /* ---------- hero entrance ---------- */
+       const heroItems = all("[data-hero-item]");
+       if (heroItems.length) {
+-        gsap.set(heroItems, { opacity: 0, y: 28 });
++        gsap.set(heroItems, { opacity: 0, y: 32 });
+         markSet(heroItems);
+         gsap.to(heroItems, {
+           opacity: 1,
+           y: 0,
+-          duration: 1,
+-          ease: "power3.out",
+-          stagger: 0.1,
+-          delay: 0.35,
++          duration: 1.2,
++          ease: "expo.out",
++          stagger: 0.09,
++          delay: heroAt + 0.25,
+           clearProps: "transform,opacity",
+         });
+       }
++
+       const heroMedia = all("[data-hero-media]");
+       if (heroMedia.length) {
+-        gsap.set(heroMedia, { opacity: 0, y: 64, scale: 0.92, rotate: 4 });
++        const card = heroMedia[0].querySelector<HTMLElement>(".photo-card");
++        const photo = heroMedia[0].querySelector<HTMLElement>(".photo-card-media img");
++        const tape = heroMedia[0].querySelector<HTMLElement>(".washi");
++        const sticker = heroMedia[0].querySelector<HTMLElement>(".badge");
++        gsap.set(heroMedia, { opacity: 0 });
+         markSet(heroMedia);
+-        gsap.to(heroMedia, {
+-          opacity: 1,
+-          y: 0,
+-          scale: 1,
+-          rotate: 0,
+-          duration: 1.4,
+-          ease: "power3.out",
+-          delay: 0.2,
+-        });
++
++        const tl = gsap.timeline({ delay: heroAt });
++        tl.fromTo(
++          heroMedia,
++          { opacity: 0, y: 120, rotate: -8, scale: 0.9 },
++          { opacity: 1, y: 0, rotate: 0, scale: 1, duration: 1.7, ease: "expo.out" },
++          0,
++        );
++        if (card) {
++          tl.fromTo(card, { "--tilt": "0deg" }, { "--tilt": "2.5deg", duration: 1.3, ease: "back.out(1.7)" }, 0.25);
++        }
++        if (photo) tl.fromTo(photo, { scale: 1.24 }, { scale: 1, duration: 2, ease: "expo.out", clearProps: "transform" }, 0);
++        if (tape) {
++          tl.fromTo(
++            tape,
++            { scale: 0, rotate: -30, opacity: 0 },
++            { scale: 1, rotate: -4, opacity: 1, duration: 0.7, ease: "back.out(2.6)", clearProps: "transform,opacity" },
++            0.8,
++          );
++        }
++        if (sticker) {
++          tl.fromTo(sticker, { scale: 0, rotate: -140 }, { scale: 1, rotate: 0, duration: 1.1, ease: "back.out(1.8)" }, 0.95);
++        }
++
+         gsap.to(heroMedia, {
+           yPercent: -6,
+           ease: "none",
+-          scrollTrigger: {
+-            trigger: ".section--hero",
+-            start: "top top",
+-            end: "bottom top",
+-            scrub: true,
+-          },
++          scrollTrigger: { trigger: ".section--hero", start: "top top", end: "bottom top", scrub: true },
++        });
++      }
++      /* Hero copy drifts and softens as it leaves. */
++      const heroCopy = document.querySelector<HTMLElement>(".hero-copy");
++      if (heroCopy) {
++        gsap.to(heroCopy, {
++          yPercent: 8,
++          opacity: 0.2,
++          ease: "none",
++          scrollTrigger: { trigger: ".section--hero", start: "top top", end: "bottom top", scrub: true },
+         });
+       }
+-      all("[data-badge]").forEach((badge) =>
+-        gsap.to(badge, { rotation: 360, duration: 22, ease: "none", repeat: -1, transformOrigin: "50% 50%" }),
+-      );
+ 
+-      /* Cards and blocks: batched scroll reveals. */
++      /* ---------- cards and blocks: dealt in, batched ---------- */
+       const cards = all("[data-reveal]");
+-      gsap.set(cards, { opacity: 0, y: 56, scale: 0.96 });
++      gsap.set(cards, { opacity: 0 });
+       markSet(cards);
+       ScrollTrigger.batch(cards, {
+         start: "top 90%",
+         once: true,
+-        onEnter: (batch) =>
+-          gsap.to(batch, {
+-            opacity: 1,
+-            y: 0,
+-            scale: 1,
+-            duration: 1,
+-            ease: "power3.out",
+-            stagger: 0.12,
+-            clearProps: "transform,opacity",
+-          }),
++        onEnter: (batch) => batch.forEach((element, index) => reveal(element as HTMLElement, index * 0.12)),
+       });
+       const fades = all("[data-fade]");
+       gsap.set(fades, { opacity: 0, y: 24 });
+@@ -121,47 +400,92 @@ export default function Motion() {
+           gsap.to(batch, {
+             opacity: 1,
+             y: 0,
+-            duration: 0.9,
+-            ease: "power3.out",
++            duration: 1,
++            ease: "expo.out",
+             stagger: 0.08,
+             clearProps: "transform,opacity",
+           }),
+       });
+ 
+-      /* Marquee: loops forever and speeds up with scroll velocity. */
++      /* ---------- scroll velocity drives the marquee and the badge ---------- */
+       const marqueeTrack = document.querySelector<HTMLElement>("[data-marquee]");
+-      if (marqueeTrack) {
+-        const loop = gsap.to(marqueeTrack, {
+-          xPercent: -50,
+-          duration: 40,
+-          ease: "none",
+-          repeat: -1,
+-        });
+-        ScrollTrigger.create({
+-          onUpdate: (self) => {
+-            const boost = gsap.utils.clamp(0, 6, Math.abs(self.getVelocity()) / 400);
+-            loop.timeScale(1 + boost);
+-            gsap.to(loop, { timeScale: 1, duration: 0.8, overwrite: true });
+-          },
+-        });
+-      }
++      const loop = marqueeTrack
++        ? gsap.to(marqueeTrack, { xPercent: -50, duration: 40, ease: "none", repeat: -1 })
++        : null;
++      /* Start deep inside the loop so it can run backwards without hitting zero. */
++      loop?.totalTime(loop.duration() * 50);
++      const stamp = document.querySelector<HTMLElement>("[data-badge]");
++      const spin = stamp
++        ? gsap.to(stamp, { rotation: 360, duration: 22, ease: "none", repeat: -1, transformOrigin: "50% 50%" })
++        : null;
++      if (marqueeTrack) gsap.set(marqueeTrack, { skewX: 0 });
++      const skew = marqueeTrack ? gsap.quickTo(marqueeTrack, "skewX", { duration: 0.6, ease: "power3" }) : null;
+ 
+-      /* Photo band parallax. */
++      let direction = 1;
++      let calm = 0;
++      ScrollTrigger.create({
++        onUpdate: (self) => {
++          if (self.direction !== 0) direction = self.direction;
++          const velocity = self.getVelocity();
++          const boost = gsap.utils.clamp(0, 7, Math.abs(velocity) / 380);
++          if (loop) {
++            loop.timeScale(direction * (1 + boost));
++            gsap.to(loop, { timeScale: direction, duration: 0.9, ease: "power2.out", overwrite: true });
++          }
++          if (spin) {
++            spin.timeScale(1 + boost * 0.8);
++            gsap.to(spin, { timeScale: 1, duration: 1.2, ease: "power2.out", overwrite: true });
++          }
++          skew?.(gsap.utils.clamp(-4, 4, -velocity / 500));
++          window.clearTimeout(calm);
++          calm = window.setTimeout(() => skew?.(0), 90);
++        },
++      });
++      cleanups.push(() => window.clearTimeout(calm));
++
++      /* ---------- photo band: the torn paper peels back as it scrolls in ---------- */
+       all("[data-band]").forEach((band) => {
+         const image = band.querySelector("[data-band-img]");
++        const tear = band.querySelector("[data-band-tear]");
++        if (tear) {
++          gsap.fromTo(
++            tear,
++            { yPercent: 0 },
++            {
++              yPercent: -45,
++              ease: "none",
++              scrollTrigger: { trigger: band, start: "top 90%", end: "top 10%", scrub: true },
++            },
++          );
++        }
+         if (!image) return;
+         gsap.fromTo(
+           image,
+-          { yPercent: -7 },
++          { yPercent: -7, scale: 1.14 },
+           {
+             yPercent: 7,
++            scale: 1,
+             ease: "none",
+             scrollTrigger: { trigger: band, start: "top bottom", end: "bottom top", scrub: true },
+           },
+         );
+       });
+ 
+-      /* Navbar: hides when scrolling down, returns when scrolling up. */
++      /* ---------- footer ---------- */
++      const footerBits = all(".footer-top > *, .footer-base");
++      if (footerBits.length) {
++        gsap.from(footerBits, {
++          y: 48,
++          opacity: 0,
++          duration: 1.3,
++          ease: "expo.out",
++          stagger: 0.1,
++          clearProps: "transform,opacity",
++          scrollTrigger: { trigger: ".section--footer", start: "top 70%", once: true },
++        });
++      }
++
++      /* ---------- navbar ---------- */
+       const nav = document.querySelector<HTMLElement>(".navbar");
+       if (nav) {
+         let hidden = false;
+@@ -176,12 +500,42 @@ export default function Motion() {
+             hidden = shouldHide;
+             gsap.to(nav, {
+               yPercent: hidden ? -160 : 0,
+-              duration: 0.45,
+-              ease: "power3.out",
++              duration: 0.55,
++              ease: "expo.out",
+               overwrite: "auto",
+             });
+           },
+         });
++
++        /* The square in the logo turns a full circle over the whole page. */
++        const squares = all<SVGRectElement>(".navbar .logo-mark rect");
++        if (squares.length) {
++          gsap.to(squares, {
++            rotation: 360,
++            transformOrigin: "50% 50%",
++            ease: "none",
++            scrollTrigger: { trigger: document.body, start: "top top", end: "bottom bottom", scrub: 0.6 },
++          });
++        }
++
++        /* Mobile menu: links drop in one after another. */
++        let wasOpen = false;
++        const observer = new MutationObserver(() => {
++          const open = nav.classList.contains("is-open");
++          if (open && !wasOpen) {
++            gsap.from(nav.querySelectorAll(".nav-link"), {
++              y: -14,
++              opacity: 0,
++              duration: 0.7,
++              stagger: 0.05,
++              ease: "expo.out",
++              clearProps: "transform,opacity",
++            });
++          }
++          wasOpen = open;
++        });
++        observer.observe(nav, { attributes: true, attributeFilter: ["class"] });
++        cleanups.push(() => observer.disconnect());
+       }
+ 
+       const refresh = () => ScrollTrigger.refresh();
+@@ -190,18 +544,70 @@ export default function Motion() {
+       return () => {
+         window.removeEventListener("load", refresh);
+         cancelAnimationFrame(frame);
++        cleanups.forEach((cleanup) => cleanup());
+       };
+     });
+ 
+-    /* Pointer-only extras: magnetic buttons and the cursor-following tag. */
++    /* Desktop nav: one highlight glides between links. */
++    mm.add(
++      "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 760px)",
++      () => {
++        const nav = document.querySelector<HTMLElement>(".navbar");
++        const glide = nav?.querySelector<HTMLElement>(".nav-glide");
++        if (!nav || !glide) return;
++        const links = all<HTMLElement>(".navbar .nav-link:not(.nav-link--cta)");
++        const current = () => nav.querySelector<HTMLElement>('.nav-link[aria-current="page"]');
++        nav.classList.add("has-glide");
++
++        const place = (link: HTMLElement | null) => {
++          if (!link) {
++            gsap.to(glide, { opacity: 0, duration: 0.3, overwrite: "auto" });
++            return;
++          }
++          const box = { x: link.offsetLeft, y: link.offsetTop, width: link.offsetWidth, height: link.offsetHeight };
++          if (Number(gsap.getProperty(glide, "opacity")) < 0.05) gsap.set(glide, box);
++          gsap.to(glide, { ...box, opacity: 1, duration: 0.6, ease: "expo.out", overwrite: "auto" });
++        };
++
++        const off = () => place(current());
++        const cleanups: (() => void)[] = [];
++        links.forEach((link) => {
++          const on = () => place(link);
++          link.addEventListener("pointerenter", on);
++          link.addEventListener("focus", on);
++          link.addEventListener("blur", off);
++          cleanups.push(() => {
++            link.removeEventListener("pointerenter", on);
++            link.removeEventListener("focus", on);
++            link.removeEventListener("blur", off);
++          });
++        });
++        const group = nav.querySelector<HTMLElement>(".nav-menu");
++        group?.addEventListener("pointerleave", off);
++        cleanups.push(() => group?.removeEventListener("pointerleave", off));
++
++        const start = current();
++        if (start) {
++          gsap.set(glide, { x: start.offsetLeft, y: start.offsetTop, width: start.offsetWidth, height: start.offsetHeight, opacity: 1 });
++        }
++        return () => {
++          nav.classList.remove("has-glide");
++          cleanups.forEach((cleanup) => cleanup());
++        };
++      },
++    );
++
++    /* Pointer-only extras: magnetic buttons, cursor tag, hero depth. */
+     mm.add(
+       "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)",
+       () => {
+         const cleanups: (() => void)[] = [];
+ 
++        /* Magnet runs through CSS variables so it never fights the buttons'
++           own :hover / :active translate. */
+         all(".btn").forEach((button) => {
+-          const x = gsap.quickTo(button, "x", { duration: 0.5, ease: "power3" });
+-          const y = gsap.quickTo(button, "y", { duration: 0.5, ease: "power3" });
++          const x = gsap.quickTo(button, "--mx", { duration: 0.6, ease: "power3" });
++          const y = gsap.quickTo(button, "--my", { duration: 0.6, ease: "power3" });
+           const move = (event: PointerEvent) => {
+             const rect = button.getBoundingClientRect();
+             x((event.clientX - (rect.left + rect.width / 2)) * 0.25);
+@@ -219,16 +625,22 @@ export default function Motion() {
+           });
+         });
+ 
++        /* The "order now" tag follows the cursor and leans into the motion. */
+         all("[data-cursor-tag]").forEach((card) => {
+           const tag = card.querySelector<HTMLElement>(".cursor-tag");
+           if (!tag) return;
+           gsap.set(tag, { xPercent: -50, yPercent: -150, scale: 0.6 });
+           const x = gsap.quickTo(tag, "x", { duration: 0.45, ease: "power3" });
+           const y = gsap.quickTo(tag, "y", { duration: 0.45, ease: "power3" });
++          const lean = gsap.quickTo(tag, "rotation", { duration: 0.5, ease: "power3" });
++          let settle = 0;
+           const move = (event: PointerEvent) => {
+             const rect = card.getBoundingClientRect();
+             x(event.clientX - rect.left);
+             y(event.clientY - rect.top);
++            lean(gsap.utils.clamp(-14, 14, event.movementX * 0.9));
++            window.clearTimeout(settle);
++            settle = window.setTimeout(() => lean(0), 90);
+           };
+           const enter = (event: PointerEvent) => {
+             const rect = card.getBoundingClientRect();
+@@ -241,12 +653,45 @@ export default function Motion() {
+           card.addEventListener("pointerenter", enter);
+           card.addEventListener("pointerleave", leave);
+           cleanups.push(() => {
++            window.clearTimeout(settle);
+             card.removeEventListener("pointermove", move);
+             card.removeEventListener("pointerenter", enter);
+             card.removeEventListener("pointerleave", leave);
+           });
+         });
+ 
++        /* Hero depth: the photo tilts toward the pointer, the badge drifts the other way. */
++        const hero = document.querySelector<HTMLElement>(".section--hero");
++        const heroCard = hero?.querySelector<HTMLElement>(".hero-media .photo-card");
++        const heroBadge = hero?.querySelector<HTMLElement>(".hero-media .badge");
++        if (hero && heroCard) {
++          gsap.set(heroCard, { transformPerspective: 1100 });
++          const rx = gsap.quickTo(heroCard, "rotationX", { duration: 0.9, ease: "power3" });
++          const ry = gsap.quickTo(heroCard, "rotationY", { duration: 0.9, ease: "power3" });
++          const bx = heroBadge ? gsap.quickTo(heroBadge, "x", { duration: 1.1, ease: "power3" }) : null;
++          const by = heroBadge ? gsap.quickTo(heroBadge, "y", { duration: 1.1, ease: "power3" }) : null;
++          const move = (event: PointerEvent) => {
++            const nx = event.clientX / window.innerWidth - 0.5;
++            const ny = event.clientY / window.innerHeight - 0.5;
++            ry(nx * 9);
++            rx(-ny * 9);
++            bx?.(nx * -22);
++            by?.(ny * -22);
++          };
++          const leave = () => {
++            ry(0);
++            rx(0);
++            bx?.(0);
++            by?.(0);
++          };
++          hero.addEventListener("pointermove", move);
++          hero.addEventListener("pointerleave", leave);
++          cleanups.push(() => {
++            hero.removeEventListener("pointermove", move);
++            hero.removeEventListener("pointerleave", leave);
++          });
++        }
++
+         return () => cleanups.forEach((cleanup) => cleanup());
+       },
+     );
+@@ -254,5 +699,17 @@ export default function Motion() {
+     return () => mm.revert();
+   }, [pathname]);
+ 
+-  return null;
++  return (
++    <>
++      <div className="intro" ref={intro} aria-hidden="true">
++        <div className="intro-mark">
++          <span data-intro-word>LA CRAVE</span>
++          <span className="intro-square" />
++        </div>
++      </div>
++      <div className="curtain" ref={curtain} aria-hidden="true">
++        <span className="curtain-square" />
++      </div>
++    </>
++  );
+ }
+diff --git a/app/components/Navbar.tsx b/app/components/Navbar.tsx
+index a59d5e6..4a9dc85 100644
+--- a/app/components/Navbar.tsx
++++ b/app/components/Navbar.tsx
+@@ -32,6 +32,7 @@ export default function Navbar() {
+           aria-label="Main"
+           onClick={() => setOpen(false)}
+         >
++          <span className="nav-glide" aria-hidden="true" />
+           <div className="nav-group">
+             <Link href="/#about" className="nav-link">
+               About
+diff --git a/app/components/ParallaxBand.tsx b/app/components/ParallaxBand.tsx
+index b90cc9b..93beff0 100644
+--- a/app/components/ParallaxBand.tsx
++++ b/app/components/ParallaxBand.tsx
+@@ -3,6 +3,7 @@ import Image from "next/image";
+ export default function ParallaxBand() {
+   return (
+     <div className="band" data-band>
++      <span className="band-tear" data-band-tear aria-hidden="true" />
+       <div className="band-img" data-band-img>
+         <Image
+           src="/images/parallax-baker.jpg"
+diff --git a/app/components/TestimonialsSection.tsx b/app/components/TestimonialsSection.tsx
+index 38187e1..241bdf6 100644
+--- a/app/components/TestimonialsSection.tsx
++++ b/app/components/TestimonialsSection.tsx
+@@ -88,11 +88,22 @@ export default function TestimonialsSection() {
+     const tween = gsap.to(track.current, {
+       xPercent: -100 * current,
+       duration,
+-      ease: "power3.inOut",
+-      overwrite: true,
++      ease: "expo.inOut",
++      overwrite: "auto",
+     });
++    /* The cards on the incoming slide get dealt in as it arrives. */
++    const incoming = track.current.children[current]?.querySelectorAll(".photo-card");
++    const settle =
++      duration && incoming?.length
++        ? gsap.fromTo(
++            incoming,
++            { y: 56, rotate: (index: number) => (index % 2 ? -4 : 4) },
++            { y: 0, rotate: 0, duration: 1.3, delay: 0.25, ease: "expo.out", stagger: 0.09, clearProps: "transform" },
++          )
++        : null;
+     return () => {
+       tween.kill();
++      settle?.progress(1).kill();
+     };
+   }, [current, pages.length]);
+ 
+@@ -102,14 +113,30 @@ export default function TestimonialsSection() {
+     if (event.key === "ArrowLeft") go(current - 1);
+     if (event.key === "ArrowRight") go(current + 1);
+   };
++  const dragging = useRef(false);
+   const onPointerDown = (event: PointerEvent) => {
++    if (event.pointerType === "mouse" && event.button !== 0) return;
+     startX.current = event.clientX;
++    dragging.current = false;
+   };
+-  const onPointerUp = (event: PointerEvent) => {
++  const onPointerMove = (event: PointerEvent) => {
++    if (startX.current === null || !track.current) return;
++    const delta = event.clientX - startX.current;
++    if (!dragging.current && Math.abs(delta) < 6) return;
++    if (!dragging.current && event.pointerType === "mouse") {
++      event.currentTarget.setPointerCapture(event.pointerId);
++    }
++    dragging.current = true;
++    /* Resist a little so the slide feels weighted, not glued to the pointer. */
++    gsap.to(track.current, { x: delta * 0.8, duration: 0.25, ease: "power3.out", overwrite: "auto" });
++  };
++  const release = (event: PointerEvent) => {
+     if (startX.current === null) return;
+     const delta = event.clientX - startX.current;
+     startX.current = null;
+-    if (Math.abs(delta) > 50) go(current + (delta < 0 ? 1 : -1));
++    dragging.current = false;
++    if (track.current) gsap.to(track.current, { x: 0, duration: 0.9, ease: "expo.out", overwrite: "auto" });
++    if (Math.abs(delta) > 60) go(current + (delta < 0 ? 1 : -1));
+   };
+ 
+   return (
+@@ -139,8 +166,9 @@ export default function TestimonialsSection() {
+           <div
+             className="carousel-viewport"
+             onPointerDown={onPointerDown}
+-            onPointerUp={onPointerUp}
+-            onPointerCancel={() => (startX.current = null)}
++            onPointerMove={onPointerMove}
++            onPointerUp={release}
++            onPointerCancel={release}
+           >
+             <div className="carousel-track" ref={track}>
+               {pages.map((page, pageIndex) => (
+diff --git a/app/components/Wordmark.tsx b/app/components/Wordmark.tsx
+index 1bbb480..aa2f5ed 100644
+--- a/app/components/Wordmark.tsx
++++ b/app/components/Wordmark.tsx
+@@ -24,7 +24,7 @@ export default function Wordmark({ className }: { className?: string }) {
+         width="11.84"
+         height="11.84"
+         rx="2.88"
+-        fill="#ff6ba1"
++        style={{ fill: "var(--brand)" }}
+       />
+     </svg>
+   );
+diff --git a/app/globals.css b/app/globals.css
+index 74d722e..1496433 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -8,7 +8,11 @@
+   --bg: #fff3e3;
+   --ink: #2c2c2d;
+   --ink-2: #55555a;
+-  --pink: #ff6ba1;
++  /* Brand colour. Used for the small, recurring marks (the square, tags, tape,
++     the contact widget), never for large flat areas, so it stays a signature. */
++  --brand: #d41ac5;
++  --on-brand: #fff;
++  --pink: var(--brand);
+   --mint: #a2e3c4;
+   --yellow: #ffe156;
+   --peach: #ffc8a2;
+@@ -36,12 +40,17 @@
+ }
+ html {
+   -webkit-text-size-adjust: 100%;
++  -webkit-tap-highlight-color: transparent;
+   scroll-padding-top: 6rem;
+ }
++html.intro-on {
++  overflow: hidden;
++  scrollbar-gutter: stable;
++}
+ body {
+   margin: 0;
+   min-height: 100vh;
+-  background: var(--bg);
++  background: var(--bg) url("/backgrounds/grain.svg") 0 0 / 15rem 15rem;
+   color: var(--ink);
+   font-family: var(--font-body), system-ui, sans-serif;
+   font-size: 1rem;
+@@ -86,8 +95,8 @@ button {
+   cursor: pointer;
+ }
+ ::selection {
+-  background: var(--pink);
+-  color: var(--ink);
++  background: var(--brand);
++  color: var(--on-brand);
+ }
+ :focus-visible {
+   outline: 3px solid var(--ink);
+@@ -138,6 +147,7 @@ button {
+   height: 0.5rem;
+   border-radius: 2px;
+   background: var(--pink);
++  transform: scale(var(--sq-s, 1)) rotate(var(--sq-r, 0deg));
+ }
+ 
+ /* ---------- layout ---------- */
+@@ -159,23 +169,38 @@ button {
+   background-size: cover;
+ }
+ .section--peach {
+-  background-image: url("/backgrounds/torn-peach.svg");
++  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-peach.svg");
++  background-size:
++    15rem 15rem,
++    cover;
++  background-repeat: repeat, no-repeat;
++  background-position:
++    0 0,
++    50%;
+ }
+ .section--hero {
+   padding-top: clamp(8.5rem, 15vw, 12rem);
+   padding-bottom: clamp(7rem, 14vw, 12rem);
+-  background-image: url("/backgrounds/torn-mint-bottom.svg");
+-  background-position: 50% 100%;
+-  background-repeat: no-repeat;
+-  background-size: cover;
++  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-bottom.svg");
++  background-position:
++    0 0,
++    50% 100%;
++  background-repeat: repeat, no-repeat;
++  background-size:
++    15rem 15rem,
++    cover;
+ }
+ .section--footer {
+   padding-top: clamp(7rem, 14vw, 11rem);
+-  padding-bottom: 2.5rem;
+-  background-image: url("/backgrounds/torn-mint-top.svg");
+-  background-position: 50% 0;
+-  background-repeat: no-repeat;
+-  background-size: cover;
++  padding-bottom: 5.5rem;
++  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-top.svg");
++  background-position:
++    0 0,
++    50% 0;
++  background-repeat: repeat, no-repeat;
++  background-size:
++    15rem 15rem,
++    cover;
+   position: relative;
+   z-index: 2;
+ }
+@@ -241,6 +266,7 @@ button {
+   letter-spacing: 0.02em;
+   line-height: 1;
+   box-shadow: 0 3px 0 var(--ink);
++  transform: translate(calc(var(--mx, 0) * 1px), calc(var(--my, 0) * 1px));
+   transition:
+     translate 0.25s var(--ease-out),
+     box-shadow 0.25s var(--ease-out),
+@@ -255,7 +281,11 @@ button {
+   box-shadow: 0 0 0 var(--ink);
+ }
+ .btn--pink {
+-  background: var(--pink);
++  background: var(--brand);
++  color: var(--on-brand);
++}
++.btn--white {
++  background: var(--white);
+ }
+ .btn--ghost {
+   background: transparent;
+@@ -281,6 +311,18 @@ button {
+   text-decoration-thickness: 1.5px;
+   text-underline-offset: 0.3em;
+ }
++.link-arrow,
++.footer-links a {
++  text-decoration-color: rgb(44 44 45 / 0.5);
++  transition:
++    text-decoration-color 0.25s,
++    text-underline-offset 0.35s var(--ease-out);
++}
++.link-arrow:hover,
++.footer-links a:hover {
++  text-decoration-color: var(--pink);
++  text-underline-offset: 0.45em;
++}
+ .link-arrow svg {
+   transition: translate 0.25s var(--ease-out);
+ }
+@@ -318,11 +360,24 @@ button {
+   justify-content: space-between;
+ }
+ .nav-menu {
++  position: relative;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   width: 100%;
+ }
++.nav-glide {
++  position: absolute;
++  z-index: 0;
++  top: 0;
++  left: 0;
++  width: 0;
++  height: 0;
++  border-radius: 999px;
++  background: rgb(44 44 45 / 0.08);
++  opacity: 0;
++  pointer-events: none;
++}
+ .nav-group {
+   display: flex;
+   align-items: center;
+@@ -333,6 +388,8 @@ button {
+   justify-content: flex-end;
+ }
+ .nav-link {
++  position: relative;
++  z-index: 1;
+   display: inline-flex;
+   align-items: center;
+   min-height: 2.75rem;
+@@ -346,6 +403,10 @@ button {
+ .nav-link[aria-current="page"] {
+   background: rgb(44 44 45 / 0.07);
+ }
++.navbar.has-glide .nav-link:not(.nav-link--cta):hover,
++.navbar.has-glide .nav-link[aria-current="page"]:not(.nav-link--cta) {
++  background: transparent;
++}
+ .nav-link--cta {
+   background: var(--yellow);
+   border: 1.5px solid var(--ink);
+@@ -513,9 +574,27 @@ button {
+   transform: rotate(var(--tilt));
+   transition: transform 0.6s var(--ease-out);
+ }
++.photo-card::after {
++  content: "";
++  position: absolute;
++  inset: 0.5rem 0.75rem -0.375rem;
++  z-index: -2;
++  border-radius: var(--radius-lg);
++  background: var(--white);
++  box-shadow: var(--shadow-sm);
++  transform: rotate(calc(var(--tilt) * -1.7));
++  transition: transform 0.6s var(--ease-out);
++}
+ .photo-card--alt {
+   --tilt: -2.5deg;
+ }
++.photo-card--alt .washi {
++  background-image: url("/icons/washi-brand.svg");
++}
++.hero-media .photo-card::after {
++  background: var(--brand);
++  inset: 0.25rem 0.5rem -0.5rem;
++}
+ .photo-card-inner {
+   position: relative;
+   display: flex;
+@@ -524,7 +603,7 @@ button {
+   padding: 0.75rem;
+   border-radius: var(--radius-lg);
+   background: var(--white);
+-  box-shadow: var(--shadow-md);
++  box-shadow: var(--shadow-md), 0 0 0 1px rgb(44 44 45 / 0.04);
+   transition:
+     transform 0.6s var(--ease-out),
+     box-shadow 0.6s var(--ease-out);
+@@ -554,6 +633,7 @@ button {
+ .price {
+   display: inline-flex;
+   align-items: baseline;
++  font-variant-numeric: tabular-nums;
+   gap: 0.125rem;
+   font-weight: 600;
+   white-space: nowrap;
+@@ -584,7 +664,8 @@ button {
+   bottom: 1.25rem;
+   padding: 0.25rem 0.75rem;
+   border-radius: 999px;
+-  background: var(--pink);
++  background: var(--brand);
++  color: var(--on-brand);
+   font-family: var(--font-display), system-ui, sans-serif;
+   font-size: 1rem;
+   letter-spacing: 0.03em;
+@@ -611,9 +692,17 @@ a.photo-card:hover::before,
+ a.photo-card:focus-visible::before {
+   transform: rotate(0deg);
+ }
++a.photo-card:hover::after,
++a.photo-card:focus-visible::after {
++  transform: rotate(calc(var(--tilt) * -0.6));
++}
+ a.photo-card:hover .photo-card-media img {
+   scale: 1.05;
+ }
++a.photo-card:focus-visible {
++  outline-offset: 8px;
++  border-radius: var(--radius-lg);
++}
+ .cursor-tag {
+   position: absolute;
+   z-index: 6;
+@@ -621,7 +710,8 @@ a.photo-card:hover .photo-card-media img {
+   top: 0;
+   padding: 0.25rem 0.75rem;
+   border-radius: 999px;
+-  background: var(--pink);
++  background: var(--brand);
++  color: var(--on-brand);
+   font-family: var(--font-display), system-ui, sans-serif;
+   font-size: 1rem;
+   letter-spacing: 0.03em;
+@@ -655,7 +745,20 @@ a.photo-card:hover .photo-card-media img {
+ .carousel-viewport {
+   margin-inline: -1rem;
+   overflow: hidden;
+-  touch-action: pan-y;
++  touch-action: pan-y pinch-zoom;
++  user-select: none;
++  -webkit-user-select: none;
++}
++.carousel-viewport img {
++  -webkit-user-drag: none;
++}
++@media (hover: hover) and (pointer: fine) {
++  .carousel-viewport {
++    cursor: grab;
++  }
++  .carousel-viewport:active {
++    cursor: grabbing;
++  }
+ }
+ .carousel-track {
+   display: flex;
+@@ -701,7 +804,8 @@ a.photo-card:hover .photo-card-media img {
+   display: inline-block;
+   padding: 0.25rem 0.75rem;
+   border-radius: 999px;
+-  background: var(--pink);
++  background: var(--brand);
++  color: var(--on-brand);
+   font-family: var(--font-display), system-ui, sans-serif;
+   font-size: 1rem;
+   letter-spacing: 0.03em;
+@@ -772,7 +876,17 @@ a.photo-card:hover .photo-card-media img {
+   z-index: -1;
+   border-radius: var(--radius-lg);
+   background: var(--yellow);
+-  transform: rotate(2deg);
++  transform: rotate(var(--tilt, 2deg));
++  box-shadow: var(--shadow-sm);
++}
++.cta-card::after {
++  content: "";
++  position: absolute;
++  inset: 0;
++  z-index: -2;
++  border-radius: var(--radius-lg);
++  background: var(--brand);
++  transform: rotate(calc(var(--tilt, 2deg) * -1.5));
+   box-shadow: var(--shadow-sm);
+ }
+ .cta-inner {
+@@ -809,6 +923,16 @@ a.photo-card:hover .photo-card-media img {
+   margin-bottom: -5rem;
+   overflow: hidden;
+ }
++.band-tear {
++  position: absolute;
++  z-index: 2;
++  top: 0;
++  left: 0;
++  right: 0;
++  height: max(3.25rem, 4.2vw);
++  background: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
++  pointer-events: none;
++}
+ .band-img {
+   position: absolute;
+   inset: -12% 0;
+@@ -848,6 +972,7 @@ a.photo-card:hover .photo-card-media img {
+   background: var(--mint);
+   font-family: var(--font-display), system-ui, sans-serif;
+   font-size: 1.25rem;
++  transform: scale(var(--pop, 1)) rotate(var(--pop-r, 0deg));
+ }
+ 
+ /* ---------- footer ---------- */
+@@ -891,8 +1016,153 @@ a.photo-card:hover .photo-card-media img {
+   color: var(--ink-2);
+ }
+ 
++/* ---------- contact widget ---------- */
++.widget {
++  position: fixed;
++  z-index: 90;
++  right: max(1rem, env(safe-area-inset-right));
++  bottom: max(1rem, env(safe-area-inset-bottom));
++  display: grid;
++  justify-items: end;
++  gap: 0.75rem;
++}
++.widget-toggle {
++  position: relative;
++  display: inline-flex;
++  align-items: center;
++  gap: 0.625rem;
++  min-height: 3.25rem;
++  padding: 0.5rem 1.375rem 0.5rem 1rem;
++  border: 1.5px solid var(--ink);
++  border-radius: 999px;
++  background: var(--brand);
++  color: var(--on-brand);
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: 1.25rem;
++  letter-spacing: 0.03em;
++  line-height: 1;
++  box-shadow: 0 3px 0 var(--ink);
++  transition:
++    translate 0.25s var(--ease-out),
++    box-shadow 0.25s var(--ease-out);
++}
++.widget-toggle:hover {
++  translate: 0 2px;
++  box-shadow: 0 1px 0 var(--ink);
++}
++.widget-toggle:active {
++  translate: 0 3px;
++  box-shadow: 0 0 0 var(--ink);
++}
++.widget-toggle:focus-visible {
++  outline-color: var(--ink);
++}
++.widget-toggle svg {
++  width: 1.5rem;
++  height: 1.5rem;
++  transition: transform 0.5s var(--ease-out);
++}
++.widget[data-open="true"] .widget-toggle svg {
++  transform: rotate(90deg) scale(0.9);
++}
++.widget-toggle::after {
++  /* a soft ring that breathes every few seconds, to say "we're here" */
++  content: "";
++  position: absolute;
++  inset: -1.5px;
++  border-radius: inherit;
++  border: 1.5px solid var(--brand);
++  opacity: 0;
++  pointer-events: none;
++  animation: widget-ping 4.5s var(--ease-out) 3s infinite;
++}
++@keyframes widget-ping {
++  0% {
++    opacity: 0.55;
++    transform: scale(1);
++  }
++  40%,
++  100% {
++    opacity: 0;
++    transform: scale(1.25, 1.55);
++  }
++}
++.widget-panel {
++  display: grid;
++  gap: 0.5rem;
++  justify-items: end;
++  margin: 0;
++  padding: 0;
++  list-style: none;
++  visibility: hidden;
++}
++.widget[data-open="true"] .widget-panel {
++  visibility: visible;
++}
++.widget-panel .btn {
++  white-space: nowrap;
++}
++
++/* ---------- intro (once per session) and route curtain ---------- */
++.intro,
++.curtain {
++  position: fixed;
++  inset: 0;
++  z-index: 300;
++  display: none;
++  place-items: center;
++  pointer-events: none;
++  will-change: transform;
++}
++html.intro-on .intro {
++  display: grid;
++  pointer-events: auto;
++  /* If scripts fail, the lid still lifts. */
++  animation: intro-failsafe 0.01s 5s forwards;
++}
++.intro {
++  background: var(--yellow);
++  border-radius: 0 0 50% 50% / 0 0 7vh 7vh;
++}
++.intro-mark {
++  display: inline-flex;
++  align-items: flex-end;
++  gap: 0.02em;
++  font-family: var(--font-display), system-ui, sans-serif;
++  font-size: clamp(3.5rem, 14vw, 9rem);
++  line-height: 1;
++  letter-spacing: 0.01em;
++  color: var(--ink);
++}
++.intro-square {
++  width: 0.147em;
++  height: 0.147em;
++  border-radius: 0.036em;
++  background: var(--pink);
++}
++@keyframes intro-failsafe {
++  to {
++    opacity: 0;
++    visibility: hidden;
++    pointer-events: none;
++  }
++}
++.curtain {
++  display: grid;
++  visibility: hidden;
++  background: var(--brand);
++  border-radius: 50% 50% 0 0 / 7vh 7vh 0 0;
++}
++.curtain-square {
++  width: clamp(3rem, 8vw, 4.5rem);
++  aspect-ratio: 1;
++  border: 1.5px solid var(--ink);
++  border-radius: 22%;
++  background: var(--yellow);
++}
++
+ /* ---------- motion: hidden states (only when GSAP will reveal them) ---------- */
+-html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-hero-media]):not(.is-set) {
++html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-item], [data-hero-media]):not(.is-set) {
+   opacity: 0;
+   animation: anim-failsafe 0.01s 3.5s forwards;
+ }
+@@ -982,6 +1252,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-he
+   .nav-menu {
+     display: none;
+   }
++  .nav-glide {
++    display: none;
++  }
+   .navbar.is-open .nav-menu {
+     display: flex;
+     flex-direction: column;
+@@ -1034,6 +1307,13 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-hero-item], [data-he
+   }
+ }
+ @media (prefers-reduced-motion: reduce) {
++  .intro,
++  .curtain {
++    display: none !important;
++  }
++  .widget-toggle::after {
++    display: none;
++  }
+   *,
+   ::before,
+   ::after {
+diff --git a/app/layout.tsx b/app/layout.tsx
+index a72ab82..4cf4095 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,6 +1,7 @@
+ import type { Metadata, Viewport } from "next";
+ import localFont from "next/font/local";
+ import "./globals.css";
++import ContactWidget from "./components/ContactWidget";
+ import Footer from "./components/Footer";
+ import Motion from "./components/Motion";
+ import Navbar from "./components/Navbar";
+@@ -49,11 +50,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
+       suppressHydrationWarning
+     >
+       <head>
+-        {/* Scroll-in animations start hidden, so only hide them when JS can reveal them. */}
++        {/* Scroll-in animations start hidden, so only hide them when JS can reveal them.
++            The intro plays once per browser session. */}
+         <script
+           dangerouslySetInnerHTML={{
+             __html:
+-              'if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js")',
++              '(function(){var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("js");try{if(!sessionStorage.getItem("lc-intro")){sessionStorage.setItem("lc-intro","1");d.classList.add("intro-on")}}catch(e){}})()',
+           }}
+         />
+       </head>
+@@ -62,6 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
+         <main>{children}</main>
+         <ParallaxBand />
+         <Footer />
++        <ContactWidget />
+         <Motion />
+       </body>
+     </html>
+diff --git a/public/backgrounds/grain.svg b/public/backgrounds/grain.svg
+new file mode 100644
+index 0000000..7d8ebe9
+--- /dev/null
++++ b/public/backgrounds/grain.svg
+@@ -0,0 +1,4 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240">
++<filter id="n" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.17  0 0 0 0 0.16  0 0 0 0 0.15  0 0 0 0.11 0"/></filter>
++<rect width="240" height="240" filter="url(#n)"/>
++</svg>
+diff --git a/public/backgrounds/torn-cream-bottom.svg b/public/backgrounds/torn-cream-bottom.svg
+new file mode 100644
+index 0000000..f15a51b
+--- /dev/null
++++ b/public/backgrounds/torn-cream-bottom.svg
+@@ -0,0 +1,8 @@
++<svg width="2400" height="96" viewBox="0 0 2400 96" fill="none" xmlns="http://www.w3.org/2000/svg">
++<g transform="translate(0 96) scale(1 -1)">
++<path d="M0 60.626C12.0896 60.0704 36.6436 58.6254 38.1445 57.292C39.812 59.3291 44.2732 62.2922 48.7754 57.8477C53.2776 53.4033 64.825 55.6252 70.0361 57.292H70.9873L96.2324 53.9746C95.0496 52.808 93.583 46.6405 92.5479 46.1807L90.0469 45.0693C92.7566 42.6619 98.8015 37.8468 101.303 37.8467C104.429 37.8467 165.711 51.1808 150.078 32.8467V31.1797H158.207C167.378 34.8835 188.723 41.1808 200.729 36.7363L262.637 37.292C275.352 38.9587 303.283 43.1807 313.288 46.7363C313.913 45.9956 315.415 44.5137 316.415 44.5137C317.666 44.5148 324.544 55.0706 324.544 56.1816C324.548 57.2926 340.803 58.4034 347.681 56.1816C354.559 53.9594 378.948 39.5137 400.834 39.5137C407.087 35.6246 425.347 29.1803 448.358 34.5137C471.37 39.8472 495.05 34.1437 504.013 30.625C505.681 31.1805 511.267 31.9584 520.271 30.625C531.527 28.9583 544.033 23.958 555.289 29.5137C566.545 22.6615 591.558 9.95691 601.563 13.957C614.07 18.9573 619.073 19.5133 627.202 29.5137C628.245 28.7728 631.079 27.4023 634.08 27.8467C637.832 28.4022 649.713 37.8463 652.84 37.8467C655.341 37.8467 663.054 40.4399 666.598 41.7363C669.308 42.4771 676.103 42.958 681.605 38.958C688.484 33.9575 708.494 20.069 726.003 37.8467C738.509 40.4393 769.276 44.0692 792.288 37.8467C821.052 30.0691 847.939 31.1801 849.817 29.5137C851.693 27.8469 859.198 33.4021 866.076 31.7354C872.955 30.0686 910.475 27.291 916.103 33.4023C929.86 32.4764 958.748 31.069 964.252 32.8467C971.13 35.069 983.012 46.7368 991.142 50.0703C999.271 53.4037 1017.41 56.7368 1021.16 59.5146C1024.91 62.2927 1029.91 72.848 1048.67 64.5146C1049.3 64.5146 1054.92 73.9594 1064.3 70.0703C1073.68 66.1815 1072.43 67.8486 1073.68 67.8486C1074.94 67.8502 1102.45 76.7371 1134.34 71.7373C1137.05 70.2557 1142.47 66.7369 1142.47 64.5146C1143.72 65.2554 1147.22 66.6261 1151.22 66.1816C1155.23 65.7372 1160.81 62.6632 1163.11 61.1816C1171.44 62.1075 1190.62 63.1814 1200.63 60.0703C1213.13 56.1813 1205.63 65.6259 1240.65 58.4033C1275.66 51.1809 1265.66 52.2917 1280.04 56.7363C1297.97 55.0696 1337.2 52.7363 1350.7 56.7363C1360.92 54.3289 1383.85 49.9586 1393.85 51.7363C1406.36 53.9586 1414.49 56.7363 1415.11 56.7363C1415.74 56.7336 1419.49 46.7373 1427.62 48.959C1435.75 51.1813 1447 70.0691 1459.51 64.5146C1461.8 68.9595 1476.52 73.2931 1517.04 55.0703C1523.71 53.3367 1539.3 52.243 1548.31 61.7373C1555.39 59.1447 1575.82 55.4037 1600.83 61.1816C1632.1 59.515 1633.98 73.9595 1653.99 65.0703C1658.99 69.7001 1674.12 76.1819 1694.63 65.0703C1702.97 65.0706 1724.02 62.8485 1741.53 53.959C1741.53 54.0139 1741.61 54.1453 1741.74 54.3379L1732.33 31.3535C1731.97 31.3809 1731.7 31.3347 1731.53 31.1816C1730.52 30.2917 1723.61 25.2559 1720.27 22.8486C1733.78 13.9594 1780.51 19.1448 1802.19 22.8486C1813.69 16.1816 1842.83 13.4032 1855.97 12.8477C1872.98 23.0702 1897.24 12.6624 1907.24 6.18066C1912.75 17.2922 1924.96 11.9219 1930.38 7.84766C1941.39 0.292114 1946.22 8.03271 1947.26 12.8477C1952.77 6.62549 1957.89 8.03308 1959.77 9.51465C1981.03 18.9595 1988.54 22.8483 1992.29 20.626C1996.04 18.4039 1999.17 18.959 2001.04 18.959C2002.54 18.959 2005.84 21.5522 2007.3 22.8486C2008.34 23.0336 2010.67 22.5142 2011.67 18.959C2012.67 15.4032 2020.84 6.36621 2024.8 2.29199C2034.81 -5.26392 2046.07 7.6626 2050.44 15.0703L2061.7 9.51465C2074.21 2.40332 2080.67 1.73645 2082.33 2.29199C2087.84 1.84802 2096.72 10.6257 2100.47 15.0703C2108.6 5.62549 2123.61 -1.59705 2132.99 15.0703C2142.37 31.7366 2167.38 15.0715 2169.88 15.0703C2178.88 9.73682 2183.22 12.848 2184.26 15.0703C2204.27 33.2932 2214.7 34.5154 2217.41 32.8486C2238.92 28.4042 2241.79 34.7004 2240.54 38.4043L2256.8 41.1826C2259.8 39.8492 2272.64 38.7747 2278.69 38.4043C2289.19 50.8492 2316 48.4048 2328.09 45.627C2345.6 31.849 2365.82 42.1079 2373.74 48.96L2400 50.627V1200L0 1200V60.626ZM106.349 52.6455C105.718 52.5303 105.078 52.4126 104.43 52.292C102.391 52.292 98.1208 52.6125 96.998 53.874L106.349 52.6455Z" fill="#FFF3E3"/>
++<path d="M2373.74 49.0078L2400 50.6745V64.5621L2373.74 64.0066C2366.86 55.1177 2348.72 52.8955 2342.47 52.8955C2336.22 52.8955 2329.34 59.5621 2327.46 60.6732C2325.59 61.7843 2301.82 61.7843 2292.44 60.6732C2283.06 59.5621 2279.94 52.3399 2278.69 52.3399C2277.44 52.3399 2259.3 54.5634 2255.55 55.1189C2252.55 55.5634 2244.29 52.7115 2240.54 51.23C2237.54 42.7856 2229.7 43.6374 2226.16 45.1189C2203.65 49.0078 2199.27 43.4523 2190.52 33.4523C2181.76 23.4523 2176.76 25.1189 2176.13 25.1189C2167.13 30.0078 2153.62 33.8226 2147.99 35.1189C2131.74 36.7856 2131.74 17.3412 2116.1 15.6745C2111.39 15.1721 2103.39 22.156 2099.84 26.23C2099.22 22.3412 2083.59 9.56338 2075.46 14.0078C2068.95 17.5634 2056.07 23.2671 2050.44 25.6745C2047.32 16.7856 2037.31 11.23 2032.31 11.23C2027.31 11.23 2016.05 20.6745 2016.05 24.0078C2016.05 27.3412 2007.3 36.23 2007.3 34.5634C2007.3 33.23 2001.04 31.7856 1997.92 31.23C1997.92 30.6745 1995.91 30.23 1987.91 32.8967C1980.41 34.0078 1962.9 20.6745 1957.89 20.6745C1953.89 20.6745 1949.97 22.8967 1948.51 24.0078C1942.01 14.23 1936.63 15.8597 1934.76 17.8967C1933.92 19.193 1929.88 22.5634 1920.38 25.6745C1908.49 29.5634 1910.37 15.6745 1907.24 17.8967C1904.12 20.1189 1889.73 26.23 1878.48 29.5634C1867.22 32.8967 1859.09 25.6745 1844.09 24.0078C1829.08 22.3412 1811.57 33.4523 1800.31 36.23C1789.06 39.0078 1766.55 31.23 1752.79 29.5634C1739.03 27.8967 1732.78 32.3412 1731.53 31.23C1730.53 30.3412 1723.61 25.3041 1720.27 22.8967C1733.78 14.0078 1780.51 19.193 1802.19 22.8967C1813.69 16.23 1842.83 13.4523 1855.97 12.8967C1872.98 23.1189 1897.24 12.7115 1907.24 6.23004C1912.75 17.3412 1924.96 11.9708 1930.38 7.89671C1941.39 0.341156 1946.22 8.08189 1947.26 12.8967C1952.77 6.67448 1957.89 8.08189 1959.77 9.56338C1981.03 19.0078 1988.54 22.8967 1992.29 20.6745C1996.04 18.4523 1999.17 19.0078 2001.04 19.0078C2002.54 19.0078 2005.84 21.6004 2007.3 22.8967C2008.34 23.0819 2010.67 22.5634 2011.67 19.0078C2012.67 15.4523 2020.84 6.41523 2024.8 2.34116C2034.81 -5.2144 2046.07 7.71152 2050.44 15.1189L2061.7 9.56338C2074.21 2.45226 2080.67 1.7856 2082.33 2.34116C2087.84 1.89671 2096.72 10.6745 2100.47 15.1189C2108.6 5.67448 2123.61 -1.54774 2132.99 15.1189C2142.37 31.7856 2167.38 15.1189 2169.88 15.1189C2178.88 9.7856 2183.22 12.8967 2184.26 15.1189C2204.27 33.3412 2214.7 34.5634 2217.4 32.8967C2238.92 28.4523 2241.79 34.7486 2240.54 38.4523L2256.8 41.23C2259.8 39.8967 2272.64 38.8226 2278.69 38.4523C2289.19 50.8967 2316 48.4523 2328.09 45.6745C2345.6 31.8967 2365.82 42.156 2373.74 49.0078Z" fill="white"/>
++<path d="M1748.41 64.0066C1749.04 62.8955 1741.53 54.5621 1741.53 54.0066C1724.02 62.8958 1702.97 65.1175 1694.63 65.1172C1674.12 76.2283 1658.99 69.7468 1653.99 65.1172C1633.98 74.0061 1632.1 59.5617 1600.83 61.2283C1575.82 55.4506 1555.39 59.1913 1548.31 61.7839C1539.3 52.29 1523.71 53.3837 1517.04 55.1172C1476.52 73.3394 1461.8 69.0057 1459.51 64.5611C1447 70.116 1435.75 51.2283 1427.62 49.0061C1419.49 46.7839 1415.74 56.7839 1415.11 56.7839C1414.49 56.7839 1406.36 54.0061 1393.85 51.7839C1383.85 50.0061 1360.92 54.3765 1350.7 56.7839C1337.2 52.7839 1297.97 55.1172 1280.04 56.7839C1265.66 52.3394 1275.66 51.2283 1240.65 58.4506C1205.63 65.6728 1213.13 56.2283 1200.63 60.1172C1190.62 63.2283 1171.44 62.1543 1163.11 61.2283C1160.81 62.7098 1155.23 65.7839 1151.22 66.2283C1147.22 66.6728 1143.72 65.3024 1142.47 64.5617C1142.47 66.7839 1137.05 70.3024 1134.34 71.7839C1102.45 76.7839 1074.93 67.895 1073.68 67.895C1072.43 67.895 1073.68 66.2283 1064.3 70.1172C1054.92 74.0061 1049.3 64.5617 1048.67 64.5617C1029.91 72.895 1024.91 62.3394 1021.16 59.5617C1017.4 56.7839 999.271 53.4506 991.141 50.1172C983.012 46.7839 971.131 35.1172 964.252 32.895C958.749 31.1172 929.859 32.5246 916.102 33.4506C910.474 27.3394 872.955 30.1172 866.076 31.7839C859.198 33.4506 851.694 27.895 849.818 29.5617C847.942 31.2283 821.053 30.1172 792.288 37.895C769.276 44.1172 738.51 40.4876 726.003 37.895C708.494 20.1172 688.484 34.0061 681.605 39.0061C676.102 43.0061 669.307 42.5246 666.597 41.7839C663.054 40.4876 655.341 37.895 652.84 37.895C649.713 37.895 637.832 28.4506 634.08 27.895C631.079 27.4506 628.244 28.8209 627.202 29.5617C619.073 19.5617 614.07 19.0061 601.563 14.0061C591.558 10.0061 566.545 22.7098 555.289 29.5617C544.033 24.0061 531.527 29.0061 520.271 30.6728C511.266 32.0061 505.68 31.2283 504.013 30.6728C495.05 34.1913 471.37 39.895 448.359 34.5617C425.347 29.2283 407.087 35.6728 400.834 39.5617C378.947 39.5617 354.56 54.0061 347.681 56.2283C340.802 58.4506 324.544 57.3394 324.544 56.2283C324.544 55.1172 317.666 44.5617 316.415 44.5617C315.414 44.5617 313.914 46.0431 313.288 46.7839C303.283 43.2283 275.352 39.0061 262.637 37.3394L200.729 36.7839C188.723 41.2283 167.379 34.932 158.208 31.2283H150.078V32.895C165.711 51.2283 104.429 37.895 101.303 37.895C98.8015 37.895 92.7566 42.7098 90.0469 45.1172L92.5483 46.2283C93.7988 46.7839 95.6748 55.6728 96.9255 54.0061C97.926 52.6728 102.345 52.3394 104.429 52.3394C158.208 62.3394 151.954 54.0061 151.954 51.2283C151.954 48.4506 150.078 44.5617 153.205 44.0061C155.706 43.5617 177.176 49.0061 187.598 51.7839C191.35 50.6728 199.979 49.0061 204.481 51.2283C210.109 54.0061 261.386 49.0061 263.887 51.2283C266.389 53.4506 297.03 56.2283 304.534 57.895C310.537 59.2283 313.288 61.0431 313.914 61.7839C314.122 61.0431 314.914 59.4506 316.415 59.0061C318.291 58.4506 321.417 66.7839 324.544 71.7839C327.045 75.7839 341.428 73.4505 348.306 71.7839C358.312 62.895 398.958 53.4506 402.084 52.3394C405.211 51.2283 411.464 44.0061 422.72 46.2283C433.976 48.4506 470.87 49.0061 474.622 49.5617C478.374 50.1172 498.385 44.5617 505.889 42.895C513.392 41.2283 507.765 42.3394 517.144 44.5617C526.524 46.7839 532.777 40.1172 539.656 39.5617C545.159 39.1172 552.371 41.5987 555.289 42.895C574.049 29.5617 580.302 31.2283 594.059 25.6728C607.817 20.1172 627.202 44.0061 627.202 43.4506C627.202 42.895 634.08 41.2283 637.832 41.7839C641.584 42.3394 651.589 50.6728 652.84 51.2283C654.091 51.7839 654.091 51.2283 662.22 55.1172C668.723 58.2283 674.518 56.4135 676.602 55.1172C681.188 51.5987 692.736 44.0061 702.241 41.7839C714.122 39.0061 722.251 48.4506 726.003 51.2283C729.755 54.0061 749.14 53.4506 750.391 53.4506C764.898 57.4506 778.947 55.1172 784.158 53.4506C800.667 49.0061 836.894 44.5617 852.944 42.895C856.071 48.4506 891.714 39.5617 905.472 42.895C916.477 45.5617 920.479 46.9691 921.105 47.3394C939.865 43.4506 959.25 45.6728 965.503 47.3394C971.756 49.0061 984.888 66.7839 991.141 65.6728C996.144 64.7839 1014.49 72.7094 1023.03 76.7833C1033.04 91.2271 1041.79 82.895 1043.04 83.4505C1044.29 84.0061 1048.05 79.5617 1049.3 81.7839C1050.55 84.0061 1056.8 87.3394 1061.8 86.2283C1066.81 85.1172 1072.43 85.1166 1073.68 85.1166C1083.06 90.6722 1114.33 88.45 1121.83 88.45H1133.72C1138.22 88.45 1141.43 83.2648 1142.47 80.6722C1145.97 86.45 1156.85 80.487 1161.86 76.7833C1168.36 80.3388 1179.57 78.2648 1184.37 76.7833C1189.58 75.6722 1202.25 74.1166 1211.26 76.7833C1222.51 80.1166 1236.27 75.1166 1240.65 73.45C1245.02 71.7833 1263.78 68.45 1272.54 69.0055C1281.29 69.5611 1278.79 74.0055 1281.92 72.3388C1285.04 70.6722 1334.45 70.6722 1342.57 72.3388C1349.08 73.6722 1359.04 71.7833 1363.21 70.6722C1387.22 63.5611 1408.23 68.8203 1415.74 72.3388C1417.74 67.45 1422.41 65.1166 1424.49 64.5611C1430.75 61.2277 1443.25 75.1166 1447.63 79.5611C1452.01 84.0055 1454.51 82.3388 1455.76 81.2277C1456.76 80.3388 1459.93 80.8574 1461.39 81.2277C1473.27 90.1166 1503.91 76.7833 1518.29 70.1166C1532.67 63.45 1546.43 76.7833 1548.31 76.7833C1550.18 76.7833 1563.31 71.7833 1567.69 72.3388C1571.19 72.7833 1591.25 75.487 1600.83 76.7833C1602.92 75.3018 1611.09 73.8944 1627.1 80.1166C1643.11 86.3388 1650.86 83.0803 1652.74 80.6732C1660.74 87.7852 1668.99 88.4506 1672.12 87.8943C1678.37 90.1166 1694.01 80.6732 1695.88 80.6732C1710.89 84.0066 1747.79 65.1177 1748.41 64.0066Z" fill="white"/>
++<path d="M90.0469 59.5617C88.7964 57.895 91.2976 57.895 91.9229 57.3394H70.0366C64.8254 55.6728 53.2778 53.4506 48.7754 57.895C44.2732 62.3394 39.8125 59.3765 38.145 57.3394C36.644 58.6728 12.0896 60.1172 0 60.6728V76.2283C3.12671 77.895 38.145 71.7839 39.3955 73.4505C40.396 74.7839 42.3137 75.4876 43.1475 75.6728C45.2319 74.3765 50.4014 71.5617 54.4033 70.6728C59.406 69.5617 65.6592 70.6728 68.7859 72.3394C71.9126 74.0061 94.4243 72.3394 96.3003 70.6728C98.1763 69.0061 94.4243 66.7839 91.9229 61.7839C89.4216 56.7839 91.2976 61.2283 90.0469 59.5617Z" fill="white"/>
++</g>
++</svg>
+diff --git a/public/icons/washi-brand.svg b/public/icons/washi-brand.svg
+new file mode 100644
+index 0000000..752bcff
+--- /dev/null
++++ b/public/icons/washi-brand.svg
+@@ -0,0 +1,13 @@
++<svg width="601" height="220" viewBox="0 0 601 220" fill="none" xmlns="http://www.w3.org/2000/svg">
++<path d="M5.11377 4.85809C-2.73247 5.97102 2.33415 24.8764 3.05692 28.5586C5.59742 41.2593 15.3782 47.3759 20.5455 57.7033C22.6923 61.995 8.38423 69.8196 11.7985 76.6482C14.0783 81.2078 25.1447 81.8137 22.73 89.0325C21.1353 93.824 14.6555 96.8176 16.1747 102.877C17.6922 108.939 29.3753 115.078 25.6283 122.546C21.4229 130.953 8.08397 169.057 11.7805 176.486C15.0007 182.925 25.3209 179.093 28.541 182.313C30.0153 183.793 10.9409 209.889 15.4286 214.371C20.3064 219.254 31.3997 217.641 38.0108 218.747C67.8009 223.708 96.5824 210.728 126.171 210.728C180.372 210.728 240.274 218.832 293.752 214.371C325.398 211.735 356.921 208.499 388.468 205.629C414.826 203.233 441.54 207.816 467.887 207.816C500.223 207.816 531.692 214.371 564.061 214.371C570.111 214.371 591.598 216.712 596.118 212.186C598.342 209.962 585.825 199.257 587.376 196.159C590.775 189.36 604.615 179.617 599.761 169.929C597.893 166.121 592.698 165.208 591.03 161.889C589.191 158.208 598.599 152.991 596.859 149.499C593.971 143.722 580.553 133.929 576.456 129.831C574.631 128.001 590.575 105.602 587.389 99.2466C584.575 93.6244 573.32 94.2088 571.357 88.3151C568.432 79.5339 578.757 67.4553 580.81 59.1704C582.74 51.4518 575.521 51.5022 572.797 46.058C570.016 40.4358 578.007 34.6195 574.981 28.5694C573.058 24.7218 567.052 22.9149 565.53 19.8278C563.609 15.991 575.978 9.14619 573.541 6.70998C563.426 -3.40526 493.466 2.32839 481.738 3.79731C459.456 6.57693 436.302 2.46683 413.981 5.25365C358.89 12.1434 301.219 11.0862 245.673 11.0862C186.284 11.0862 144.555 24.5816 83.1985 16.9133C67.7614 14.9625 18.4761 2.90732 5.11377 4.85809Z" fill="#EE95E5"/>
++<path d="M77.9758 217.33C77.8939 216.441 77.6463 215.575 77.2459 214.777C72.1199 204.522 71.1005 192.47 69.9354 178.684L69.9336 178.664L69.7125 176.053C68.4953 161.855 66.8232 145.849 57.8568 132.399C54.0254 126.653 46.5136 119.84 39.115 114.195C31.6643 108.513 23.1583 103.125 16.7576 100.726C16.4987 100.628 16.2362 100.547 15.9719 100.48C15.9036 101.228 15.9593 102.023 16.1732 102.879C16.7468 105.169 18.7749 107.472 20.8731 109.855C24.2478 113.69 27.8042 117.73 25.7653 122.255C27.3309 123.348 28.8733 124.474 30.3914 125.632C37.5382 131.085 43.4427 136.709 45.8897 140.378C52.5367 150.35 54.1333 162.738 55.381 177.281C55.4727 178.347 55.5626 179.426 55.6525 180.517C56.6845 192.968 57.8406 206.926 63.4772 219.313C68.3208 218.853 73.1519 218.145 77.9758 217.33Z" fill="#D41AC5"/>
++<path d="M126.925 210.729C123.177 175.446 112.065 138.788 91.8762 108.451C86.903 101.669 80.8422 94.5027 74.2815 86.8543C73.4975 85.9409 72.7083 85.0204 71.9118 84.0962C66.0631 77.2874 59.9231 70.1442 54.1319 62.8247C41.095 46.3466 28.9517 27.9482 25.3702 8.46207C25.2381 7.74323 25.2156 7.00852 25.3036 6.28296C29.9621 6.98596 35.0072 7.86515 40.1421 8.81447C43.6948 23.6457 53.3839 38.6963 65.4122 53.8997C71.0092 60.9729 76.946 67.8824 82.8145 74.7128L85.1986 77.4888C91.7737 85.1534 98.2121 92.7533 103.575 100.082C103.638 100.166 103.698 100.253 103.757 100.341C125.884 133.529 137.641 173.281 141.404 210.921C136.579 210.803 131.752 210.739 126.925 210.729Z" fill="#D41AC5"/>
++<path d="M93.4492 18.0205C100.954 35.7662 112.155 50.975 123.682 65.0349C127.398 69.5676 131.109 73.9402 134.755 78.2372C143.132 88.108 151.169 97.5777 158.166 107.693C178.798 137.499 195.745 177.718 203.038 213.84C207.971 214.108 212.906 214.365 217.836 214.599C210.576 175.628 192.428 131.918 169.995 99.5105C162.577 88.7858 153.799 78.4404 145.216 68.3234C141.71 64.2178 138.24 60.0824 134.806 55.9176C125.127 44.1105 116.289 32.1829 109.755 19.0579C104.311 18.8578 98.8741 18.513 93.4492 18.0205Z" fill="#D41AC5"/>
++<path d="M269.674 215.592C268.041 205.36 265.316 193.211 262.238 184.746C250.634 152.838 229.56 126.189 207.724 98.5761L207.578 98.3909C187.943 73.5612 167.675 47.9046 155.249 17.7548C160.289 17.3449 165.292 16.8738 170.301 16.3794C181.902 42.5503 199.96 65.5712 218.86 89.4695L219.675 90.4997C241.043 117.519 263.354 145.729 275.754 179.831C279.403 189.86 282.443 203.797 284.142 215.038C279.361 215.306 274.535 215.486 269.674 215.592Z" fill="#D41AC5"/>
++<path d="M360.505 208.245C357.927 207.091 355.284 205.933 352.646 204.777L352.184 204.576C344.048 201.01 335.646 197.33 330.706 194.189C323.99 189.914 316.108 182.556 308.115 173.969C300.022 165.273 291.457 154.92 283.359 144.293C267.325 123.251 252.504 100.315 247.019 86.6001C243.135 76.8912 238.345 66.9377 233.39 56.6373C232.042 53.8343 230.682 51.0061 229.325 48.151C223.737 36.4032 218.239 24.2725 214.319 12.2496C219.194 11.908 224.152 11.6221 229.228 11.4208C232.72 21.3239 237.349 31.5326 242.313 41.9751C243.601 44.681 244.913 47.4084 246.231 50.1485L246.233 50.1521C251.219 60.5119 256.289 71.0496 260.374 81.2566C265.082 93.0331 278.864 114.662 294.799 135.574C302.687 145.927 310.948 155.9 318.643 164.171C326.441 172.547 333.311 178.795 338.428 182.053C342.286 184.507 349.611 187.745 358.417 191.602L358.79 191.765C367.121 195.415 376.44 199.498 383.434 203.461C384.461 204.04 385.329 204.864 385.96 205.86C377.476 206.636 368.991 207.438 360.505 208.245Z" fill="#D41AC5"/>
++<path d="M439.875 206.611C424.817 193.155 413.112 185.553 403.558 180.214C399.451 177.918 395.953 176.143 392.556 174.421C390.392 173.333 388.239 172.223 386.096 171.093C380.713 168.23 375.557 165.134 370.575 160.704C352.894 144.99 339.672 125.705 327.6 106.417C324.813 101.95 322.049 97.4687 319.308 92.9737C310.21 78.1137 301.375 63.6815 291.007 50.4846C279.946 36.4103 273.317 24.8387 265.999 11.1168C271.441 11.1294 276.9 11.1402 282.368 11.1438C288.123 21.5791 293.808 30.772 302.316 41.5974C313.258 55.5225 322.685 70.9291 331.861 85.9221C334.483 90.2236 337.127 94.5117 339.792 98.7864C351.734 117.868 364.066 135.675 380.129 149.952C383.879 153.288 387.9 155.76 392.849 158.392C394.545 159.293 396.469 160.271 398.549 161.328C402.201 163.185 406.338 165.289 410.577 167.657C423.713 175 440.081 186.026 462.049 207.746C454.677 207.573 447.28 207.111 439.875 206.611Z" fill="#D41AC5"/>
++<path d="M557.515 214.286C556.724 213.44 555.94 212.587 555.163 211.733C552.753 209.063 550.367 206.37 548.008 203.655C544.98 200.192 541.981 196.764 538.615 193.155C527.281 181.007 514.99 170.525 498.075 165.929C491.795 164.223 486.689 164.07 480.861 163.973L480.212 163.962C474.525 163.87 468.067 163.764 460.234 161.871C439.424 156.84 425.46 152.919 407.921 138.28C392.643 125.529 387.025 108.956 383.253 93.7684C382.436 90.4782 381.739 87.4055 381.065 84.4371C380.101 80.2012 379.188 76.1756 378.041 72.0169C376.174 65.2477 373.974 59.327 370.761 54.282C365.525 46.0564 356.107 37.5503 345.724 28.8177C344.158 27.5029 342.588 26.1922 341.015 24.8856C335.395 20.2073 329.683 15.4536 324.89 10.8526C331.934 10.731 338.976 10.5512 346.017 10.3132C347.281 11.374 348.581 12.4582 349.908 13.5675C351.559 14.9429 353.256 16.3579 354.982 17.8107C365.147 26.3599 376.295 36.1893 382.895 46.5598C387.21 53.3381 389.871 60.8139 391.906 68.1927C393.097 72.5113 394.181 77.2543 395.229 81.8463C395.898 84.7751 396.552 87.6429 397.214 90.302C400.803 104.757 405.506 117.53 417.137 127.237C432.051 139.686 443.333 142.987 463.614 147.89C469.88 149.406 474.961 149.49 480.757 149.586L481.101 149.591C487.057 149.692 493.708 149.837 501.845 152.049C522.628 157.694 537.162 170.516 549.131 183.344C552.475 186.927 555.909 190.847 559.182 194.579C561.37 197.093 563.58 199.588 565.813 202.062C570.351 207.059 574.673 211.435 579.128 214.963C575.68 214.912 572.264 214.734 569.432 214.587C567.181 214.47 565.298 214.371 564.061 214.371C561.875 214.371 559.692 214.342 557.515 214.286Z" fill="#D41AC5"/>
++<path d="M590.832 160.378C583.873 156.117 574.973 151.827 565.534 147.593C561.526 145.795 557.4 143.999 553.343 142.233L553.34 142.231C545.499 138.819 537.921 135.521 531.971 132.546C522.077 127.6 510.845 123.375 499.166 118.98C493.535 116.862 487.798 114.703 482.059 112.407C465.12 105.629 448.029 97.583 437.522 85.7633C437.4 85.6269 437.284 85.486 437.173 85.3408C425.74 70.3189 420.986 60.3296 418.382 50.849C417.279 46.8306 416.585 42.9704 415.914 39.2415L415.644 37.7456C414.871 33.4898 414.012 29.0867 412.473 23.8259C412.435 23.6974 412.401 23.5679 412.37 23.4375C410.033 13.4086 408.321 9.50704 406.611 6.12511C409.071 5.85002 411.529 5.55875 413.979 5.2531C416.533 4.93766 419.096 4.70201 421.664 4.54651C423.116 8.19634 424.711 13.0562 426.333 19.9765C428.05 25.8809 429.005 30.8109 429.796 35.1763L430.073 36.7046C430.756 40.4928 431.331 43.6878 432.252 47.0391C434.226 54.2255 437.91 62.5248 448.448 76.4032C456.47 85.303 470.444 92.2665 487.4 99.0519C492.494 101.089 497.87 103.115 503.319 105.165C515.392 109.714 527.838 114.399 538.403 119.68C544.028 122.494 550.968 125.512 558.543 128.808C562.847 130.67 567.139 132.557 571.42 134.47C579.09 137.909 586.961 141.622 593.934 145.532C595.236 146.967 596.266 148.317 596.857 149.499C597.715 151.221 595.861 153.364 593.982 155.534C592.549 157.19 591.102 158.862 590.832 160.378Z" fill="#D41AC5"/>
++<path d="M582.77 115.573C571.073 110.39 561.353 102.531 553.509 96.188C551.856 94.8439 550.192 93.5146 548.516 92.2001C541.139 86.4629 535.858 78.32 531.585 71.7305L530.981 70.801C528.672 67.2483 526.648 64.1846 524.56 61.6225C522.476 59.0694 520.633 57.4063 518.888 56.4354C513.158 53.2513 508.069 50.8546 503.289 48.6899C502.262 48.2242 501.234 47.7639 500.211 47.3054C496.55 45.6639 492.927 44.0404 489.45 42.2712C480.176 37.548 471.584 31.631 461.717 20.1205C461.578 19.9589 461.447 19.791 461.325 19.6171C456.432 12.7669 453.583 8.11385 451.711 4.63123C457.34 4.78585 462.962 4.89193 468.551 4.7391C469.941 6.85342 471.373 8.94062 472.844 10.9995C481.285 20.793 488.288 25.5377 495.975 29.4519C499.105 31.0448 502.298 32.476 505.892 34.0888C506.964 34.5688 508.071 35.065 509.222 35.5864C514.159 37.8213 519.65 40.4049 525.874 43.8642C529.853 46.0757 533.045 49.2688 535.706 52.5303C538.361 55.7882 540.79 59.4973 543.041 62.962L543.081 63.0213C547.804 70.2922 551.921 76.6263 557.346 80.8461C559.253 82.3373 561.149 83.8428 563.034 85.3626C570.8 91.5888 578.702 97.9266 587.781 102.089C587.49 105.609 585.216 110.701 582.77 115.573Z" fill="#D41AC5"/>
++<path d="M572.688 40.7073C569.96 39.4926 567.23 38.2831 564.497 37.0791C552.729 31.8884 544.809 28.395 536.659 23.5046C528.867 18.8299 523.658 13.7184 519.721 9.25947C518.51 7.87711 517.322 6.47574 516.155 5.05588C515.71 4.51686 515.261 3.97986 514.811 3.44492C514.232 2.75467 513.636 2.07903 513.023 1.41863C518.994 1.13096 525.302 0.9242 531.515 0.864868C534.642 4.27197 538.518 7.84809 544.06 11.1707C551.395 15.5721 558.199 18.5728 569.432 23.528L569.745 23.6664C569.762 23.6789 569.779 23.6909 569.797 23.7024C571.823 25.0814 573.97 26.5431 574.982 28.5694C576.525 31.6547 575.204 34.6788 573.907 37.649C573.458 38.6739 573.012 39.6951 572.688 40.7073Z" fill="#D41AC5"/>
++</svg>

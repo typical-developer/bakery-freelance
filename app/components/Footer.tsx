@@ -1,5 +1,6 @@
 import Link from "next/link";
-import Wordmark from "./Wordmark";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
+import Logo from "./Logo";
 import { INSTAGRAM, WHATSAPP } from "../site";
 
 export default function Footer() {
@@ -7,7 +8,7 @@ export default function Footer() {
     <footer className="section--footer">
       <div className="container">
         <div className="footer-top">
-          <Wordmark className="footer-logo" />
+          <Logo className="footer-logo" sizes="(min-width: 640px) 22rem, 80vw" />
           <p className="lead">Baked fresh in Port Harcourt. Same-day delivery, every day.</p>
           <ul className="footer-links">
             <li>
@@ -18,11 +19,13 @@ export default function Footer() {
             </li>
             <li>
               <a href={WHATSAPP} target="_blank" rel="noreferrer">
+                <FaWhatsapp className="link-icon" aria-hidden="true" />
                 Order on WhatsApp
               </a>
             </li>
             <li>
               <a href={INSTAGRAM} target="_blank" rel="noreferrer">
+                <FaInstagram className="link-icon" aria-hidden="true" />
                 @lacravebakery
               </a>
             </li>

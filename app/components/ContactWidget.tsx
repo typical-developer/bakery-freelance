@@ -1,8 +1,9 @@
 "use client";
 
 import gsap from "gsap";
+import { MessageCircle, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { INSTAGRAM, WHATSAPP } from "../site";
+import SocialButton from "./SocialButton";
 
 /** Floating contact widget in the brand colour. One tap opens the two ways
     to reach the bakery; the options pop out of the button one by one. */
@@ -71,26 +72,14 @@ export default function ContactWidget() {
     <div className="widget" ref={root} data-open={open}>
       <ul className="widget-panel" id="contact-panel" aria-hidden={!open}>
         <li>
-          <a
-            href={WHATSAPP}
-            target="_blank"
-            rel="noreferrer"
-            className="btn"
-            tabIndex={open ? 0 : -1}
-          >
-            order on whatsapp
-          </a>
+          <SocialButton network="whatsapp" tabIndex={open ? 0 : -1}>
+            dm on whatsapp
+          </SocialButton>
         </li>
         <li>
-          <a
-            href={INSTAGRAM}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn--white"
-            tabIndex={open ? 0 : -1}
-          >
+          <SocialButton network="instagram" tabIndex={open ? 0 : -1}>
             dm on instagram
-          </a>
+          </SocialButton>
         </li>
       </ul>
       <button
@@ -101,9 +90,7 @@ export default function ContactWidget() {
         aria-controls="contact-panel"
         onClick={() => setOpen((value) => !value)}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M20 12a7.5 7.5 0 0 1-10.9 6.7L4 20l1.4-4.4A7.5 7.5 0 1 1 20 12Z" />
-        </svg>
+        {open ? <X aria-hidden="true" /> : <MessageCircle aria-hidden="true" />}
         message us
       </button>
     </div>

@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import Logo from "./Logo";
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, SplitText);
 
@@ -229,15 +230,11 @@ export default function Motion() {
 
       /* ---------- intro: the tray lid ---------- */
       if (playIntro && intro.current) {
-        const word = intro.current.querySelector<HTMLElement>("[data-intro-word]");
         const mark = intro.current.querySelector<HTMLElement>(".intro-mark");
-        const square = intro.current.querySelector<HTMLElement>(".intro-square");
-        if (word && mark && square) {
-          const split = SplitText.create(word, { type: "chars", mask: "chars" });
+        if (mark) {
           gsap
             .timeline({ onComplete: () => root.classList.remove("intro-on") })
-            .from(split.chars, { yPercent: 118, duration: 0.95, ease: "expo.out", stagger: 0.05 }, 0.1)
-            .from(square, { scale: 0, rotate: -120, duration: 0.8, ease: "back.out(2.4)" }, 0.55)
+            .from(mark, { yPercent: 40, scale: 0.85, opacity: 0, duration: 0.95, ease: "expo.out" }, 0.1)
             .to(mark, { yPercent: -60, duration: 0.9, ease: "expo.inOut" }, 1)
             .to(intro.current, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 1);
         }
@@ -507,17 +504,6 @@ export default function Motion() {
           },
         });
 
-        /* The square in the logo turns a full circle over the whole page. */
-        const squares = all<SVGRectElement>(".navbar .logo-mark rect");
-        if (squares.length) {
-          gsap.to(squares, {
-            rotation: 360,
-            transformOrigin: "50% 50%",
-            ease: "none",
-            scrollTrigger: { trigger: document.body, start: "top top", end: "bottom bottom", scrub: 0.6 },
-          });
-        }
-
         /* Mobile menu: links drop in one after another. */
         let wasOpen = false;
         const observer = new MutationObserver(() => {
@@ -703,8 +689,7 @@ export default function Motion() {
     <>
       <div className="intro" ref={intro} aria-hidden="true">
         <div className="intro-mark">
-          <span data-intro-word>LA CRAVE</span>
-          <span className="intro-square" />
+          <Logo className="intro-logo" sizes="(min-width: 640px) 28rem, 70vw" priority />
         </div>
       </div>
       <div className="curtain" ref={curtain} aria-hidden="true">

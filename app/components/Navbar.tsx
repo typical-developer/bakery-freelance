@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import Wordmark from "./Wordmark";
+import Logo from "./Logo";
 import { INSTAGRAM, WHATSAPP } from "../site";
 
 export default function Navbar() {
@@ -24,7 +24,7 @@ export default function Navbar() {
     <header className={open ? "navbar is-open" : "navbar"}>
       <div className="nav-inner">
         <Link href="/" className="brand brand--mobile" aria-label="La Crave home">
-          <Wordmark className="logo-mark" />
+          <Logo className="logo-mark" sizes="6rem" priority />
         </Link>
         <nav
           id="nav-menu"
@@ -46,7 +46,7 @@ export default function Navbar() {
             </Link>
           </div>
           <Link href="/" className="brand brand--desktop" aria-label="La Crave home">
-            <Wordmark className="logo-mark" />
+            <Logo className="logo-mark" sizes="6rem" priority />
           </Link>
           <div className="nav-group">
             <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="nav-link">

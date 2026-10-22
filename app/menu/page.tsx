@@ -3,6 +3,7 @@ import Link from "next/link";
 import Arrow from "../components/Arrow";
 import CtaSection from "../components/CtaSection";
 import PhotoCard from "../components/PhotoCard";
+import SocialButton from "../components/SocialButton";
 import { MENU } from "../menu-data";
 import { WHATSAPP } from "../site";
 
@@ -44,9 +45,7 @@ export default function MenuPage() {
               a message. We will take it from there.
             </p>
             <div className="actions" style={{ justifyContent: "center" }} data-hero-item>
-              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
-                order on whatsapp
-              </a>
+              <SocialButton network="whatsapp">order on whatsapp</SocialButton>
               <Link href="/" className="link-arrow">
                 <Arrow dir="left" />
                 back home

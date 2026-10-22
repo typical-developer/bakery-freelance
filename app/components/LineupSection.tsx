@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Arrow from "./Arrow";
 import PhotoCard from "./PhotoCard";
+import SocialButton from "./SocialButton";
 import { FEATURED_IDS, MENU } from "../menu-data";
 import { WHATSAPP } from "../site";
 
@@ -24,9 +25,7 @@ export default function LineupSection() {
               message and we&apos;ll get it to you the same day.
             </p>
             <div className="actions" data-fade>
-              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
-                order on whatsapp
-              </a>
+              <SocialButton network="whatsapp">order on whatsapp</SocialButton>
               <Link href="/menu" className="link-arrow">
                 see more
                 <Arrow />

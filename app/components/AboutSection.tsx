@@ -3,7 +3,7 @@ import { INSTAGRAM } from "../site";
 
 export default function AboutSection() {
   return (
-    <section className="section section--torn section--peach" id="about">
+    <section className="section section--torn section--brand" id="about">
       <div className="container split">
         <div className="about-media">
           <PhotoCard

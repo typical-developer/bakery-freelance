@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PhotoCard from "./PhotoCard";
-import { WHATSAPP } from "../site";
+import SocialButton from "./SocialButton";
 
 function Badge() {
   return (
@@ -31,9 +31,9 @@ export default function HeroSection() {
     <section className="section--hero">
       <div className="container hero-grid">
         <div className="hero-copy">
-          <span className="eyebrow" data-hero-item>
+          {/* <span className="eyebrow" data-hero-item>
             Port Harcourt bakery
-          </span>
+          </span> */}
           <h1 className="display-1" data-split>
             flaky pastries, beautiful cakes
           </h1>
@@ -46,9 +46,7 @@ export default function HeroSection() {
             <Link href="/menu" className="btn">
               explore our menu
             </Link>
-            <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn btn--ghost">
-              order on whatsapp
-            </a>
+            <SocialButton network="whatsapp">order on whatsapp</SocialButton>
           </div>
           <ul className="hero-meta" data-hero-item>
             <li>Baked to order</li>

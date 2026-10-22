@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { INSTAGRAM, WHATSAPP } from "../site";
+import SocialButton from "./SocialButton";
 
 export default function CtaSection() {
   return (
-    <section className="section section--torn section--peach">
+    <section className="section section--torn section--brand">
       <div className="container">
         <div className="cta-card" data-reveal>
           <div className="cta-inner">
@@ -24,12 +24,8 @@ export default function CtaSection() {
                   take your order from there. Same-day delivery in Port Harcourt.
                 </p>
                 <div className="actions">
-                  <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
-                    order on whatsapp
-                  </a>
-                  <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="btn btn--ghost">
-                    message on instagram
-                  </a>
+                  <SocialButton network="whatsapp">order on whatsapp</SocialButton>
+                  <SocialButton network="instagram">message on instagram</SocialButton>
                 </div>
               </div>
             </div>

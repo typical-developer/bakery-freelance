@@ -8,8 +8,9 @@
   --bg: #fff3e3;
   --ink: #2c2c2d;
   --ink-2: #55555a;
-  /* Brand colour. Used for the small, recurring marks (the square, tags, tape,
-     the contact widget), never for large flat areas, so it stays a signature. */
+  /* Brand colour. It is meant to be loud: full-bleed sections, buttons, the
+     navbar, headings, card stacks, the contact widget. Light sections use it
+     as ink; brand sections (see below) flip text to white. */
   --brand: #d41ac5;
   --on-brand: #fff;
   --pink: var(--brand);
@@ -17,6 +18,29 @@
   --yellow: #ffe156;
   --peach: #ffc8a2;
   --white: #fff;
+
+  /* Social brand colours */
+  --whatsapp: #25d366;
+  --whatsapp-ink: #073b1d;
+  --instagram: radial-gradient(
+    circle at 30% 107%,
+    #fdf497 0%,
+    #fdf497 5%,
+    #fd5949 45%,
+    #d6249f 60%,
+    #285aeb 90%
+  );
+
+  /* Contextual colours. Light sections use these defaults; .section--hero,
+     .section--footer and .section--brand re-point them for brand backgrounds,
+     and white cards re-point them back. */
+  --fg: var(--ink);
+  --fg-2: var(--ink-2);
+  --head: var(--brand);
+  --sq: var(--brand);
+  --stack: var(--brand);
+  --btn-bg: var(--brand);
+  --btn-fg: var(--on-brand);
 
   --container: 78rem;
   --gutter: clamp(1.25rem, 5vw, 2.5rem);
@@ -73,6 +97,7 @@ h2,
 h3 {
   font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 400;
+  color: var(--head);
   text-wrap: balance;
 }
 p {
@@ -95,8 +120,8 @@ button {
   cursor: pointer;
 }
 ::selection {
-  background: var(--brand);
-  color: var(--on-brand);
+  background: var(--yellow);
+  color: var(--ink);
 }
 :focus-visible {
   outline: 3px solid var(--ink);
@@ -123,13 +148,13 @@ button {
 .lead {
   font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
   line-height: 1.6;
-  color: var(--ink-2);
+  color: var(--fg-2);
   max-width: 34rem;
 }
 .small {
   font-size: 0.9375rem;
   line-height: 1.55;
-  color: var(--ink-2);
+  color: var(--fg-2);
 }
 .eyebrow {
   display: inline-flex;
@@ -139,14 +164,14 @@ button {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--fg);
 }
 .eyebrow::before {
   content: "";
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.625rem;
+  height: 0.625rem;
   border-radius: 2px;
-  background: var(--pink);
+  background: var(--sq);
   transform: scale(var(--sq-s, 1)) rotate(var(--sq-r, 0deg));
 }
 
@@ -168,8 +193,8 @@ button {
   background-repeat: no-repeat;
   background-size: cover;
 }
-.section--peach {
-  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-peach.svg");
+.section--brand {
+  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-brand.svg");
   background-size:
     15rem 15rem,
     cover;
@@ -181,7 +206,7 @@ button {
 .section--hero {
   padding-top: clamp(8.5rem, 15vw, 12rem);
   padding-bottom: clamp(7rem, 14vw, 12rem);
-  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-bottom.svg");
+  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-brand-bottom.svg");
   background-position:
     0 0,
     50% 100%;
@@ -193,7 +218,7 @@ button {
 .section--footer {
   padding-top: clamp(7rem, 14vw, 11rem);
   padding-bottom: 5.5rem;
-  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-top.svg");
+  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-brand-top.svg");
   background-position:
     0 0,
     50% 0;
@@ -203,6 +228,39 @@ button {
     cover;
   position: relative;
   z-index: 2;
+}
+/* Brand sections: the brand colour fills the whole band, text goes white. */
+.section--hero,
+.section--footer,
+.section--brand {
+  --fg: var(--white);
+  --fg-2: rgb(255 255 255 / 0.94);
+  --head: var(--white);
+  --sq: var(--yellow);
+  --stack: var(--yellow);
+  --btn-bg: var(--yellow);
+  --btn-fg: var(--ink);
+  color: var(--fg);
+}
+/* White cards sit on top of those sections and go back to ink. */
+.photo-card-inner,
+.step {
+  --fg: var(--ink);
+  --fg-2: var(--ink-2);
+  --head: var(--ink);
+  --sq: var(--brand);
+  --btn-bg: var(--brand);
+  --btn-fg: var(--on-brand);
+  color: var(--fg);
+}
+.cta-inner {
+  --fg: var(--ink);
+  --fg-2: var(--ink-2);
+  --head: var(--brand);
+  --sq: var(--brand);
+  --btn-bg: var(--brand);
+  --btn-fg: var(--on-brand);
+  color: var(--fg);
 }
 .section-head {
   display: grid;
@@ -259,8 +317,8 @@ button {
   padding: 0.5rem 1.5rem;
   border: 1.5px solid var(--ink);
   border-radius: 999px;
-  background: var(--yellow);
-  color: var(--ink);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.125rem;
   letter-spacing: 0.02em;
@@ -289,12 +347,31 @@ button {
 }
 .btn--ghost {
   background: transparent;
+  color: var(--fg);
+  border-color: var(--fg);
   box-shadow: none;
 }
 .btn--ghost:hover {
   background: var(--white);
+  color: var(--ink);
   translate: none;
   box-shadow: none;
+}
+.btn--whatsapp {
+  background: var(--whatsapp);
+  color: var(--whatsapp-ink);
+}
+.btn--instagram {
+  background: var(--instagram);
+  color: var(--white);
+}
+.btn-icon {
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+}
+.btn--whatsapp .btn-icon {
+  color: var(--white);
 }
 .btn--sm {
   min-height: 2.75rem;
@@ -313,14 +390,14 @@ button {
 }
 .link-arrow,
 .footer-links a {
-  text-decoration-color: rgb(44 44 45 / 0.5);
+  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
   transition:
     text-decoration-color 0.25s,
     text-underline-offset 0.35s var(--ease-out);
 }
 .link-arrow:hover,
 .footer-links a:hover {
-  text-decoration-color: var(--pink);
+  text-decoration-color: var(--sq);
   text-underline-offset: 0.45em;
 }
 .link-arrow svg {
@@ -341,9 +418,10 @@ button {
   max-width: 44rem;
   margin-inline: auto;
   padding: 0.5rem 0.75rem;
-  border: 1px solid rgb(44 44 45 / 0.14);
+  border: 1.5px solid var(--brand);
   border-radius: 999px;
-  background: rgb(255 243 227 / 0.78);
+  background: rgb(255 243 227 / 0.92);
+  box-shadow: 0 3px 0 var(--brand);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   backdrop-filter: saturate(180%) blur(16px);
   transition:
@@ -351,8 +429,9 @@ button {
     border-color 0.3s;
 }
 .navbar.is-scrolled {
-  box-shadow: var(--shadow-md);
-  border-color: rgb(44 44 45 / 0.22);
+  box-shadow:
+    0 3px 0 var(--brand),
+    var(--shadow-md);
 }
 .nav-inner {
   display: flex;
@@ -374,7 +453,7 @@ button {
   width: 0;
   height: 0;
   border-radius: 999px;
-  background: rgb(44 44 45 / 0.08);
+  background: rgb(212 26 197 / 0.14);
   opacity: 0;
   pointer-events: none;
 }
@@ -401,19 +480,23 @@ button {
 }
 .nav-link:hover,
 .nav-link[aria-current="page"] {
-  background: rgb(44 44 45 / 0.07);
+  background: rgb(212 26 197 / 0.14);
 }
 .navbar.has-glide .nav-link:not(.nav-link--cta):hover,
 .navbar.has-glide .nav-link[aria-current="page"]:not(.nav-link--cta) {
   background: transparent;
 }
+.nav-link--cta,
+.nav-link--cta:hover,
+.navbar.has-glide .nav-link--cta:hover {
+  background: var(--brand);
+  color: var(--on-brand);
+}
 .nav-link--cta {
-  background: var(--yellow);
   border: 1.5px solid var(--ink);
 }
 .nav-link--cta:hover {
-  background: var(--yellow);
-  filter: brightness(0.96);
+  filter: brightness(1.12);
 }
 .brand {
   display: inline-flex;
@@ -424,7 +507,7 @@ button {
 .logo-mark {
   display: block;
   width: auto;
-  height: 1.5rem;
+  height: 2.25rem;
 }
 .brand--mobile,
 .nav-toggle {
@@ -446,7 +529,7 @@ button {
   height: 2px;
   margin-left: -0.625rem;
   border-radius: 2px;
-  background: var(--ink);
+  background: var(--brand);
   transition: transform 0.35s var(--ease-out);
 }
 .nav-toggle::before {
@@ -483,7 +566,7 @@ button {
   list-style: none;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ink-2);
+  color: var(--fg-2);
 }
 .hero-meta li {
   display: inline-flex;
@@ -495,7 +578,7 @@ button {
   width: 0.375rem;
   height: 0.375rem;
   border-radius: 50%;
-  background: var(--pink);
+  background: var(--sq);
 }
 .hero-media {
   position: relative;
@@ -580,7 +663,7 @@ button {
   inset: 0.5rem 0.75rem -0.375rem;
   z-index: -2;
   border-radius: var(--radius-lg);
-  background: var(--white);
+  background: var(--stack);
   box-shadow: var(--shadow-sm);
   transform: rotate(calc(var(--tilt) * -1.7));
   transition: transform 0.6s var(--ease-out);
@@ -592,7 +675,6 @@ button {
   background-image: url("/icons/washi-brand.svg");
 }
 .hero-media .photo-card::after {
-  background: var(--brand);
   inset: 0.25rem 0.5rem -0.5rem;
 }
 .photo-card-inner {
@@ -636,6 +718,7 @@ button {
   font-variant-numeric: tabular-nums;
   gap: 0.125rem;
   font-weight: 600;
+  color: var(--brand);
   white-space: nowrap;
 }
 .price small {
@@ -655,7 +738,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--brand);
 }
 .tag {
   position: absolute;
@@ -831,7 +914,8 @@ a.photo-card:focus-visible {
     translate 0.25s var(--ease-out);
 }
 .round-btn:hover {
-  background: var(--yellow);
+  background: var(--brand);
+  color: var(--on-brand);
 }
 .round-btn:active {
   translate: 0 2px;
@@ -852,14 +936,14 @@ a.photo-card:focus-visible {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 999px;
-  background: rgb(44 44 45 / 0.25);
+  background: rgb(212 26 197 / 0.3);
   transition:
     width 0.4s var(--ease-out),
     background-color 0.3s;
 }
 .dot[aria-current="true"]::before {
   width: 1.5rem;
-  background: var(--ink);
+  background: var(--brand);
 }
 
 /* ---------- cta ---------- */
@@ -885,7 +969,7 @@ a.photo-card:focus-visible {
   inset: 0;
   z-index: -2;
   border-radius: var(--radius-lg);
-  background: var(--brand);
+  background: var(--white);
   transform: rotate(calc(var(--tilt, 2deg) * -1.5));
   box-shadow: var(--shadow-sm);
 }
@@ -969,7 +1053,8 @@ a.photo-card:focus-visible {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: var(--mint);
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.25rem;
   transform: scale(var(--pop, 1)) rotate(var(--pop-r, 0deg));
@@ -983,8 +1068,17 @@ a.photo-card:focus-visible {
   text-align: center;
 }
 .footer-logo {
-  width: min(100%, 28rem);
+  width: min(100%, 22rem);
   height: auto;
+  /* the logo knocked out in white, for the brand-colour footer */
+  filter: brightness(0) invert(1);
+}
+.link-icon {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-right: 0.5rem;
+  text-decoration: none;
 }
 .footer-links {
   display: flex;
@@ -1007,13 +1101,13 @@ a.photo-card:focus-visible {
 .footer-base {
   margin-top: 4rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgb(44 44 45 / 0.18);
+  border-top: 1px solid rgb(255 255 255 / 0.4);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
   font-size: 0.875rem;
-  color: var(--ink-2);
+  color: var(--fg-2);
 }
 
 /* ---------- contact widget ---------- */
@@ -1041,18 +1135,25 @@ a.photo-card:focus-visible {
   font-size: 1.25rem;
   letter-spacing: 0.03em;
   line-height: 1;
-  box-shadow: 0 3px 0 var(--ink);
+  /* a white ring keeps it readable on the brand-colour sections too */
+  box-shadow:
+    0 3px 0 var(--ink),
+    0 0 0 3px var(--white);
   transition:
     translate 0.25s var(--ease-out),
     box-shadow 0.25s var(--ease-out);
 }
 .widget-toggle:hover {
   translate: 0 2px;
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow:
+    0 1px 0 var(--ink),
+    0 0 0 3px var(--white);
 }
 .widget-toggle:active {
   translate: 0 3px;
-  box-shadow: 0 0 0 var(--ink);
+  box-shadow:
+    0 0 0 var(--ink),
+    0 0 0 3px var(--white);
 }
 .widget-toggle:focus-visible {
   outline-color: var(--ink);
@@ -1071,7 +1172,7 @@ a.photo-card:focus-visible {
   position: absolute;
   inset: -1.5px;
   border-radius: inherit;
-  border: 1.5px solid var(--brand);
+  border: 2px solid var(--yellow);
   opacity: 0;
   pointer-events: none;
   animation: widget-ping 4.5s var(--ease-out) 3s infinite;
@@ -1121,24 +1222,16 @@ html.intro-on .intro {
   animation: intro-failsafe 0.01s 5s forwards;
 }
 .intro {
-  background: var(--yellow);
+  background: var(--brand);
   border-radius: 0 0 50% 50% / 0 0 7vh 7vh;
 }
 .intro-mark {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 0.02em;
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-size: clamp(3.5rem, 14vw, 9rem);
-  line-height: 1;
-  letter-spacing: 0.01em;
-  color: var(--ink);
 }
-.intro-square {
-  width: 0.147em;
-  height: 0.147em;
-  border-radius: 0.036em;
-  background: var(--pink);
+.intro-logo {
+  width: clamp(14rem, 50vw, 28rem);
+  height: auto;
+  filter: brightness(0) invert(1);
 }
 @keyframes intro-failsafe {
   to {

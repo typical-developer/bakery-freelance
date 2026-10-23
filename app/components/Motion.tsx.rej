@@ -1,0 +1,9 @@
+diff a/app/components/Motion.tsx b/app/components/Motion.tsx	(rejected hunks)
+@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
+ import { SplitText } from "gsap/SplitText";
+ import { usePathname, useRouter } from "next/navigation";
+ import { useEffect, useRef } from "react";
++import Wordmark from "./Wordmark";
+ 
+ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, SplitText);
+ 

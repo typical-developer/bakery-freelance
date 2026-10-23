@@ -1,0 +1,1562 @@
+diff --git a/README.md b/README.md
+index e215bc4..d07b5e8 100644
+--- a/README.md
++++ b/README.md
+@@ -34,3 +34,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
+ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ 
+ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
++
++## Adding your own photos and videos
++
++Drop files into these folders inside `public/`. No code changes are needed.
++
++| Folder | What it does |
++| --- | --- |
++| `public/menu/` | Menu photos. A file named after an item replaces that item's photo (`meat-pies.jpg`, `Banana Bread.webp`, `custom-cake-2.jpg`). Any other file becomes its own menu card, named after the file (`04_chin-chin.jpg` becomes "Chin Chin"). |
++| `public/gallery/` | Gallery photos. They fill the gallery page (first 12), the home hero carousel and the photo band above the footer. Until you add some, the menu photos and then the placeholder images are used. |
++| `public/creators/` | Creator spotlight videos (`mp4`, `webm`, `m4v`, `mov`, vertical works best). An optional image with the same name (`ada-okafor.jpg`) is the thumbnail. Add a name, handle, link and quote in `app/creators.ts`. |
++
++The folder names live at the top of `app/media.ts` if you want different ones.
+diff --git a/app/about/page.tsx b/app/about/page.tsx
+new file mode 100644
+index 0000000..e7dbf0d
+--- /dev/null
++++ b/app/about/page.tsx
+@@ -0,0 +1,49 @@
++import type { Metadata } from "next";
++import Link from "next/link";
++import AboutSection from "../components/AboutSection";
++import Arrow from "../components/Arrow";
++import CtaSection from "../components/CtaSection";
++import HowItWorks from "../components/HowItWorks";
++import { WHATSAPP } from "../site";
++
++export const metadata: Metadata = {
++  title: "About",
++  description:
++    "La Crave is a small-batch bakery in Port Harcourt. Meat pies, custom cakes, banana bread and brownies, baked fresh to order and delivered the same day.",
++};
++
++export default function AboutPage() {
++  return (
++    <>
++      <section className="section--hero">
++        <div className="container">
++          <div className="section-head">
++            <span className="eyebrow" data-hero-item>
++              About us
++            </span>
++            <h1 className="display-1" data-split>
++              the bakery behind the meat pies
++            </h1>
++            <p className="lead" data-hero-item>
++              A small-batch bakery in Port Harcourt, baking fresh to order and
++              delivering the same day.
++            </p>
++            <div className="actions" style={{ justifyContent: "center" }} data-hero-item>
++              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
++                order on whatsapp
++              </a>
++              <Link href="/menu" className="link-arrow">
++                see the menu
++                <Arrow />
++              </Link>
++            </div>
++          </div>
++        </div>
++      </section>
++
++      <AboutSection showLink={false} />
++      <HowItWorks />
++      <CtaSection />
++    </>
++  );
++}
+diff --git a/app/components/AboutSection.tsx b/app/components/AboutSection.tsx
+index 81491a5..41df404 100644
+--- a/app/components/AboutSection.tsx
++++ b/app/components/AboutSection.tsx
+@@ -1,7 +1,8 @@
++import Link from "next/link";
+ import PhotoCard from "./PhotoCard";
+-import { INSTAGRAM } from "../site";
+ 
+-export default function AboutSection() {
++/** The story. On the home page it links on to /about; on /about itself the link is dropped. */
++export default function AboutSection({ showLink = true }: { showLink?: boolean }) {
+   return (
+     <section className="section section--torn section--peach" id="about">
+       <div className="container split">
+@@ -27,11 +28,13 @@ export default function AboutSection() {
+             Everything is baked fresh to order, packed with care, and delivered
+             the same day.
+           </p>
+-          <div className="actions" data-fade>
+-            <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="btn">
+-              about us
+-            </a>
+-          </div>
++          {showLink ? (
++            <div className="actions" data-fade>
++              <Link href="/about" className="btn">
++                more about us
++              </Link>
++            </div>
++          ) : null}
+         </div>
+       </div>
+     </section>
+diff --git a/app/components/BgCarousel.tsx b/app/components/BgCarousel.tsx
+new file mode 100644
+index 0000000..9d790a9
+--- /dev/null
++++ b/app/components/BgCarousel.tsx
+@@ -0,0 +1,78 @@
++"use client";
++
++import Image from "next/image";
++import { useEffect, useRef, useState, type CSSProperties } from "react";
++
++type Props = {
++  images: { src: string }[];
++  /** Milliseconds each photo stays up. */
++  interval?: number;
++  /** Which photo shows first, so two carousels on one page never match. */
++  start?: number;
++  sizes?: string;
++  /** Preload the first photo (use for the hero). */
++  priority?: boolean;
++};
++
++const FADE = 1400;
++
++/** Full-bleed photo carousel for section backgrounds. Photos dissolve into
++    each other with a slow push-in. It only runs while it is on screen and
++    the tab is visible, and holds still for prefers-reduced-motion. */
++export default function BgCarousel({ images, interval = 5500, start = 0, sizes = "100vw", priority }: Props) {
++  const count = images.length;
++  const root = useRef<HTMLDivElement>(null);
++  const [pos, setPos] = useState({ index: count ? start % count : 0, prev: -1 });
++
++  useEffect(() => {
++    const element = root.current;
++    if (!element || count < 2) return;
++    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
++
++    let onScreen = false;
++    let timer = 0;
++    const stop = () => window.clearInterval(timer);
++    const sync = () => {
++      stop();
++      if (onScreen && !document.hidden) {
++        timer = window.setInterval(
++          () => setPos((current) => ({ index: (current.index + 1) % count, prev: current.index })),
++          interval,
++        );
++      }
++    };
++    const observer = new IntersectionObserver(([entry]) => {
++      onScreen = entry.isIntersecting;
++      sync();
++    });
++    observer.observe(element);
++    document.addEventListener("visibilitychange", sync);
++    return () => {
++      observer.disconnect();
++      document.removeEventListener("visibilitychange", sync);
++      stop();
++    };
++  }, [count, interval]);
++
++  if (!count) return null;
++
++  return (
++    <div
++      className="bg-carousel"
++      ref={root}
++      aria-hidden="true"
++      style={{ "--fade": `${FADE}ms`, "--push": `${interval + FADE + 600}ms` } as CSSProperties}
++    >
++      {images.map((image, index) => (
++        <div
++          key={image.src}
++          className={
++            index === pos.index ? "bg-slide is-active" : index === pos.prev ? "bg-slide is-prev" : "bg-slide"
++          }
++        >
++          <Image src={image.src} alt="" fill sizes={sizes} priority={priority && index === start % count} />
++        </div>
++      ))}
++    </div>
++  );
++}
+diff --git a/app/components/CategoriesSection.tsx b/app/components/CategoriesSection.tsx
+index da7cd82..0d6b50b 100644
+--- a/app/components/CategoriesSection.tsx
++++ b/app/components/CategoriesSection.tsx
+@@ -1,7 +1,7 @@
+ import Link from "next/link";
+ import Arrow from "./Arrow";
+ import PhotoCard from "./PhotoCard";
+-import { CATEGORIES } from "../menu-data";
++import { getCategories } from "../media";
+ 
+ export default function CategoriesSection() {
+   return (
+@@ -23,7 +23,7 @@ export default function CategoriesSection() {
+         </div>
+         <div className="section-gap" />
+         <div className="grid-3">
+-          {CATEGORIES.map((category, index) => (
++          {getCategories().map((category, index) => (
+             <PhotoCard
+               key={category.title}
+               href="/menu"
+diff --git a/app/components/CreatorSpotlight.tsx b/app/components/CreatorSpotlight.tsx
+new file mode 100644
+index 0000000..5bc0e25
+--- /dev/null
++++ b/app/components/CreatorSpotlight.tsx
+@@ -0,0 +1,68 @@
++import CreatorVideo from "./CreatorVideo";
++import PhotoCard from "./PhotoCard";
++import { getCreators } from "../media";
++
++/** Content-creator spotlight. Videos come from /public/creators (see
++    app/creators.ts). Until some are added, "coming soon" cards hold the place. */
++export default function CreatorSpotlight() {
++  const creators = getCreators();
++  return (
++    <section className="section section--torn section--mint" id="creators">
++      <div className="container">
++        <div className="section-head">
++          <span className="eyebrow" data-fade>
++            Creator spotlight
++          </span>
++          <h2 className="display-2" data-split>
++            the creators craving la crave
++          </h2>
++          <p className="lead" data-fade>
++            Content creators share their favourite La Crave moments. Press play,
++            then place an order of your own.
++          </p>
++        </div>
++        <div className="section-gap" />
++        <div className="creator-row">
++          {creators.map((creator, index) => (
++            <PhotoCard
++              key={creator.id}
++              flip={index % 2 === 1}
++              media={
++                creator.video ? (
++                  <CreatorVideo src={creator.video} poster={creator.poster} label={creator.name} />
++                ) : (
++                  <div className="creator-soon">
++                    <span className="creator-play" aria-hidden="true">
++                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
++                        <path d="M8 5v14l11-7z" />
++                      </svg>
++                    </span>
++                    <span>Video coming soon</span>
++                  </div>
++                )
++              }
++            >
++              {creator.video ? (
++                <div className="photo-card-body">
++                  <div className="photo-card-row">
++                    <h3 className="title-3">{creator.name}</h3>
++                    {creator.handle ? (
++                      creator.href ? (
++                        <a href={creator.href} target="_blank" rel="noreferrer" className="creator-handle">
++                          {creator.handle}
++                        </a>
++                      ) : (
++                        <span className="creator-handle">{creator.handle}</span>
++                      )
++                    ) : null}
++                  </div>
++                  {creator.quote ? <p className="small">{creator.quote}</p> : null}
++                </div>
++              ) : null}
++            </PhotoCard>
++          ))}
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/app/components/CreatorVideo.tsx b/app/components/CreatorVideo.tsx
+new file mode 100644
+index 0000000..7406112
+--- /dev/null
++++ b/app/components/CreatorVideo.tsx
+@@ -0,0 +1,124 @@
++"use client";
++
++import { useEffect, useRef, useState } from "react";
++
++const SOUND_EVENT = "lc-creator-sound";
++
++function Icon({ path }: { path: string }) {
++  return (
++    <svg
++      width="20"
++      height="20"
++      viewBox="0 0 24 24"
++      fill="none"
++      stroke="currentColor"
++      strokeWidth="2"
++      strokeLinecap="round"
++      strokeLinejoin="round"
++      aria-hidden="true"
++    >
++      <path d={path} />
++    </svg>
++  );
++}
++
++/** A creator's video. It plays quietly on a loop while it is on screen; the
++    speaker button turns the sound on (and silences any other video), and
++    tapping the picture pauses it. Nothing autoplays for reduced motion. */
++export default function CreatorVideo({ src, poster, label }: { src: string; poster?: string; label: string }) {
++  const video = useRef<HTMLVideoElement>(null);
++  const [muted, setMuted] = useState(true);
++  const [playing, setPlaying] = useState(false);
++
++  useEffect(() => {
++    const element = video.current;
++    if (!element) return;
++    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++    const observer = new IntersectionObserver(
++      ([entry]) => {
++        if (entry.isIntersecting) {
++          if (!calm) element.play().catch(() => {});
++        } else {
++          element.pause();
++        }
++      },
++      { threshold: 0.5 },
++    );
++    observer.observe(element);
++
++    /* Another video turned its sound on: this one goes quiet. */
++    const onSound = (event: Event) => {
++      if ((event as CustomEvent<HTMLVideoElement>).detail !== element) {
++        element.muted = true;
++        setMuted(true);
++      }
++    };
++    window.addEventListener(SOUND_EVENT, onSound);
++    return () => {
++      observer.disconnect();
++      window.removeEventListener(SOUND_EVENT, onSound);
++    };
++  }, []);
++
++  const toggleSound = () => {
++    const element = video.current;
++    if (!element) return;
++    const next = !element.muted;
++    element.muted = next;
++    setMuted(next);
++    if (!next) {
++      window.dispatchEvent(new CustomEvent(SOUND_EVENT, { detail: element }));
++      element.play().catch(() => {});
++    }
++  };
++
++  const togglePlay = () => {
++    const element = video.current;
++    if (!element) return;
++    if (element.paused) element.play().catch(() => {});
++    else element.pause();
++  };
++
++  return (
++    <>
++      <video
++        ref={video}
++        className="creator-video"
++        src={src}
++        poster={poster}
++        muted
++        loop
++        playsInline
++        preload="metadata"
++        onPlay={() => setPlaying(true)}
++        onPause={() => setPlaying(false)}
++        aria-label={`Video from ${label}`}
++      />
++      <button
++        type="button"
++        className="creator-surface"
++        onClick={togglePlay}
++        aria-label={playing ? `Pause video from ${label}` : `Play video from ${label}`}
++      >
++        {playing ? null : (
++          <span className="creator-play">
++            <Icon path="M8 5v14l11-7z" />
++          </span>
++        )}
++      </button>
++      <button
++        type="button"
++        className="creator-sound"
++        onClick={toggleSound}
++        aria-label={muted ? "Turn sound on" : "Turn sound off"}
++        aria-pressed={!muted}
++      >
++        {muted ? (
++          <Icon path="M11 5 6 9H2v6h4l5 4V5zM22 9l-6 6M16 9l6 6" />
++        ) : (
++          <Icon path="M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
++        )}
++      </button>
++    </>
++  );
++}
+diff --git a/app/components/Footer.tsx b/app/components/Footer.tsx
+index 58d8345..da9c3b3 100644
+--- a/app/components/Footer.tsx
++++ b/app/components/Footer.tsx
+@@ -14,7 +14,10 @@ export default function Footer() {
+               <Link href="/menu">Menu</Link>
+             </li>
+             <li>
+-              <Link href="/#about">About</Link>
++              <Link href="/gallery">Gallery</Link>
++            </li>
++            <li>
++              <Link href="/about">About</Link>
+             </li>
+             <li>
+               <a href={WHATSAPP} target="_blank" rel="noreferrer">
+diff --git a/app/components/HeroSection.tsx b/app/components/HeroSection.tsx
+index 888641a..14a8ed6 100644
+--- a/app/components/HeroSection.tsx
++++ b/app/components/HeroSection.tsx
+@@ -1,5 +1,7 @@
+ import Link from "next/link";
++import BgCarousel from "./BgCarousel";
+ import PhotoCard from "./PhotoCard";
++import { getGallery } from "../media";
+ import { WHATSAPP } from "../site";
+ 
+ function Badge() {
+@@ -28,7 +30,10 @@ function Badge() {
+ 
+ export default function HeroSection() {
+   return (
+-    <section className="section--hero">
++    <section className="section--hero hero--photos">
++      <div className="hero-bg">
++        <BgCarousel images={getGallery()} priority />
++      </div>
+       <div className="container hero-grid">
+         <div className="hero-copy">
+           <span className="eyebrow" data-hero-item>
+diff --git a/app/components/HowItWorks.tsx b/app/components/HowItWorks.tsx
+new file mode 100644
+index 0000000..a86e881
+--- /dev/null
++++ b/app/components/HowItWorks.tsx
+@@ -0,0 +1,40 @@
++const steps = [
++  {
++    title: "Send us a message",
++    body: "Slide into our DMs or message us on WhatsApp with what you are craving and when you need it.",
++  },
++  {
++    title: "We bake it fresh",
++    body: "Everything is baked to order and packed with care, so it reaches you at its best.",
++  },
++  {
++    title: "Same-day delivery",
++    body: "We deliver across Port Harcourt the same day, every day.",
++  },
++];
++
++export default function HowItWorks() {
++  return (
++    <section className="section" style={{ paddingTop: 0 }}>
++      <div className="container">
++        <div className="section-head">
++          <span className="eyebrow" data-fade>
++            How it works
++          </span>
++          <h2 className="display-2" data-split>
++            from your message to your door
++          </h2>
++        </div>
++        <div className="section-gap" />
++        <ol className="steps">
++          {steps.map((step) => (
++            <li className="step" key={step.title} data-reveal>
++              <h3 className="title-3">{step.title}</h3>
++              <p className="small">{step.body}</p>
++            </li>
++          ))}
++        </ol>
++      </div>
++    </section>
++  );
++}
+diff --git a/app/components/Motion.tsx b/app/components/Motion.tsx
+index 6328cd0..bce855a 100644
+--- a/app/components/Motion.tsx
++++ b/app/components/Motion.tsx
+@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
+ import { SplitText } from "gsap/SplitText";
+ import { usePathname, useRouter } from "next/navigation";
+ import { useEffect, useRef } from "react";
++import Wordmark from "./Wordmark";
+ 
+ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, SplitText);
+ 
+@@ -15,33 +16,56 @@ const markSet = (elements: Element[]) =>
+   elements.forEach((element) => element.classList.add("is-set"));
+ 
+ /* ------------------------------------------------------------------
+-   Route curtain. A brand-colour sheet (with the yellow square) slides up over the
+-   page, the route changes underneath, then the sheet lifts away.
++   Route transition. A sheet slides up over the page with the La Crave logo
++   in the middle, the route changes underneath, then the logo steps aside and
++   the sheet lifts away. While it waits, the logo's square keeps turning.
+    State lives at module level so it survives the effect re-run that
+    happens when the pathname changes.
+    ------------------------------------------------------------------ */
+-const navState = { covering: false, timer: null as gsap.core.Tween | null };
++const navState = {
++  covering: false,
++  timer: null as gsap.core.Tween | null,
++  spin: null as gsap.core.Tween | null,
++};
+ 
+ const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
+-  const square = curtain.querySelector(".curtain-square");
++  const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
++  const square = curtain.querySelector<SVGRectElement>(".curtain-logo rect");
+   gsap.set(curtain, { visibility: "visible", yPercent: 100 });
++  gsap.set(logo, { opacity: 0, y: 28, scale: 0.94 });
++  gsap.set(square, { rotation: -90, transformOrigin: "50% 50%" });
+   gsap
+-    .timeline({ onComplete: onCovered })
++    .timeline({
++      onComplete: () => {
++        onCovered();
++        navState.spin?.kill();
++        navState.spin = gsap.to(square, {
++          rotation: "+=360",
++          duration: 1.4,
++          ease: "power2.inOut",
++          repeat: -1,
++          repeatDelay: 0.15,
++          transformOrigin: "50% 50%",
++        });
++      },
++    })
+     .to(curtain, { yPercent: 0, duration: 0.75, ease: "expo.inOut" })
+-    .fromTo(
+-      square,
+-      { scale: 0, rotate: -90 },
+-      { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" },
+-      0.3,
+-    );
++    .to(logo, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" }, 0.3)
++    .to(square, { rotation: 0, duration: 0.7, ease: "back.out(2.2)" }, 0.35);
+ };
+ 
+ const liftCurtain = (curtain: HTMLElement) => {
+-  const square = curtain.querySelector(".curtain-square");
++  const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
+   gsap
+-    .timeline({ onComplete: () => gsap.set(curtain, { visibility: "hidden" }) })
+-    .to(square, { scale: 0, rotate: 90, duration: 0.4, ease: "power3.in" })
+-    .to(curtain, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 0.15);
++    .timeline({
++      onComplete: () => {
++        navState.spin?.kill();
++        navState.spin = null;
++        gsap.set(curtain, { visibility: "hidden" });
++      },
++    })
++    .to(logo, { opacity: 0, y: -18, scale: 0.97, duration: 0.4, ease: "power2.in" }, 0.1)
++    .to(curtain, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 0.3);
+ };
+ 
+ /* ------------------------------------------------------------------
+@@ -225,7 +249,7 @@ export default function Motion() {
+       const playIntro = root.classList.contains("intro-on");
+       const covered = navState.covering;
+       /* When hero content should start, relative to now. */
+-      const heroAt = playIntro ? 1.2 : covered ? 0.55 : 0.1;
++      const heroAt = playIntro ? 1.2 : covered ? 0.8 : 0.1;
+ 
+       /* ---------- intro: the tray lid ---------- */
+       if (playIntro && intro.current) {
+@@ -488,14 +512,29 @@ export default function Motion() {
+       /* ---------- navbar ---------- */
+       const nav = document.querySelector<HTMLElement>(".navbar");
+       if (nav) {
++        /* The bar lives in the layout, so it outlives the page. Its hide tween is
++           created from a scroll callback, which this context does not revert: left
++           alone, a bar hidden on the old page stayed hidden on the new one. Every
++           page starts with it showing. */
++        gsap.killTweensOf(nav);
++        gsap.set(nav, { yPercent: 0 });
++        cleanups.push(() => {
++          gsap.killTweensOf(nav);
++          gsap.set(nav, { clearProps: "transform" });
++        });
++
+         let hidden = false;
++        const arrived = performance.now();
+         ScrollTrigger.create({
+           start: 0,
+           end: "max",
+           onUpdate: (self) => {
+             nav.classList.toggle("is-scrolled", self.scroll() > 12);
+             if (nav.classList.contains("is-open")) return;
+-            const shouldHide = self.direction === 1 && self.scroll() > 240;
++            /* A jump to a hash or a restored scroll position on arrival is not
++               the reader scrolling down, so it must not hide the bar. */
++            const settled = performance.now() - arrived > 1200;
++            const shouldHide = settled && self.direction === 1 && self.scroll() > 240;
+             if (shouldHide === hidden) return;
+             hidden = shouldHide;
+             gsap.to(nav, {
+@@ -708,7 +747,7 @@ export default function Motion() {
+         </div>
+       </div>
+       <div className="curtain" ref={curtain} aria-hidden="true">
+-        <span className="curtain-square" />
++        <Wordmark className="curtain-logo" />
+       </div>
+     </>
+   );
+diff --git a/app/components/Navbar.tsx b/app/components/Navbar.tsx
+index 4a9dc85..edeefb1 100644
+--- a/app/components/Navbar.tsx
++++ b/app/components/Navbar.tsx
+@@ -9,7 +9,7 @@ import { INSTAGRAM, WHATSAPP } from "../site";
+ export default function Navbar() {
+   const [open, setOpen] = useState(false);
+   const pathname = usePathname();
+-  const onMenu = pathname.startsWith("/menu");
++  const here = (href: string) => (pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined);
+ 
+   useEffect(() => {
+     if (!open) return;
+@@ -34,16 +34,15 @@ export default function Navbar() {
+         >
+           <span className="nav-glide" aria-hidden="true" />
+           <div className="nav-group">
+-            <Link href="/#about" className="nav-link">
++            <Link href="/about" className="nav-link" aria-current={here("/about")}>
+               About
+             </Link>
+-            <Link
+-              href="/menu"
+-              className="nav-link"
+-              aria-current={onMenu ? "page" : undefined}
+-            >
++            <Link href="/menu" className="nav-link" aria-current={here("/menu")}>
+               Menu
+             </Link>
++            <Link href="/gallery" className="nav-link" aria-current={here("/gallery")}>
++              Gallery
++            </Link>
+           </div>
+           <Link href="/" className="brand brand--desktop" aria-label="La Crave home">
+             <Wordmark className="logo-mark" />
+diff --git a/app/components/ParallaxBand.tsx b/app/components/ParallaxBand.tsx
+index 93beff0..437347a 100644
+--- a/app/components/ParallaxBand.tsx
++++ b/app/components/ParallaxBand.tsx
+@@ -1,16 +1,15 @@
+-import Image from "next/image";
++import BgCarousel from "./BgCarousel";
++import { getGallery } from "../media";
+ 
++/** The cut-out photo band above the footer: the gallery again, starting
++    part-way through so it never matches the hero. */
+ export default function ParallaxBand() {
++  const gallery = getGallery();
+   return (
+     <div className="band" data-band>
+       <span className="band-tear" data-band-tear aria-hidden="true" />
+       <div className="band-img" data-band-img>
+-        <Image
+-          src="/images/parallax-baker.jpg"
+-          alt="Freshly baked La Crave pastries on the counter"
+-          fill
+-          sizes="100vw"
+-        />
++        <BgCarousel images={gallery} start={Math.floor(gallery.length / 2)} interval={6500} />
+       </div>
+     </div>
+   );
+diff --git a/app/components/PhotoCard.tsx b/app/components/PhotoCard.tsx
+index a14ce12..4230412 100644
+--- a/app/components/PhotoCard.tsx
++++ b/app/components/PhotoCard.tsx
+@@ -3,9 +3,11 @@ import Link from "next/link";
+ import type { ReactNode } from "react";
+ 
+ type Props = {
+-  img: string;
+-  alt: string;
+-  sizes: string;
++  img?: string;
++  alt?: string;
++  sizes?: string;
++  /** Replaces the photo, e.g. with a video. */
++  media?: ReactNode;
+   href?: string;
+   external?: boolean;
+   tag?: string;
+@@ -19,8 +21,9 @@ type Props = {
+ /** The one card used across the site: paper stack, tape, photo, then content. */
+ export default function PhotoCard({
+   img,
+-  alt,
++  alt = "",
+   sizes,
++  media,
+   href,
+   external,
+   tag,
+@@ -40,7 +43,7 @@ export default function PhotoCard({
+       <span className="washi" aria-hidden="true" />
+       <div className="photo-card-inner">
+         <div className="photo-card-media">
+-          <Image src={img} alt={alt} fill sizes={sizes} priority={priority} />
++          {media ?? (img ? <Image src={img} alt={alt} fill sizes={sizes} priority={priority} /> : null)}
+           {tag ? <span className="tag">{tag}</span> : null}
+         </div>
+         {children}
+diff --git a/app/components/SeeMore.tsx b/app/components/SeeMore.tsx
+new file mode 100644
+index 0000000..c4bdf07
+--- /dev/null
++++ b/app/components/SeeMore.tsx
+@@ -0,0 +1,15 @@
++import Arrow from "./Arrow";
++import { INSTAGRAM } from "../site";
++
++/** "See more" under the menu and the gallery. It hands people to Instagram,
++    where the full, always-current set of photos lives. */
++export default function SeeMore({ label = "see more on instagram" }: { label?: string }) {
++  return (
++    <div className="actions" style={{ justifyContent: "center" }} data-fade>
++      <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="btn">
++        {label}
++        <Arrow />
++      </a>
++    </div>
++  );
++}
+diff --git a/app/creators.ts b/app/creators.ts
+new file mode 100644
+index 0000000..a2cc9ab
+--- /dev/null
++++ b/app/creators.ts
+@@ -0,0 +1,27 @@
++/** Optional details for the content-creator spotlight.
++ *
++ *  Drop vertical videos in /public/creators (mp4, webm, m4v or mov). Each
++ *  file becomes a card. The key below is the file name without its extension,
++ *  so "ada-okafor.mp4" is described by "ada-okafor". Everything is optional:
++ *  with no entry the name is made from the file name.
++ *
++ *  A poster image with the same name (ada-okafor.jpg) is used as the
++ *  thumbnail while the video loads. */
++export type CreatorDetails = {
++  name?: string;
++  /** e.g. "@adaeats" */
++  handle?: string;
++  /** Link for the handle, usually their Instagram or TikTok. */
++  href?: string;
++  /** One short line, shown under the video. */
++  quote?: string;
++};
++
++export const CREATOR_DETAILS: Record<string, CreatorDetails> = {
++  // "ada-okafor": {
++  //   name: "Ada Okafor",
++  //   handle: "@adaeats",
++  //   href: "https://www.instagram.com/adaeats/",
++  //   quote: "The meat pies are gone before I finish filming.",
++  // },
++};
+diff --git a/app/gallery/page.tsx b/app/gallery/page.tsx
+new file mode 100644
+index 0000000..8814811
+--- /dev/null
++++ b/app/gallery/page.tsx
+@@ -0,0 +1,67 @@
++import type { Metadata } from "next";
++import Link from "next/link";
++import Arrow from "../components/Arrow";
++import CtaSection from "../components/CtaSection";
++import PhotoCard from "../components/PhotoCard";
++import SeeMore from "../components/SeeMore";
++import { GALLERY_PAGE_LIMIT, getGallery } from "../media";
++import { WHATSAPP } from "../site";
++
++export const metadata: Metadata = {
++  title: "Gallery",
++  description:
++    "A look inside La Crave Bakery: meat pies, cakes, banana bread, brownies and more, fresh from the oven in Port Harcourt.",
++};
++
++export default function GalleryPage() {
++  const photos = getGallery().slice(0, GALLERY_PAGE_LIMIT);
++  return (
++    <>
++      <section className="section--hero">
++        <div className="container">
++          <div className="section-head">
++            <span className="eyebrow" data-hero-item>
++              The gallery
++            </span>
++            <h1 className="display-1" data-split>
++              fresh from the oven
++            </h1>
++            <p className="lead" data-hero-item>
++              A look at what comes out of our kitchen. There is always more on
++              our Instagram.
++            </p>
++            <div className="actions" style={{ justifyContent: "center" }} data-hero-item>
++              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="btn">
++                order on whatsapp
++              </a>
++              <Link href="/" className="link-arrow">
++                <Arrow dir="left" />
++                back home
++              </Link>
++            </div>
++          </div>
++        </div>
++      </section>
++
++      <section className="section">
++        <div className="container">
++          <div className="grid-3 grid-3--center">
++            {photos.map((photo, index) => (
++              <PhotoCard
++                key={photo.src}
++                img={photo.src}
++                alt={photo.alt}
++                sizes="(min-width: 992px) 24rem, 90vw"
++                flip={index % 2 === 1}
++              />
++            ))}
++          </div>
++          <div className="section-gap" />
++          <SeeMore />
++        </div>
++      </section>
++
++      <CtaSection />
++    </>
++  );
++}
+diff --git a/app/globals.css b/app/globals.css
+index 1496433..1ca2d8d 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -162,46 +162,50 @@ button {
+   position: relative;
+   padding-block: var(--section-y);
+ }
+-.section--torn {
+-  padding-block: var(--torn-y);
+-  background-position: 50%;
++/* Torn paper. The sheet is an SVG background; the grain sits in a pseudo-element
++   masked by that same SVG, so it only lands on the paper. (Painted over the whole
++   box it also covered the strip past the torn edge, which then stopped at the
++   section's edge as a hard horizontal line.) */
++.section--torn,
++.section--hero,
++.section--footer {
++  position: relative;
++  background-image: var(--torn);
++  background-position: var(--torn-pos, 50%);
+   background-repeat: no-repeat;
+   background-size: cover;
+ }
++.section--torn::before,
++.section--hero::before,
++.section--footer::before {
++  content: "";
++  position: absolute;
++  inset: 0;
++  pointer-events: none;
++  background: url("/backgrounds/grain.svg") 0 0 / 15rem 15rem;
++  -webkit-mask: var(--torn) var(--torn-pos, 50%) / cover no-repeat;
++  mask: var(--torn) var(--torn-pos, 50%) / cover no-repeat;
++}
++.section--torn {
++  padding-block: var(--torn-y);
++}
+ .section--peach {
+-  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-peach.svg");
+-  background-size:
+-    15rem 15rem,
+-    cover;
+-  background-repeat: repeat, no-repeat;
+-  background-position:
+-    0 0,
+-    50%;
++  --torn: url("/backgrounds/torn-peach.svg");
++}
++.section--mint {
++  --torn: url("/backgrounds/torn-mint.svg");
+ }
+ .section--hero {
++  --torn: url("/backgrounds/torn-mint-bottom.svg");
++  --torn-pos: 50% 100%;
+   padding-top: clamp(8.5rem, 15vw, 12rem);
+   padding-bottom: clamp(7rem, 14vw, 12rem);
+-  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-bottom.svg");
+-  background-position:
+-    0 0,
+-    50% 100%;
+-  background-repeat: repeat, no-repeat;
+-  background-size:
+-    15rem 15rem,
+-    cover;
+ }
+ .section--footer {
++  --torn: url("/backgrounds/torn-mint-top.svg");
++  --torn-pos: 50% 0;
+   padding-top: clamp(7rem, 14vw, 11rem);
+   padding-bottom: 5.5rem;
+-  background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-mint-top.svg");
+-  background-position:
+-    0 0,
+-    50% 0;
+-  background-repeat: repeat, no-repeat;
+-  background-size:
+-    15rem 15rem,
+-    cover;
+-  position: relative;
+   z-index: 2;
+ }
+ .section-head {
+@@ -338,7 +342,7 @@ button {
+   left: 0;
+   right: 0;
+   width: calc(100% - 2rem);
+-  max-width: 44rem;
++  max-width: 46rem;
+   margin-inline: auto;
+   padding: 0.5rem 0.75rem;
+   border: 1px solid rgb(44 44 45 / 0.14);
+@@ -463,6 +467,87 @@ button {
+ }
+ 
+ /* ---------- hero ---------- */
++/* The home hero: a photo carousel instead of the flat mint sheet, cut to the
++   same torn shape, with a soft mint wash so the copy stays easy to read. */
++.hero--photos {
++  background-image: none;
++}
++.hero--photos::before {
++  display: none;
++}
++.hero--photos::after {
++  content: "";
++  position: absolute;
++  inset: 0;
++  z-index: 1;
++  pointer-events: none;
++  background: url("/backgrounds/torn-fiber-bottom.svg") 50% 100% / cover no-repeat;
++}
++.hero--photos > .container {
++  z-index: 2;
++}
++.hero-bg {
++  position: absolute;
++  inset: 0;
++  z-index: 0;
++  -webkit-mask: var(--torn) 50% 100% / cover no-repeat;
++  mask: var(--torn) 50% 100% / cover no-repeat;
++}
++.hero-bg::after {
++  content: "";
++  position: absolute;
++  inset: 0;
++  z-index: 1;
++  background: linear-gradient(
++    90deg,
++    rgb(224 247 236 / 0.94) 0%,
++    rgb(224 247 236 / 0.84) 42%,
++    rgb(224 247 236 / 0.4) 100%
++  );
++}
++
++/* ---------- background photo carousel ---------- */
++.bg-carousel {
++  position: absolute;
++  inset: 0;
++  z-index: 0;
++  isolation: isolate;
++  overflow: hidden;
++  background: #f1e3d0;
++}
++.bg-slide {
++  position: absolute;
++  inset: 0;
++  opacity: 0;
++  transition: opacity var(--fade, 1.4s) ease-in-out;
++}
++.bg-slide img {
++  object-fit: cover;
++}
++/* The photo on its way out stays solid until the next one has fully faded in,
++   so the cross-fade never dips through the background colour. */
++.bg-slide.is-prev {
++  z-index: 1;
++  opacity: 1;
++  transition: none;
++}
++.bg-slide.is-active {
++  z-index: 2;
++  opacity: 1;
++}
++.bg-slide.is-active img,
++.bg-slide.is-prev img {
++  animation: bg-push var(--push, 8s) linear forwards;
++}
++@keyframes bg-push {
++  from {
++    transform: scale(1);
++  }
++  to {
++    transform: scale(1.09);
++  }
++}
++
+ .hero-grid {
+   display: grid;
+   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+@@ -862,6 +947,94 @@ a.photo-card:focus-visible {
+   background: var(--ink);
+ }
+ 
++/* ---------- creator spotlight ---------- */
++.creator-row {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(14.5rem, 18rem));
++  justify-content: center;
++  gap: clamp(2rem, 4vw, 3rem);
++}
++.creator-card .photo-card-media {
++  aspect-ratio: 9 / 16;
++}
++.creator-video {
++  position: absolute;
++  inset: 0;
++  width: 100%;
++  height: 100%;
++  object-fit: cover;
++  background: #2c2c2d;
++}
++.creator-surface {
++  position: absolute;
++  inset: 0;
++  display: grid;
++  place-items: center;
++  width: 100%;
++  border-radius: 0;
++}
++.creator-play {
++  display: grid;
++  place-items: center;
++  width: 3.5rem;
++  height: 3.5rem;
++  border: 1.5px solid var(--ink);
++  border-radius: 50%;
++  background: var(--brand);
++  color: var(--on-brand);
++  box-shadow: 0 3px 0 var(--ink);
++}
++.creator-play svg {
++  margin-left: 2px;
++}
++.creator-sound {
++  position: absolute;
++  z-index: 2;
++  right: 0.75rem;
++  bottom: 0.75rem;
++  display: grid;
++  place-items: center;
++  width: 2.75rem;
++  height: 2.75rem;
++  border: 1.5px solid var(--ink);
++  border-radius: 50%;
++  background: var(--white);
++  transition:
++    background-color 0.2s,
++    translate 0.25s var(--ease-out);
++}
++.creator-sound:hover {
++  background: var(--yellow);
++}
++.creator-sound:active {
++  translate: 0 2px;
++}
++.creator-soon {
++  position: absolute;
++  inset: 0;
++  display: grid;
++  place-content: center;
++  justify-items: center;
++  gap: 0.875rem;
++  background: repeating-linear-gradient(135deg, #f6e8d6 0 0.875rem, #f1e3d0 0.875rem 1.75rem);
++  font-size: 0.9375rem;
++  font-weight: 600;
++  color: var(--ink-2);
++}
++.creator-handle {
++  font-size: 0.9375rem;
++  font-weight: 600;
++  color: var(--ink-2);
++  text-decoration: underline;
++  text-decoration-thickness: 1.5px;
++  text-underline-offset: 0.3em;
++  text-decoration-color: rgb(44 44 45 / 0.4);
++  transition: text-decoration-color 0.25s;
++}
++a.creator-handle:hover {
++  text-decoration-color: var(--pink);
++}
++
+ /* ---------- cta ---------- */
+ .cta-card {
+   position: relative;
+@@ -933,6 +1106,14 @@ a.photo-card:focus-visible {
+   background: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
+   pointer-events: none;
+ }
++.band-tear::after {
++  content: "";
++  position: absolute;
++  inset: 0;
++  background: url("/backgrounds/grain.svg") 0 0 / 15rem 15rem;
++  -webkit-mask: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
++  mask: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
++}
+ .band-img {
+   position: absolute;
+   inset: -12% 0;
+@@ -1150,15 +1331,13 @@ html.intro-on .intro {
+ .curtain {
+   display: grid;
+   visibility: hidden;
+-  background: var(--brand);
++  background: var(--yellow);
+   border-radius: 50% 50% 0 0 / 7vh 7vh 0 0;
+ }
+-.curtain-square {
+-  width: clamp(3rem, 8vw, 4.5rem);
+-  aspect-ratio: 1;
+-  border: 1.5px solid var(--ink);
+-  border-radius: 22%;
+-  background: var(--yellow);
++.curtain-logo {
++  width: min(72vw, 24rem);
++  height: auto;
++  will-change: transform, opacity;
+ }
+ 
+ /* ---------- motion: hidden states (only when GSAP will reveal them) ---------- */
+@@ -1193,6 +1372,33 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
+   .lineup-head {
+     grid-template-columns: minmax(0, 1fr);
+   }
++  .hero-bg::after {
++    background: linear-gradient(
++      180deg,
++      rgb(224 247 236 / 0.92) 0%,
++      rgb(224 247 236 / 0.8) 55%,
++      rgb(224 247 236 / 0.55) 100%
++    );
++  }
++  /* Creator videos become a swipeable row: nine stacked 9:16 cards would be a very long scroll. */
++  .creator-row {
++    display: flex;
++    justify-content: flex-start;
++    gap: 2rem;
++    margin-inline: calc(var(--gutter) * -1);
++    padding: 1.75rem var(--gutter) 2.5rem;
++    overflow-x: auto;
++    scroll-snap-type: x mandatory;
++    scroll-padding-inline: var(--gutter);
++    scrollbar-width: none;
++  }
++  .creator-row::-webkit-scrollbar {
++    display: none;
++  }
++  .creator-row > * {
++    flex: 0 0 min(72vw, 17rem);
++    scroll-snap-align: center;
++  }
+   .hero-media {
+     width: min(100%, 24rem);
+     justify-self: center;
+@@ -1314,6 +1520,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
+   .widget-toggle::after {
+     display: none;
+   }
++  .bg-slide img {
++    animation: none;
++  }
+   *,
+   ::before,
+   ::after {
+diff --git a/app/media.ts b/app/media.ts
+new file mode 100644
+index 0000000..c1b0974
+--- /dev/null
++++ b/app/media.ts
+@@ -0,0 +1,166 @@
++import fs from "node:fs";
++import path from "node:path";
++import { CREATOR_DETAILS, type CreatorDetails } from "./creators";
++import { CATEGORIES, MENU, type MenuItem } from "./menu-data";
++
++/* ------------------------------------------------------------------
++   Photos and videos you add yourself. Drop files into these folders
++   inside /public and the site picks them up, no code changes needed.
++
++     public/menu      menu photos. A file named after an item replaces that
++                      item's photo (meat-pies.jpg, "Banana Bread.webp"...).
++                      Any other file becomes its own card, named after the file.
++     public/gallery   gallery photos. They also feed the hero and the photo
++                      band above the footer.
++     public/creators  creator spotlight videos (plus an optional poster).
++
++   Reads are synchronous and happen while the page is prerendered, so
++   they are part of the static output.
++   ------------------------------------------------------------------ */
++export const MENU_DIR = "menu";
++export const GALLERY_DIR = "gallery";
++export const CREATORS_DIR = "creators";
++/** How many photos the gallery page shows before "see more on Instagram". */
++export const GALLERY_PAGE_LIMIT = 12;
++
++const IMAGE = /\.(jpe?g|png|webp|avif|gif)$/i;
++const VIDEO = /\.(mp4|webm|m4v|mov)$/i;
++
++type Found = { file: string; src: string; base: string };
++
++function list(dir: string, ext: RegExp): Found[] {
++  try {
++    return fs
++      .readdirSync(path.join(process.cwd(), "public", dir), { withFileTypes: true })
++      .filter((entry) => entry.isFile() && !entry.name.startsWith(".") && ext.test(entry.name))
++      .map((entry) => ({
++        file: entry.name,
++        src: `/${dir}/${encodeURIComponent(entry.name)}`,
++        base: entry.name.replace(/\.[^.]+$/, ""),
++      }))
++      .sort((a, b) => a.file.localeCompare(b.file, undefined, { numeric: true, sensitivity: "base" }));
++  } catch {
++    return [];
++  }
++}
++
++/** "Meat Pies 2" and "meat-pie" both become "meatpie", so names match loosely. */
++function key(value: string) {
++  return value
++    .toLowerCase()
++    .split(/[^a-z0-9]+/)
++    .filter(Boolean)
++    .map((word) => word.replace(/s$/, ""))
++    .join("")
++    .replace(/\d+$/, "");
++}
++
++function matches(fileKey: string, itemKeys: string[]) {
++  return itemKeys.some(
++    (itemKey) =>
++      fileKey === itemKey ||
++      (fileKey.length >= 3 && (itemKey.includes(fileKey) || fileKey.includes(itemKey))),
++  );
++}
++
++/** "04-banana_bread" becomes "Banana Bread". Names that already have capitals are kept. */
++function label(base: string) {
++  const words = base
++    .replace(/^\d+[-_.\s]+/, "")
++    .replace(/[-_]+/g, " ")
++    .trim();
++  if (/[A-Z]/.test(words)) return words;
++  return words.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
++}
++
++/* ---------- menu ---------- */
++
++/** The menu, with photos from /public/menu swapped in where a file name matches. */
++export function getMenu(): MenuItem[] {
++  const photos = list(MENU_DIR, IMAGE);
++  const used = new Set<string>();
++
++  const items = MENU.map((item) => {
++    const itemKeys = [key(item.id), key(item.name)];
++    const hits = photos.filter((photo) => !used.has(photo.file) && matches(key(photo.base), itemKeys));
++    hits.forEach((photo) => used.add(photo.file));
++    /* An exact name beats a loose match. */
++    const best = hits.find((photo) => itemKeys.includes(key(photo.base))) ?? hits[0];
++    return best ? { ...item, img: best.src } : item;
++  });
++
++  const extras: MenuItem[] = photos
++    .filter((photo) => !used.has(photo.file))
++    .map((photo) => ({
++      id: `photo-${key(photo.base) || photo.file}`,
++      name: label(photo.base),
++      group: "More from the oven",
++      blurb: "",
++      img: photo.src,
++      alt: `${label(photo.base)} from La Crave`,
++    }));
++
++  return [...items, ...extras];
++}
++
++/** The home page category cards, using a menu photo when one has been added. */
++export function getCategories() {
++  const menu = getMenu();
++  return CATEGORIES.map((category) => {
++    const photo = menu.find((item) => item.id === category.itemId)?.img;
++    return photo?.startsWith(`/${MENU_DIR}/`) ? { ...category, img: photo } : category;
++  });
++}
++
++/* ---------- gallery ---------- */
++
++export type GalleryImage = { src: string; alt: string };
++
++/** Shown until real photos are added, so the carousels are never empty. */
++const PLACEHOLDER_GALLERY = [
++  "/images/hero-storefront.jpg",
++  "/images/about-cafe.jpg",
++  "/images/parallax-baker.jpg",
++  "/images/cat-cakes.jpg",
++  "/images/cat-meat-pies.jpg",
++  "/images/item-pastry-box.jpg",
++  "/images/item-brownies.jpg",
++  "/images/cat-breads.jpg",
++];
++
++/** Gallery photos, falling back to the menu photos and then to the placeholders. */
++export function getGallery(): GalleryImage[] {
++  const own = list(GALLERY_DIR, IMAGE);
++  const source = own.length ? own : list(MENU_DIR, IMAGE);
++  const srcs = source.length ? source.map((photo) => photo.src) : PLACEHOLDER_GALLERY;
++  return srcs.map((src, index) => ({ src, alt: `La Crave bakery photo ${index + 1}` }));
++}
++
++/* ---------- creators ---------- */
++
++export type Creator = CreatorDetails & {
++  id: string;
++  name: string;
++  /** Undefined for the "coming soon" placeholder cards. */
++  video?: string;
++  poster?: string;
++};
++
++export function getCreators(): Creator[] {
++  const videos = list(CREATORS_DIR, VIDEO);
++  if (!videos.length) {
++    return [1, 2, 3].map((n) => ({ id: `soon-${n}`, name: "" }));
++  }
++  const posters = list(CREATORS_DIR, IMAGE);
++  return videos.map((video) => {
++    const details = CREATOR_DETAILS[video.base] ?? {};
++    const poster = posters.find((image) => key(image.base) === key(video.base));
++    return {
++      id: video.file,
++      name: details.name ?? label(video.base),
++      ...details,
++      video: video.src,
++      poster: poster?.src,
++    };
++  });
++}
+diff --git a/app/menu-data.ts b/app/menu-data.ts
+index 2483976..eb2ec79 100644
+--- a/app/menu-data.ts
++++ b/app/menu-data.ts
+@@ -59,18 +59,22 @@ export const FEATURED_IDS = ["pastry-box", "custom-cake", "brownies"];
+ 
+ export const CATEGORIES = [
+   {
++    /** The menu item whose photo (from /public/menu) this card borrows. */
++    itemId: "meat-pies",
+     title: "Meat pies",
+     body: "Golden, flaky and generously filled. The one everybody orders by the tray.",
+     img: "/images/cat-meat-pies.jpg",
+     alt: "A tray of golden La Crave meat pies",
+   },
+   {
++    itemId: "custom-cake",
+     title: "Custom cakes",
+     body: "Birthdays, weddings and everything in between, built around your moment.",
+     img: "/images/cat-cakes.jpg",
+     alt: "A custom celebration cake by La Crave",
+   },
+   {
++    itemId: "banana-bread",
+     title: "Banana bread and brownies",
+     body: "Comforting loaves and rich, fudgy squares that melt in your mouth.",
+     img: "/images/cat-breads.jpg",
+diff --git a/app/menu/page.tsx b/app/menu/page.tsx
+index ed802da..5208127 100644
+--- a/app/menu/page.tsx
++++ b/app/menu/page.tsx
+@@ -2,8 +2,10 @@ import type { Metadata } from "next";
+ import Link from "next/link";
+ import Arrow from "../components/Arrow";
+ import CtaSection from "../components/CtaSection";
++import HowItWorks from "../components/HowItWorks";
+ import PhotoCard from "../components/PhotoCard";
+-import { MENU } from "../menu-data";
++import SeeMore from "../components/SeeMore";
++import { getMenu } from "../media";
+ import { WHATSAPP } from "../site";
+ 
+ export const metadata: Metadata = {
+@@ -12,21 +14,6 @@ export const metadata: Metadata = {
+     "Meat pies, pastry boxes, custom cakes, banana bread and brownies from La Crave Bakery, baked fresh to order in Port Harcourt.",
+ };
+ 
+-const steps = [
+-  {
+-    title: "Send us a message",
+-    body: "Slide into our DMs or message us on WhatsApp with what you are craving and when you need it.",
+-  },
+-  {
+-    title: "We bake it fresh",
+-    body: "Everything is baked to order and packed with care, so it reaches you at its best.",
+-  },
+-  {
+-    title: "Same-day delivery",
+-    body: "We deliver across Port Harcourt the same day, every day.",
+-  },
+-];
+-
+ export default function MenuPage() {
+   return (
+     <>
+@@ -59,7 +46,7 @@ export default function MenuPage() {
+       <section className="section">
+         <div className="container">
+           <div className="grid-3 grid-3--center">
+-            {MENU.map((item, index) => (
++            {getMenu().map((item, index) => (
+               <PhotoCard
+                 key={item.id}
+                 href={WHATSAPP}
+@@ -83,36 +70,18 @@ export default function MenuPage() {
+                       <span className="price price--ask">Message for price</span>
+                     )}
+                   </div>
+-                  <p className="small">{item.blurb}</p>
++                  {item.blurb ? <p className="small">{item.blurb}</p> : null}
+                 </div>
+               </PhotoCard>
+             ))}
+           </div>
+-        </div>
+-      </section>
+-
+-      <section className="section" style={{ paddingTop: 0 }}>
+-        <div className="container">
+-          <div className="section-head">
+-            <span className="eyebrow" data-fade>
+-              How it works
+-            </span>
+-            <h2 className="display-2" data-split>
+-              from your message to your door
+-            </h2>
+-          </div>
+           <div className="section-gap" />
+-          <ol className="steps">
+-            {steps.map((step) => (
+-              <li className="step" key={step.title} data-reveal>
+-                <h3 className="title-3">{step.title}</h3>
+-                <p className="small">{step.body}</p>
+-              </li>
+-            ))}
+-          </ol>
++          <SeeMore />
+         </div>
+       </section>
+ 
++      <HowItWorks />
++
+       <CtaSection />
+     </>
+   );
+diff --git a/app/page.tsx b/app/page.tsx
+index f7a0b51..33ca307 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -1,5 +1,6 @@
+ import AboutSection from "./components/AboutSection";
+ import CategoriesSection from "./components/CategoriesSection";
++import CreatorSpotlight from "./components/CreatorSpotlight";
+ import CtaSection from "./components/CtaSection";
+ import HeroSection from "./components/HeroSection";
+ import LineupSection from "./components/LineupSection";
+@@ -14,6 +15,7 @@ export default function Home() {
+       <CategoriesSection />
+       <AboutSection />
+       <LineupSection />
++      <CreatorSpotlight />
+       <TestimonialsSection />
+       <CtaSection />
+     </>
+diff --git a/public/backgrounds/torn-fiber-bottom.svg b/public/backgrounds/torn-fiber-bottom.svg
+new file mode 100644
+index 0000000..777a187
+--- /dev/null
++++ b/public/backgrounds/torn-fiber-bottom.svg
+@@ -0,0 +1,5 @@
++<svg width="2400" height="1200" viewBox="0 0 2400 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
++<path d="M26.2637 1150.99L0 1149.33V1135.44L26.2637 1135.99C33.1423 1144.88 51.2767 1147.1 57.53 1147.1C63.7832 1147.1 70.6618 1140.44 72.5378 1139.33C74.4138 1138.22 98.1761 1138.22 107.556 1139.33C116.936 1140.44 120.063 1147.66 121.313 1147.66C122.564 1147.66 140.698 1145.44 144.45 1144.88C147.452 1144.44 155.706 1147.29 159.458 1148.77C162.46 1157.21 170.297 1156.36 173.841 1154.88C196.352 1150.99 200.73 1156.55 209.484 1166.55C218.239 1176.55 223.241 1174.88 223.867 1174.88C232.871 1169.99 246.378 1166.18 252.006 1164.88C268.265 1163.21 268.265 1182.66 283.898 1184.33C288.61 1184.83 296.613 1177.84 300.156 1173.77C300.782 1177.66 316.415 1190.44 324.544 1185.99C331.047 1182.44 343.929 1176.73 349.557 1174.33C352.684 1183.21 362.689 1188.77 367.691 1188.77C372.694 1188.77 383.95 1179.33 383.95 1175.99C383.95 1172.66 392.705 1163.77 392.705 1165.44C392.705 1166.77 398.958 1168.21 402.084 1168.77C402.084 1169.33 404.085 1169.77 412.09 1167.1C419.594 1165.99 437.103 1179.33 442.105 1179.33C446.107 1179.33 450.026 1177.1 451.485 1175.99C457.989 1185.77 463.366 1184.14 465.242 1182.1C466.076 1180.81 470.12 1177.44 479.625 1174.33C491.506 1170.44 489.63 1184.33 492.757 1182.1C495.883 1179.88 510.266 1173.77 521.522 1170.44C532.777 1167.1 540.907 1174.33 555.915 1175.99C570.922 1177.66 588.431 1166.55 599.687 1163.77C610.943 1160.99 633.455 1168.77 647.212 1170.44C660.969 1172.1 667.222 1167.66 668.473 1168.77C669.474 1169.66 676.394 1174.7 679.729 1177.1C666.222 1185.99 619.489 1180.81 597.811 1177.1C586.305 1183.77 557.165 1186.55 544.033 1187.1C527.024 1176.88 502.762 1187.29 492.757 1193.77C487.254 1182.66 475.039 1188.03 469.62 1192.1C458.614 1199.66 453.778 1191.92 452.736 1187.1C447.233 1193.33 442.105 1191.92 440.229 1190.44C418.968 1180.99 411.464 1177.1 407.712 1179.33C403.96 1181.55 400.834 1180.99 398.958 1180.99C397.457 1180.99 394.164 1178.4 392.705 1177.1C391.662 1176.92 389.328 1177.44 388.327 1180.99C387.327 1184.55 379.156 1193.58 375.195 1197.66C365.19 1205.21 353.934 1192.29 349.557 1184.88L338.301 1190.44C325.795 1197.55 319.333 1198.21 317.665 1197.66C312.163 1198.1 303.283 1189.33 299.531 1184.88C291.402 1194.33 276.394 1201.55 267.014 1184.88C257.634 1168.21 232.621 1184.88 230.12 1184.88C221.115 1190.21 216.78 1187.1 215.737 1184.88C195.727 1166.66 185.305 1165.44 182.595 1167.1C161.084 1171.55 158.207 1165.25 159.458 1161.55L143.2 1158.77C140.198 1160.1 127.358 1161.18 121.313 1161.55C110.808 1149.1 84.0021 1151.55 71.9125 1154.33C54.4033 1168.1 34.1845 1157.84 26.2637 1150.99Z" fill="white"/>
++<path d="M651.589 1135.99C650.964 1137.1 658.468 1145.44 658.468 1145.99C675.977 1137.1 697.03 1134.88 705.367 1134.88C725.878 1123.77 741.011 1130.25 746.014 1134.88C766.024 1125.99 767.9 1140.44 799.166 1138.77C824.179 1144.55 844.607 1140.81 851.694 1138.22C860.698 1147.71 876.29 1146.62 882.96 1144.88C923.481 1126.66 938.197 1130.99 940.49 1135.44C952.996 1129.88 964.252 1148.77 972.381 1150.99C980.511 1153.22 984.263 1143.22 984.888 1143.22C985.513 1143.22 993.643 1145.99 1006.15 1148.22C1016.15 1149.99 1039.08 1145.62 1049.3 1143.22C1062.8 1147.22 1102.03 1144.88 1119.96 1143.22C1134.34 1147.66 1124.34 1148.77 1159.35 1141.55C1194.37 1134.33 1186.87 1143.77 1199.37 1139.88C1209.38 1136.77 1228.56 1137.85 1236.89 1138.77C1239.19 1137.29 1244.77 1134.22 1248.78 1133.77C1252.78 1133.33 1256.28 1134.7 1257.53 1135.44C1257.53 1133.22 1262.95 1129.7 1265.66 1128.22C1297.55 1123.22 1325.07 1132.11 1326.32 1132.11C1327.57 1132.11 1326.32 1133.77 1335.7 1129.88C1345.08 1125.99 1350.7 1135.44 1351.33 1135.44C1370.09 1127.11 1375.09 1137.66 1378.84 1140.44C1382.6 1143.22 1400.73 1146.55 1408.86 1149.88C1416.99 1153.22 1428.87 1164.88 1435.75 1167.11C1441.25 1168.88 1470.14 1167.48 1483.9 1166.55C1489.53 1172.66 1527.05 1169.88 1533.92 1168.22C1540.8 1166.55 1548.31 1172.11 1550.18 1170.44C1552.06 1168.77 1578.95 1169.88 1607.71 1162.11C1630.72 1155.88 1661.49 1159.51 1674 1162.11C1691.51 1179.88 1711.52 1165.99 1718.4 1160.99C1723.9 1156.99 1730.69 1157.48 1733.4 1158.22C1736.95 1159.51 1744.66 1162.11 1747.16 1162.11C1750.29 1162.11 1762.17 1171.55 1765.92 1172.11C1768.92 1172.55 1771.76 1171.18 1772.8 1170.44C1780.93 1180.44 1785.93 1180.99 1798.44 1185.99C1808.44 1189.99 1833.45 1177.29 1844.71 1170.44C1855.97 1175.99 1868.47 1170.99 1879.73 1169.33C1888.73 1167.99 1894.32 1168.77 1895.99 1169.33C1904.95 1165.81 1928.63 1160.11 1951.64 1165.44C1974.65 1170.77 1992.91 1164.33 1999.17 1160.44C2021.05 1160.44 2045.44 1145.99 2052.32 1143.77C2059.2 1141.55 2075.46 1142.66 2075.46 1143.77C2075.46 1144.88 2082.33 1155.44 2083.59 1155.44C2084.59 1155.44 2086.09 1153.96 2086.71 1153.22C2096.72 1156.77 2124.65 1160.99 2137.36 1162.66L2199.27 1163.22C2211.28 1158.77 2232.62 1165.07 2241.79 1168.77H2249.92V1167.11C2234.29 1148.77 2295.57 1162.11 2298.7 1162.11C2301.2 1162.11 2307.24 1157.29 2309.95 1154.88L2307.45 1153.77C2306.2 1153.22 2304.33 1144.33 2303.07 1145.99C2302.07 1147.33 2297.66 1147.66 2295.57 1147.66C2241.79 1137.66 2248.05 1145.99 2248.05 1148.77C2248.05 1151.55 2249.92 1155.44 2246.8 1155.99C2244.29 1156.44 2222.82 1150.99 2212.4 1148.22C2208.65 1149.33 2200.02 1150.99 2195.52 1148.77C2189.89 1145.99 2138.61 1150.99 2136.11 1148.77C2133.61 1146.55 2102.97 1143.77 2095.47 1142.11C2089.46 1140.77 2086.71 1138.96 2086.09 1138.22C2085.88 1138.96 2085.09 1140.55 2083.59 1140.99C2081.71 1141.55 2078.58 1133.22 2075.46 1128.22C2072.95 1124.22 2058.57 1126.55 2051.69 1128.22C2041.69 1137.11 2001.04 1146.55 1997.92 1147.66C1994.79 1148.77 1988.54 1155.99 1977.28 1153.77C1966.02 1151.55 1929.13 1150.99 1925.38 1150.44C1921.63 1149.88 1901.62 1155.44 1894.11 1157.11C1886.61 1158.77 1892.24 1157.66 1882.86 1155.44C1873.48 1153.22 1867.22 1159.88 1860.34 1160.44C1854.84 1160.88 1847.63 1158.4 1844.71 1157.11C1825.95 1170.44 1819.7 1168.77 1805.94 1174.33C1792.18 1179.88 1772.8 1155.99 1772.8 1156.55C1772.8 1157.11 1765.92 1158.77 1762.17 1158.22C1758.42 1157.66 1748.41 1149.33 1747.16 1148.77C1745.91 1148.22 1745.91 1148.77 1737.78 1144.88C1731.28 1141.77 1725.48 1143.59 1723.4 1144.88C1718.81 1148.4 1707.26 1155.99 1697.76 1158.22C1685.88 1160.99 1677.75 1151.55 1674 1148.77C1670.24 1145.99 1650.86 1146.55 1649.61 1146.55C1635.1 1142.55 1621.05 1144.88 1615.84 1146.55C1599.33 1150.99 1563.11 1155.44 1547.06 1157.11C1543.93 1151.55 1508.29 1160.44 1494.53 1157.11C1483.52 1154.44 1479.52 1153.03 1478.9 1152.66C1460.14 1156.55 1440.75 1154.33 1434.5 1152.66C1428.24 1150.99 1415.11 1133.22 1408.86 1134.33C1403.86 1135.22 1385.51 1127.29 1376.97 1123.22C1366.96 1108.77 1358.21 1117.11 1356.96 1116.55C1355.71 1115.99 1351.95 1120.44 1350.7 1118.22C1349.45 1115.99 1343.2 1112.66 1338.2 1113.77C1333.19 1114.88 1327.57 1114.88 1326.32 1114.88C1316.94 1109.33 1285.67 1111.55 1278.17 1111.55H1266.28C1261.78 1111.55 1258.57 1116.74 1257.53 1119.33C1254.03 1113.55 1243.15 1119.51 1238.14 1123.22C1231.64 1119.66 1220.43 1121.74 1215.63 1123.22C1210.42 1124.33 1197.75 1125.88 1188.74 1123.22C1177.49 1119.88 1163.73 1124.88 1159.35 1126.55C1154.98 1128.22 1136.22 1131.55 1127.46 1130.99C1118.71 1130.44 1121.21 1125.99 1118.08 1127.66C1114.96 1129.33 1065.55 1129.33 1057.43 1127.66C1050.92 1126.33 1040.96 1128.22 1036.79 1129.33C1012.78 1136.44 991.767 1131.18 984.263 1127.66C982.262 1132.55 977.592 1134.88 975.508 1135.44C969.255 1138.77 956.748 1124.88 952.371 1120.44C947.994 1115.99 945.492 1117.66 944.242 1118.77C943.241 1119.66 940.073 1119.14 938.614 1118.77C926.733 1109.88 896.092 1123.22 881.709 1129.88C867.327 1136.55 853.57 1123.22 851.694 1123.22C849.818 1123.22 836.686 1128.22 832.308 1127.66C828.807 1127.22 808.755 1124.51 799.166 1123.22C797.082 1124.7 788.911 1126.11 772.903 1119.88C756.894 1113.66 749.14 1116.92 747.264 1119.33C739.26 1112.21 731.006 1111.55 727.879 1112.11C721.626 1109.88 705.993 1119.33 704.117 1119.33C689.109 1115.99 652.215 1134.88 651.589 1135.99Z" fill="white"/>
++<path d="M2309.95 1140.44C2311.2 1142.11 2308.7 1142.11 2308.08 1142.66H2329.96C2335.17 1144.33 2346.72 1146.55 2351.22 1142.11C2355.73 1137.66 2360.19 1140.62 2361.85 1142.66C2363.36 1141.33 2387.91 1139.88 2400 1139.33V1123.77C2396.87 1122.11 2361.85 1128.22 2360.6 1126.55C2359.6 1125.22 2357.69 1124.51 2356.85 1124.33C2354.77 1125.62 2349.6 1128.44 2345.6 1129.33C2340.59 1130.44 2334.34 1129.33 2331.21 1127.66C2328.09 1125.99 2305.58 1127.66 2303.7 1129.33C2301.82 1130.99 2305.58 1133.22 2308.08 1138.22C2310.58 1143.22 2308.7 1138.77 2309.95 1140.44Z" fill="white"/>
++</svg>
+diff --git a/public/backgrounds/torn-mint.svg b/public/backgrounds/torn-mint.svg
+new file mode 100644
+index 0000000..775f731
+--- /dev/null
++++ b/public/backgrounds/torn-mint.svg
+@@ -0,0 +1,9 @@
++<svg width="1920" height="1200" viewBox="0 0 1920 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
++<path d="M1920 1136.78L1805 1154.7L1792 1163.67L1730 1157.34L1669.5 1148.37L1650 1139.41L1594 1159.97L1552 1157.34L1439 1178.96L1388.5 1155.23L1355.5 1164.19L1317 1156.81L1257.5 1164.19H1200L1140.25 1156.55L1112.5 1139.41L1098 1132.03L1072 1126.23L1017 1124.65L959 1137.3L839.125 1138.88L779.5 1146.79L752 1130.45L716 1138.88L599.5 1130.45L548 1133.61L525.5 1145.21L535.5 1174.21L490 1173.68L462.25 1179.75L423 1178.43L393.5 1186.86H369.5L349.5 1183.7L323 1174.74H314L295 1192.66L280 1183.7L251.5 1189.5L240.5 1182.65L227.5 1189.5L208 1174.74L188.625 1179.61L173 1178.43L156.5 1166.3L131.5 1160.5L66.5 1150.48L35 1154.7L0 1149.96V65.3826L115 47.4558L128 38.4919L190 44.8191L250.5 53.783L270 62.7458L326 42.1833L368 44.8191L481 23.2019L531.5 46.9285L564.5 37.9646L603 45.3464L662.5 37.9646H720L779.75 45.6101L807.5 62.7458L822 70.1277L848 75.9275L903 77.5095L961 64.8552L1080.88 63.2732L1140.5 55.364L1168 71.7097L1204 63.2732L1320.5 71.7097L1372 68.5457L1394.5 56.946L1384.5 27.947L1430 28.4744L1457.75 22.4109L1497 23.7292L1526.5 15.2927H1550.5L1570.5 18.4558L1597 27.4197H1606L1625 9.49292L1640 18.4558L1668.5 12.656L1679.5 19.5105L1692.5 12.656L1712 27.4197L1731.38 22.5427L1747 23.7292L1763.5 35.8562L1788.5 41.656L1853.5 51.6736L1885 47.4558L1920 52.2009V1136.78Z" fill="#A2E3C4"/>
++<path d="M21.0109 1153.54L0 1151.95V1138.77L21.0109 1139.3C26.5138 1147.74 41.0214 1149.85 46.024 1149.85C51.0266 1149.85 56.5294 1143.52 58.0302 1142.46C59.531 1141.41 78.5409 1141.41 86.0448 1142.46C93.5487 1143.52 96.05 1150.37 97.0505 1150.37C98.0511 1150.37 112.559 1148.26 115.56 1147.74C117.961 1147.31 124.565 1150.02 127.566 1151.43C129.968 1159.44 136.238 1158.63 139.072 1157.23C157.082 1153.54 160.584 1158.81 167.587 1168.3C174.591 1177.79 178.593 1176.21 179.093 1176.21C186.297 1171.57 197.103 1167.95 201.605 1166.72C214.612 1165.14 214.612 1183.59 227.118 1185.17C230.888 1185.65 237.29 1179.02 240.125 1175.15C240.625 1178.84 253.132 1190.97 259.635 1186.75C264.838 1183.38 275.143 1177.97 279.646 1175.68C282.147 1184.12 290.151 1189.39 294.153 1189.39C298.155 1189.39 307.16 1180.43 307.16 1177.26C307.16 1174.1 314.164 1165.66 314.164 1167.24C314.164 1168.51 319.166 1169.88 321.668 1170.41C321.668 1170.94 323.268 1171.36 329.672 1168.83C335.675 1167.77 349.682 1180.43 353.684 1180.43C356.886 1180.43 360.021 1178.32 361.188 1177.26C366.391 1186.54 370.693 1185 372.194 1183.06C372.861 1181.83 376.096 1178.63 383.7 1175.68C393.205 1171.99 391.704 1185.17 394.205 1183.06C396.707 1180.95 408.213 1175.15 417.217 1171.99C426.222 1168.83 432.725 1175.68 444.732 1177.26C456.738 1178.84 470.745 1168.3 479.75 1165.66C488.755 1163.03 506.764 1170.41 517.77 1171.99C528.775 1173.57 533.778 1169.35 534.779 1170.41C535.579 1171.25 541.115 1176.03 543.783 1178.32C532.978 1186.75 495.591 1181.83 478.249 1178.32C469.044 1184.64 445.732 1187.28 435.227 1187.81C421.62 1178.11 402.209 1187.98 394.205 1194.13C389.803 1183.59 380.031 1188.69 375.696 1192.55C366.891 1199.72 363.022 1192.38 362.189 1187.81C357.786 1193.71 353.684 1192.38 352.183 1190.97C335.175 1182.01 329.171 1178.32 326.17 1180.43C323.168 1182.53 320.667 1182.01 319.166 1182.01C317.966 1182.01 315.331 1179.55 314.164 1178.32C313.33 1178.14 311.462 1178.63 310.662 1182.01C309.861 1185.38 303.325 1193.96 300.156 1197.83C292.152 1205 283.147 1192.73 279.646 1185.7L270.641 1190.97C260.636 1197.72 255.466 1198.35 254.132 1197.83C249.73 1198.25 242.626 1189.92 239.625 1185.7C233.121 1194.66 221.115 1201.52 213.611 1185.7C206.107 1169.88 186.097 1185.7 184.096 1185.7C176.892 1190.76 173.424 1187.81 172.59 1185.7C156.582 1168.4 148.244 1167.24 146.076 1168.83C128.867 1173.04 126.566 1167.07 127.566 1163.55L114.56 1160.92C112.158 1162.18 101.886 1163.2 97.0505 1163.55C88.6462 1151.74 67.2017 1154.06 57.53 1156.7C43.5227 1169.78 27.3476 1160.04 21.0109 1153.54Z" fill="white"/>
++<path d="M521.271 1139.3C520.771 1140.36 526.774 1148.26 526.774 1148.79C540.782 1140.35 557.624 1138.25 564.294 1138.25C580.702 1127.7 592.809 1133.85 596.811 1138.25C612.819 1129.81 614.32 1143.52 639.333 1141.94C659.343 1147.42 675.685 1143.87 681.355 1141.41C688.559 1150.42 701.032 1149.38 706.368 1147.74C738.785 1130.44 750.558 1134.56 752.392 1138.77C762.397 1133.5 771.402 1151.43 777.905 1153.54C784.409 1155.65 787.41 1146.16 787.91 1146.16C788.411 1146.16 794.914 1148.79 804.919 1150.9C812.923 1152.59 831.266 1148.44 839.437 1146.16C850.243 1149.95 881.626 1147.74 895.967 1146.16C907.473 1150.37 899.468 1151.43 927.483 1144.57C955.498 1137.72 949.494 1146.68 959.5 1142.99C967.504 1140.04 982.845 1141.06 989.515 1141.94C991.35 1140.53 995.819 1137.61 999.02 1137.19C1002.22 1136.77 1005.02 1138.07 1006.02 1138.77C1006.02 1136.66 1010.36 1133.33 1012.53 1131.92C1038.04 1127.17 1060.05 1135.61 1061.05 1135.61C1062.05 1135.61 1061.05 1137.19 1068.56 1133.5C1076.06 1129.81 1080.56 1138.77 1081.06 1138.77C1096.07 1130.86 1100.07 1140.88 1103.07 1143.52C1106.08 1146.16 1120.58 1149.32 1127.09 1152.48C1133.59 1155.65 1143.1 1166.72 1148.6 1168.83C1153 1170.51 1176.11 1169.18 1187.12 1168.3C1191.62 1174.1 1221.64 1171.46 1227.14 1169.88C1232.64 1168.3 1238.65 1173.57 1240.15 1171.99C1241.65 1170.41 1263.16 1171.46 1286.17 1164.08C1304.58 1158.18 1329.19 1161.62 1339.2 1164.08C1353.2 1180.95 1369.21 1167.77 1374.72 1163.03C1379.12 1159.23 1384.55 1159.69 1386.72 1160.39C1389.56 1161.62 1395.73 1164.08 1397.73 1164.08C1400.23 1164.08 1409.73 1173.05 1412.74 1173.57C1415.14 1173.99 1417.4 1172.69 1418.24 1171.99C1424.74 1181.48 1428.74 1182.01 1438.75 1186.75C1446.75 1190.55 1466.76 1178.49 1475.77 1171.99C1484.77 1177.26 1494.78 1172.52 1503.78 1170.94C1510.99 1169.67 1515.46 1170.41 1516.79 1170.94C1523.96 1167.6 1542.9 1162.18 1561.31 1167.25C1579.72 1172.31 1594.33 1166.19 1599.33 1162.5C1616.84 1162.5 1636.35 1148.79 1641.86 1146.68C1647.36 1144.57 1660.36 1145.63 1660.36 1146.68C1660.36 1147.74 1665.87 1157.76 1666.87 1157.76C1667.67 1157.76 1668.87 1156.35 1669.37 1155.65C1677.37 1159.02 1699.72 1163.03 1709.89 1164.61L1759.42 1165.14C1769.02 1160.92 1786.1 1166.89 1793.43 1170.41H1799.94V1168.83C1787.43 1151.43 1836.46 1164.08 1838.96 1164.08C1840.96 1164.08 1845.79 1159.51 1847.96 1157.23L1845.96 1156.17C1844.96 1155.65 1843.46 1147.21 1842.46 1148.79C1841.66 1150.06 1838.12 1150.37 1836.46 1150.37C1793.43 1140.88 1798.44 1148.79 1798.44 1151.43C1798.44 1154.06 1799.94 1157.76 1797.44 1158.28C1795.44 1158.7 1778.26 1153.54 1769.92 1150.9C1766.92 1151.96 1760.02 1153.54 1756.41 1151.43C1751.91 1148.79 1710.89 1153.54 1708.89 1151.43C1706.89 1149.32 1682.38 1146.68 1676.37 1145.1C1671.57 1143.84 1669.37 1142.11 1668.87 1141.41C1668.7 1142.11 1668.07 1143.62 1666.87 1144.05C1665.37 1144.57 1662.87 1136.66 1660.36 1131.92C1658.36 1128.12 1646.86 1130.34 1641.35 1131.92C1633.35 1140.36 1600.83 1149.32 1598.33 1150.37C1595.83 1151.43 1590.83 1158.28 1581.82 1156.17C1572.82 1154.06 1543.3 1153.54 1540.3 1153.01C1537.3 1152.48 1521.29 1157.76 1515.29 1159.34C1509.29 1160.92 1513.79 1159.86 1506.28 1157.76C1498.78 1155.65 1493.78 1161.97 1488.28 1162.5C1483.87 1162.92 1478.1 1160.57 1475.77 1159.34C1460.76 1171.99 1455.76 1170.41 1444.75 1175.68C1433.75 1180.95 1418.24 1158.28 1418.24 1158.81C1418.24 1159.34 1412.74 1160.92 1409.73 1160.39C1406.73 1159.86 1398.73 1151.96 1397.73 1151.43C1396.73 1150.9 1396.73 1151.43 1390.22 1147.74C1385.02 1144.78 1380.39 1146.51 1378.72 1147.74C1375.05 1151.08 1365.81 1158.28 1358.21 1160.39C1348.7 1163.03 1342.2 1154.06 1339.2 1151.43C1336.2 1148.79 1320.69 1149.32 1319.69 1149.32C1308.08 1145.52 1296.84 1147.74 1292.67 1149.32C1279.47 1153.54 1250.48 1157.76 1237.64 1159.34C1235.14 1154.06 1206.63 1162.5 1195.62 1159.34C1186.82 1156.81 1183.62 1155.47 1183.12 1155.12C1168.11 1158.81 1152.6 1156.7 1147.6 1155.12C1142.6 1153.54 1132.09 1136.66 1127.09 1137.72C1123.08 1138.56 1108.41 1131.04 1101.57 1127.17C1093.57 1113.47 1086.57 1121.37 1085.57 1120.85C1084.56 1120.32 1081.56 1124.54 1080.56 1122.43C1079.56 1120.32 1074.56 1117.16 1070.56 1118.21C1066.56 1119.27 1062.05 1119.27 1061.05 1119.27C1053.55 1113.99 1028.54 1116.1 1022.53 1116.1H1013.03C1009.43 1116.1 1006.86 1121.02 1006.02 1123.48C1003.22 1118 994.518 1123.66 990.516 1127.17C985.313 1123.8 976.342 1125.77 972.506 1127.17C968.338 1128.23 958.199 1129.71 950.995 1127.17C941.991 1124.01 930.985 1128.76 927.483 1130.34C923.981 1131.92 908.973 1135.08 901.97 1134.56C894.966 1134.03 896.967 1129.81 894.466 1131.39C891.965 1132.97 852.444 1132.97 845.941 1131.39C840.738 1130.13 832.767 1131.92 829.432 1132.97C810.222 1139.72 793.413 1134.73 787.41 1131.39C785.809 1136.03 782.074 1138.25 780.406 1138.77C775.404 1141.94 765.399 1128.76 761.897 1124.54C758.395 1120.32 756.394 1121.9 755.393 1122.96C754.593 1123.8 752.058 1123.31 750.891 1122.96C741.386 1114.52 716.873 1127.17 705.367 1133.5C693.861 1139.83 682.856 1127.17 681.355 1127.17C679.854 1127.17 669.349 1131.92 665.847 1131.39C663.045 1130.97 647.004 1128.4 639.333 1127.17C637.665 1128.58 631.129 1129.92 618.322 1124.01C605.515 1118.11 599.312 1121.2 597.811 1123.48C591.408 1116.73 584.805 1116.1 582.303 1116.63C577.301 1114.52 564.794 1123.48 563.293 1123.48C551.287 1120.32 521.772 1138.25 521.271 1139.3Z" fill="white"/>
++<path d="M1847.96 1143.52C1848.96 1145.1 1846.96 1145.1 1846.46 1145.63H1863.97C1868.14 1147.21 1877.38 1149.32 1880.98 1145.1C1884.58 1140.88 1888.15 1143.69 1889.48 1145.63C1890.68 1144.36 1910.33 1142.99 1920 1142.46V1127.7C1917.5 1126.12 1889.48 1131.92 1888.48 1130.34C1887.68 1129.07 1886.15 1128.4 1885.48 1128.23C1883.81 1129.46 1879.68 1132.13 1876.48 1132.97C1872.48 1134.03 1867.47 1132.97 1864.97 1131.39C1862.47 1129.81 1844.46 1131.39 1842.96 1132.97C1841.46 1134.56 1844.46 1136.66 1846.46 1141.41C1848.46 1146.16 1846.96 1141.94 1847.96 1143.52Z" fill="white"/>
++<path d="M1898.99 46.4646L1920 48.0463V61.2267L1898.99 60.6994C1893.49 52.2632 1878.98 50.1542 1873.98 50.1542C1868.97 50.1542 1863.47 56.4813 1861.97 57.5358C1860.47 58.5904 1841.46 58.5904 1833.96 57.5358C1826.45 56.4813 1823.95 49.6269 1822.95 49.6269C1821.95 49.6269 1807.44 51.7372 1804.44 52.2644C1802.04 52.6862 1795.44 49.9796 1792.43 48.5736C1790.03 40.5592 1783.76 41.3677 1780.93 42.7737C1762.92 46.4646 1759.42 41.192 1752.41 31.7013C1745.41 22.2106 1741.41 23.7924 1740.91 23.7924C1733.7 28.4323 1722.9 32.0528 1718.4 33.2831C1705.39 34.8648 1705.39 16.4107 1692.88 14.8289C1689.11 14.3522 1682.71 20.9803 1679.87 24.8469C1679.37 21.1561 1666.87 9.02907 1660.36 13.2472C1655.16 16.6216 1644.86 22.0348 1640.35 24.3196C1637.85 15.8835 1629.85 10.6109 1625.85 10.6109C1621.84 10.6109 1612.84 19.5743 1612.84 22.7378C1612.84 25.9014 1605.84 34.3376 1605.84 32.7558C1605.84 31.4904 1600.83 30.1195 1598.33 29.5922C1598.33 29.065 1596.73 28.6432 1590.33 31.174C1584.33 32.2285 1570.32 19.5743 1566.32 19.5743C1563.11 19.5743 1559.98 21.6833 1558.81 22.7378C1553.61 13.4581 1549.31 15.0047 1547.81 16.938C1547.14 18.1683 1543.9 21.367 1536.3 24.3196C1526.8 28.0104 1528.3 14.8289 1525.79 16.938C1523.29 19.047 1511.79 24.8469 1502.78 28.0104C1493.78 31.174 1487.27 24.3196 1475.27 22.7378C1463.26 21.1561 1449.25 31.7013 1440.25 34.3376C1431.25 36.9739 1413.24 29.5922 1402.23 28.0104C1391.22 26.4287 1386.22 30.6468 1385.22 29.5922C1384.42 28.7486 1378.88 23.9681 1376.22 21.6833C1387.02 13.2472 1424.41 18.1683 1441.75 21.6833C1450.96 15.3562 1474.27 12.7199 1484.77 12.1926C1498.38 21.8942 1517.79 12.0169 1525.79 5.86551C1530.2 16.4107 1539.97 11.3139 1544.3 7.44729C1553.11 0.27655 1556.98 7.62304 1557.81 12.1926C1562.21 6.28732 1566.32 7.62304 1567.82 9.02907C1584.83 17.9925 1590.83 21.6833 1593.83 19.5743C1596.83 17.4652 1599.33 17.9925 1600.83 17.9925C1602.03 17.9925 1604.67 20.453 1605.84 21.6833C1606.67 21.8591 1608.54 21.367 1609.34 17.9925C1610.14 14.618 1616.68 6.04126 1619.84 2.17469C1627.85 -4.99605 1636.85 7.27154 1640.35 14.3017L1649.36 9.02907C1659.36 2.28014 1664.53 1.64743 1665.87 2.17469C1670.27 1.75288 1677.37 10.0836 1680.38 14.3017C1686.88 5.33825 1698.88 -1.51613 1706.39 14.3017C1713.89 30.1195 1733.9 14.3017 1735.9 14.3017C1743.11 9.23997 1746.58 12.1926 1747.41 14.3017C1763.42 31.5958 1771.76 32.7558 1773.92 31.174C1791.13 26.9559 1793.43 32.9315 1792.43 36.4466L1805.44 39.0829C1807.84 37.8175 1818.11 36.7981 1822.95 36.4466C1831.35 48.2572 1852.8 45.9373 1862.47 43.301C1876.48 30.2249 1892.65 39.9617 1898.99 46.4646Z" fill="white"/>
++<path d="M1398.73 60.6994C1399.23 59.6449 1393.23 51.736 1393.23 51.2087C1379.22 59.6452 1362.38 61.7538 1355.71 61.7535C1339.3 72.2987 1327.19 66.1473 1323.19 61.7535C1307.18 70.1896 1305.68 56.4809 1280.67 58.0627C1260.66 52.5791 1244.31 56.1294 1238.65 58.5899C1231.44 49.5796 1218.97 50.6175 1213.63 52.2628C1181.22 69.5569 1169.44 65.4439 1167.61 61.2257C1157.6 66.4977 1148.6 48.572 1142.09 46.4629C1135.59 44.3539 1132.59 53.8446 1132.09 53.8446C1131.59 53.8446 1125.09 51.2083 1115.08 49.0992C1107.08 47.412 1088.73 51.5598 1080.56 53.8446C1069.76 50.0483 1038.37 52.2628 1024.03 53.8446C1012.53 49.6265 1020.53 48.572 992.517 55.4264C964.502 62.2807 970.506 53.3173 960.5 57.0081C952.496 59.9608 937.155 58.9414 930.485 58.0627C928.65 59.4687 924.181 62.3862 920.98 62.808C917.778 63.2298 914.977 61.9292 913.976 61.2262C913.976 63.3353 909.64 66.6746 907.473 68.0806C881.959 72.8259 859.948 64.3898 858.947 64.3898C857.947 64.3898 858.947 62.808 851.444 66.4988C843.94 70.1896 839.437 61.2262 838.937 61.2262C823.929 69.1351 819.927 59.1172 816.926 56.4809C813.924 53.8446 799.416 50.681 792.913 47.5175C786.41 44.3539 776.905 33.2814 771.402 31.1724C767 29.4852 743.887 30.8209 732.882 31.6996C728.379 25.8998 698.364 28.5361 692.861 30.1179C687.358 31.6996 681.355 26.427 679.854 28.0088C678.353 29.5906 656.842 28.5361 633.83 35.9177C615.421 41.823 590.808 38.3783 580.803 35.9177C566.795 19.0454 550.787 32.2269 545.284 36.9722C540.882 40.7685 535.446 40.3116 533.278 39.6085C530.443 38.3783 524.273 35.9177 522.272 35.9177C519.771 35.9177 510.266 26.9543 507.264 26.427C504.863 26.0052 502.595 27.3058 501.761 28.0088C495.258 18.5181 491.256 17.9909 481.251 13.2455C473.247 9.44926 453.236 21.5059 444.231 28.0088C435.227 22.7362 425.222 27.4816 416.217 29.0633C409.013 30.3288 404.544 29.5906 403.21 29.0633C396.04 32.4027 377.096 37.8159 358.687 32.7542C340.277 27.6925 325.67 33.8087 320.667 37.4995C303.158 37.4995 283.648 51.2083 278.145 53.3173C272.642 55.4264 259.635 54.3718 259.635 53.3173C259.635 52.2628 254.132 42.2448 253.132 42.2448C252.331 42.2448 251.131 43.6509 250.631 44.3539C242.626 40.9794 220.281 36.9722 210.11 35.3905L160.584 34.8632C150.979 39.0813 133.903 33.1057 126.566 29.5906H120.063V31.1724C132.569 48.572 83.5436 35.9177 81.0423 35.9177C79.0412 35.9177 74.2054 40.4873 72.0376 42.7721L74.0386 43.8266C75.0392 44.3539 76.5399 52.7901 77.5405 51.2083C78.3409 49.9428 81.8761 49.6265 83.5436 49.6265C126.566 59.1172 121.563 51.2083 121.563 48.572C121.563 45.9357 120.063 42.2448 122.564 41.7176C124.565 41.2958 141.741 46.4629 150.078 49.0992C153.08 48.0447 159.983 46.4629 163.585 48.572C168.088 51.2083 209.109 46.4629 211.11 48.572C213.111 50.681 237.624 53.3173 243.627 54.8991C248.43 56.1645 250.631 57.8869 251.131 58.5899C251.298 57.8869 251.931 56.3754 253.132 55.9536C254.633 55.4264 257.134 63.3353 259.635 68.0806C261.636 71.8769 273.142 69.6624 278.645 68.0806C286.649 59.6444 319.166 50.681 321.668 49.6265C324.169 48.572 329.172 41.7176 338.176 43.8266C347.181 45.9357 376.696 46.4629 379.698 46.9902C382.699 47.5175 398.708 42.2448 404.711 40.6631C410.714 39.0813 406.212 40.1358 413.716 42.2448C421.219 44.3539 426.222 38.0268 431.725 37.4995C436.127 37.0777 441.897 39.4328 444.231 40.6631C459.239 28.0088 464.242 29.5906 475.248 24.318C486.253 19.0454 501.761 41.7176 501.761 41.1903C501.761 40.6631 507.264 39.0813 510.266 39.6085C513.267 40.1358 521.272 48.0447 522.272 48.572C523.273 49.0992 523.273 48.572 529.776 52.2628C534.979 55.2155 539.614 53.4931 541.282 52.2628C544.951 48.9235 554.189 41.7176 561.793 39.6085C571.298 36.9722 577.801 45.9357 580.803 48.572C583.804 51.2083 599.312 50.681 600.313 50.681C611.919 54.4773 623.158 52.2628 627.327 50.681C640.534 46.4629 669.515 42.2448 682.355 40.6631C684.857 45.9357 713.372 37.4995 724.377 40.6631C733.182 43.1939 736.384 44.5296 736.884 44.8811C751.892 41.1903 767.4 43.2994 772.402 44.8811C777.405 46.4629 787.91 63.3353 792.913 62.2807C796.915 61.4371 811.589 68.959 818.426 72.8254C826.43 86.5336 833.434 78.6258 834.435 79.1531C835.435 79.6803 838.437 75.4622 839.437 77.5713C840.438 79.6803 845.44 82.8439 849.442 81.7894C853.445 80.7348 857.947 80.7343 858.947 80.7343C866.451 86.0069 891.464 83.8979 897.467 83.8979H906.972C910.574 83.8979 913.142 78.9768 913.976 76.5162C916.778 81.9997 925.482 76.3405 929.484 72.8254C934.687 76.1999 943.658 74.2314 947.494 72.8254C951.662 71.7709 961.801 70.2945 969.005 72.8254C978.009 75.9889 989.015 71.2436 992.517 69.6618C996.019 68.08 1011.03 64.9165 1018.03 65.4437C1025.03 65.971 1023.03 70.1891 1025.53 68.6073C1028.04 67.0255 1067.56 67.0255 1074.06 68.6073C1079.26 69.8727 1087.23 68.08 1090.57 67.0255C1109.78 60.2766 1126.59 65.268 1132.59 68.6073C1134.19 63.9674 1137.93 61.7529 1139.59 61.2257C1144.6 58.0621 1154.6 71.2436 1158.1 75.4617C1161.61 79.6798 1163.61 78.098 1164.61 77.0435C1165.41 76.1999 1167.94 76.692 1169.11 77.0435C1178.61 85.4796 1203.13 72.8254 1214.63 66.4983C1226.14 60.1711 1237.14 72.8254 1238.65 72.8254C1240.15 72.8254 1250.65 68.08 1254.15 68.6073C1256.95 69.0291 1273 71.5951 1280.67 72.8254C1282.33 71.4194 1288.87 70.0836 1301.68 75.9889C1314.48 81.8943 1320.69 78.8017 1322.19 76.5172C1328.59 83.2669 1335.2 83.8985 1337.7 83.3705C1342.7 85.4796 1355.21 76.5172 1356.71 76.5172C1368.71 79.6808 1398.23 61.7539 1398.73 60.6994Z" fill="white"/>
++<path d="M72.0376 56.4809C71.0371 54.8991 73.0381 54.8991 73.5384 54.3718H56.0293C51.8605 52.7901 42.6223 50.681 39.0204 54.8991C35.4185 59.1172 31.85 56.3051 30.516 54.3718C29.3154 55.6373 9.67174 57.0081 7.85589e-05 57.5354V72.2987C2.50138 73.8805 30.516 68.0806 31.5165 69.6624C32.317 70.9278 33.8511 71.5957 34.5181 71.7714C36.1855 70.5412 40.3211 67.8697 43.5227 67.0261C47.5248 65.9716 52.5274 67.0261 55.0287 68.6079C57.53 70.1896 75.5394 68.6079 77.0402 67.0261C78.541 65.4443 75.5394 63.3353 73.5384 58.5899C71.5373 53.8446 73.0381 58.0627 72.0376 56.4809Z" fill="white"/>
++</svg>
+diff --git a/public/creators/.gitkeep b/public/creators/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/public/gallery/.gitkeep b/public/gallery/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/public/menu/.gitkeep b/public/menu/.gitkeep
+new file mode 100644
+index 0000000..e69de29

@@ -3,9 +3,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type Props = {
-  img: string;
-  alt: string;
-  sizes: string;
+  img?: string;
+  alt?: string;
+  sizes?: string;
+  /** Replaces the photo, e.g. with a video. */
+  media?: ReactNode;
   href?: string;
   external?: boolean;
   tag?: string;
@@ -19,8 +21,9 @@ type Props = {
 /** The one card used across the site: paper stack, tape, photo, then content. */
 export default function PhotoCard({
   img,
-  alt,
+  alt = "",
   sizes,
+  media,
   href,
   external,
   tag,
@@ -40,7 +43,7 @@ export default function PhotoCard({
       <span className="washi" aria-hidden="true" />
       <div className="photo-card-inner">
         <div className="photo-card-media">
-          <Image src={img} alt={alt} fill sizes={sizes} priority={priority} />
+          {media ?? (img ? <Image src={img} alt={alt} fill sizes={sizes} priority={priority} /> : null)}
           {tag ? <span className="tag">{tag}</span> : null}
         </div>
         {children}

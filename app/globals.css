@@ -546,6 +546,87 @@ button {
 }
 
 /* ---------- hero ---------- */
+/* The home hero: a photo carousel instead of the flat mint sheet, cut to the
+   same torn shape, with a soft mint wash so the copy stays easy to read. */
+.hero--photos {
+  background-image: none;
+}
+.hero--photos::before {
+  display: none;
+}
+.hero--photos::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: url("/backgrounds/torn-fiber-bottom.svg") 50% 100% / cover no-repeat;
+}
+.hero--photos > .container {
+  z-index: 2;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  -webkit-mask: var(--torn) 50% 100% / cover no-repeat;
+  mask: var(--torn) 50% 100% / cover no-repeat;
+}
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgb(224 247 236 / 0.94) 0%,
+    rgb(224 247 236 / 0.84) 42%,
+    rgb(224 247 236 / 0.4) 100%
+  );
+}
+
+/* ---------- background photo carousel ---------- */
+.bg-carousel {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+  background: #f1e3d0;
+}
+.bg-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--fade, 1.4s) ease-in-out;
+}
+.bg-slide img {
+  object-fit: cover;
+}
+/* The photo on its way out stays solid until the next one has fully faded in,
+   so the cross-fade never dips through the background colour. */
+.bg-slide.is-prev {
+  z-index: 1;
+  opacity: 1;
+  transition: none;
+}
+.bg-slide.is-active {
+  z-index: 2;
+  opacity: 1;
+}
+.bg-slide.is-active img,
+.bg-slide.is-prev img {
+  animation: bg-push var(--push, 8s) linear forwards;
+}
+@keyframes bg-push {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.09);
+  }
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
@@ -1017,6 +1098,14 @@ a.photo-card:focus-visible {
   background: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
   pointer-events: none;
 }
+.band-tear::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/backgrounds/grain.svg") 0 0 / 15rem 15rem;
+  -webkit-mask: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
+  mask: url("/backgrounds/torn-cream-bottom.svg") 50% 100% / auto 100% repeat-x;
+}
 .band-img {
   position: absolute;
   inset: -12% 0;
@@ -1243,15 +1332,13 @@ html.intro-on .intro {
 .curtain {
   display: grid;
   visibility: hidden;
-  background: var(--brand);
+  background: var(--yellow);
   border-radius: 50% 50% 0 0 / 7vh 7vh 0 0;
 }
-.curtain-square {
-  width: clamp(3rem, 8vw, 4.5rem);
-  aspect-ratio: 1;
-  border: 1.5px solid var(--ink);
-  border-radius: 22%;
-  background: var(--yellow);
+.curtain-logo {
+  width: min(72vw, 24rem);
+  height: auto;
+  will-change: transform, opacity;
 }
 
 /* ---------- motion: hidden states (only when GSAP will reveal them) ---------- */
@@ -1285,6 +1372,33 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
   .split,
   .lineup-head {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-bg::after {
+    background: linear-gradient(
+      180deg,
+      rgb(224 247 236 / 0.92) 0%,
+      rgb(224 247 236 / 0.8) 55%,
+      rgb(224 247 236 / 0.55) 100%
+    );
+  }
+  /* Creator videos become a swipeable row: nine stacked 9:16 cards would be a very long scroll. */
+  .creator-row {
+    display: flex;
+    justify-content: flex-start;
+    gap: 2rem;
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 1.75rem var(--gutter) 2.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .creator-row::-webkit-scrollbar {
+    display: none;
+  }
+  .creator-row > * {
+    flex: 0 0 min(72vw, 17rem);
+    scroll-snap-align: center;
   }
   .hero-media {
     width: min(100%, 24rem);
@@ -1406,6 +1520,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
   }
   .widget-toggle::after {
     display: none;
+  }
+  .bg-slide img {
+    animation: none;
   }
   *,
   ::before,

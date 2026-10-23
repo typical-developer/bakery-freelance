@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Arrow from "./Arrow";
 import PhotoCard from "./PhotoCard";
-import { CATEGORIES } from "../menu-data";
+import { getCategories } from "../media";
 
 export default function CategoriesSection() {
   return (
@@ -23,7 +23,7 @@ export default function CategoriesSection() {
         </div>
         <div className="section-gap" />
         <div className="grid-3">
-          {CATEGORIES.map((category, index) => (
+          {getCategories().map((category, index) => (
             <PhotoCard
               key={category.title}
               href="/menu"

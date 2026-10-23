@@ -27,11 +27,13 @@ export default function AboutSection() {
             Everything is baked fresh to order, packed with care, and delivered
             the same day.
           </p>
-          <div className="actions" data-fade>
-            <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="btn">
-              about us
-            </a>
-          </div>
+          {showLink ? (
+            <div className="actions" data-fade>
+              <Link href="/about" className="btn">
+                more about us
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

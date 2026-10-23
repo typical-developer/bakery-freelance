@@ -1,0 +1,21 @@
+diff a/app/components/HeroSection.tsx b/app/components/HeroSection.tsx	(rejected hunks)
+@@ -1,5 +1,7 @@
+ import Link from "next/link";
++import BgCarousel from "./BgCarousel";
+ import PhotoCard from "./PhotoCard";
++import { getGallery } from "../media";
+ import { WHATSAPP } from "../site";
+ 
+ function Badge() {
+@@ -28,7 +30,10 @@ function Badge() {
+ 
+ export default function HeroSection() {
+   return (
+-    <section className="section--hero">
++    <section className="section--hero hero--photos">
++      <div className="hero-bg">
++        <BgCarousel images={getGallery()} priority />
++      </div>
+       <div className="container hero-grid">
+         <div className="hero-copy">
+           <span className="eyebrow" data-hero-item>

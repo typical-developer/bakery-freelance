@@ -15,7 +15,10 @@ export default function Footer() {
               <Link href="/menu">Menu</Link>
             </li>
             <li>
-              <Link href="/#about">About</Link>
+              <Link href="/gallery">Gallery</Link>
+            </li>
+            <li>
+              <Link href="/about">About</Link>
             </li>
             <li>
               <a href={WHATSAPP} target="_blank" rel="noreferrer">

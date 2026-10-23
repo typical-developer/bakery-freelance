@@ -1,0 +1,48 @@
+diff --git a/app/components/InlineScript.tsx b/app/components/InlineScript.tsx
+new file mode 100644
+index 0000000..a7531d4
+--- /dev/null
++++ b/app/components/InlineScript.tsx
+@@ -0,0 +1,14 @@
++/** An inline script that runs while the browser parses the HTML (so it can set
++    classes before the first paint) without React's dev warning about <script>
++    tags in rendered components. On the server it is a normal script; when React
++    re-renders it in the browser it becomes inert text/plain, because a script
++    inserted that way would never execute anyway. */
++export default function InlineScript({ html }: { html: string }) {
++  return (
++    <script
++      type={typeof window === "undefined" ? "text/javascript" : "text/plain"}
++      suppressHydrationWarning
++      dangerouslySetInnerHTML={{ __html: html }}
++    />
++  );
++}
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 4cf4095..a621e4d 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -3,6 +3,7 @@ import localFont from "next/font/local";
+ import "./globals.css";
+ import ContactWidget from "./components/ContactWidget";
+ import Footer from "./components/Footer";
++import InlineScript from "./components/InlineScript";
+ import Motion from "./components/Motion";
+ import Navbar from "./components/Navbar";
+ import ParallaxBand from "./components/ParallaxBand";
+@@ -52,11 +53,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
+       <head>
+         {/* Scroll-in animations start hidden, so only hide them when JS can reveal them.
+             The intro plays once per browser session. */}
+-        <script
+-          dangerouslySetInnerHTML={{
+-            __html:
+-              '(function(){var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("js");try{if(!sessionStorage.getItem("lc-intro")){sessionStorage.setItem("lc-intro","1");d.classList.add("intro-on")}}catch(e){}})()',
+-          }}
++        <InlineScript
++          html={
++            '(function(){var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("js");try{if(!sessionStorage.getItem("lc-intro")){sessionStorage.setItem("lc-intro","1");d.classList.add("intro-on")}}catch(e){}})()'
++          }
+         />
+       </head>
+       <body id="top">

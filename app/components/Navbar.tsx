@@ -9,7 +9,7 @@ import { INSTAGRAM, WHATSAPP } from "../site";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const onMenu = pathname.startsWith("/menu");
+  const here = (href: string) => (pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined);
 
   useEffect(() => {
     if (!open) return;

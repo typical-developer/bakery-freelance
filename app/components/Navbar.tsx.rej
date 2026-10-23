@@ -1,0 +1,23 @@
+diff a/app/components/Navbar.tsx b/app/components/Navbar.tsx	(rejected hunks)
+@@ -34,16 +34,15 @@ export default function Navbar() {
+         >
+           <span className="nav-glide" aria-hidden="true" />
+           <div className="nav-group">
+-            <Link href="/#about" className="nav-link">
++            <Link href="/about" className="nav-link" aria-current={here("/about")}>
+               About
+             </Link>
+-            <Link
+-              href="/menu"
+-              className="nav-link"
+-              aria-current={onMenu ? "page" : undefined}
+-            >
++            <Link href="/menu" className="nav-link" aria-current={here("/menu")}>
+               Menu
+             </Link>
++            <Link href="/gallery" className="nav-link" aria-current={here("/gallery")}>
++              Gallery
++            </Link>
+           </div>
+           <Link href="/" className="brand brand--desktop" aria-label="La Crave home">
+             <Wordmark className="logo-mark" />

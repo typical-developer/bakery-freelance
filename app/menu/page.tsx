@@ -13,21 +13,6 @@ export const metadata: Metadata = {
     "Meat pies, pastry boxes, custom cakes, banana bread and brownies from La Crave Bakery, baked fresh to order in Port Harcourt.",
 };
 
-const steps = [
-  {
-    title: "Send us a message",
-    body: "Slide into our DMs or message us on WhatsApp with what you are craving and when you need it.",
-  },
-  {
-    title: "We bake it fresh",
-    body: "Everything is baked to order and packed with care, so it reaches you at its best.",
-  },
-  {
-    title: "Same-day delivery",
-    body: "We deliver across Port Harcourt the same day, every day.",
-  },
-];
-
 export default function MenuPage() {
   return (
     <>
@@ -58,7 +43,7 @@ export default function MenuPage() {
       <section className="section">
         <div className="container">
           <div className="grid-3 grid-3--center">
-            {MENU.map((item, index) => (
+            {getMenu().map((item, index) => (
               <PhotoCard
                 key={item.id}
                 href={WHATSAPP}
@@ -82,35 +67,17 @@ export default function MenuPage() {
                       <span className="price price--ask">Message for price</span>
                     )}
                   </div>
-                  <p className="small">{item.blurb}</p>
+                  {item.blurb ? <p className="small">{item.blurb}</p> : null}
                 </div>
               </PhotoCard>
             ))}
           </div>
+          <div className="section-gap" />
+          <SeeMore />
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container">
-          <div className="section-head">
-            <span className="eyebrow" data-fade>
-              How it works
-            </span>
-            <h2 className="display-2" data-split>
-              from your message to your door
-            </h2>
-          </div>
-          <div className="section-gap" />
-          <ol className="steps">
-            {steps.map((step) => (
-              <li className="step" key={step.title} data-reveal>
-                <h3 className="title-3">{step.title}</h3>
-                <p className="small">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+      <HowItWorks />
 
       <CtaSection />
     </>

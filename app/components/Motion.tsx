@@ -16,33 +16,56 @@ const markSet = (elements: Element[]) =>
   elements.forEach((element) => element.classList.add("is-set"));
 
 /* ------------------------------------------------------------------
-   Route curtain. A brand-colour sheet (with the yellow square) slides up over the
-   page, the route changes underneath, then the sheet lifts away.
+   Route transition. A sheet slides up over the page with the La Crave logo
+   in the middle, the route changes underneath, then the logo steps aside and
+   the sheet lifts away. While it waits, the logo's square keeps turning.
    State lives at module level so it survives the effect re-run that
    happens when the pathname changes.
    ------------------------------------------------------------------ */
-const navState = { covering: false, timer: null as gsap.core.Tween | null };
+const navState = {
+  covering: false,
+  timer: null as gsap.core.Tween | null,
+  spin: null as gsap.core.Tween | null,
+};
 
 const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
-  const square = curtain.querySelector(".curtain-square");
+  const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
+  const square = curtain.querySelector<SVGRectElement>(".curtain-logo rect");
   gsap.set(curtain, { visibility: "visible", yPercent: 100 });
+  gsap.set(logo, { opacity: 0, y: 28, scale: 0.94 });
+  gsap.set(square, { rotation: -90, transformOrigin: "50% 50%" });
   gsap
-    .timeline({ onComplete: onCovered })
+    .timeline({
+      onComplete: () => {
+        onCovered();
+        navState.spin?.kill();
+        navState.spin = gsap.to(square, {
+          rotation: "+=360",
+          duration: 1.4,
+          ease: "power2.inOut",
+          repeat: -1,
+          repeatDelay: 0.15,
+          transformOrigin: "50% 50%",
+        });
+      },
+    })
     .to(curtain, { yPercent: 0, duration: 0.75, ease: "expo.inOut" })
-    .fromTo(
-      square,
-      { scale: 0, rotate: -90 },
-      { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" },
-      0.3,
-    );
+    .to(logo, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" }, 0.3)
+    .to(square, { rotation: 0, duration: 0.7, ease: "back.out(2.2)" }, 0.35);
 };
 
 const liftCurtain = (curtain: HTMLElement) => {
-  const square = curtain.querySelector(".curtain-square");
+  const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
   gsap
-    .timeline({ onComplete: () => gsap.set(curtain, { visibility: "hidden" }) })
-    .to(square, { scale: 0, rotate: 90, duration: 0.4, ease: "power3.in" })
-    .to(curtain, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 0.15);
+    .timeline({
+      onComplete: () => {
+        navState.spin?.kill();
+        navState.spin = null;
+        gsap.set(curtain, { visibility: "hidden" });
+      },
+    })
+    .to(logo, { opacity: 0, y: -18, scale: 0.97, duration: 0.4, ease: "power2.in" }, 0.1)
+    .to(curtain, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 0.3);
 };
 
 /* ------------------------------------------------------------------
@@ -226,7 +249,7 @@ export default function Motion() {
       const playIntro = root.classList.contains("intro-on");
       const covered = navState.covering;
       /* When hero content should start, relative to now. */
-      const heroAt = playIntro ? 1.2 : covered ? 0.55 : 0.1;
+      const heroAt = playIntro ? 1.2 : covered ? 0.8 : 0.1;
 
       /* ---------- intro: the tray lid ---------- */
       if (playIntro && intro.current) {
@@ -485,14 +508,29 @@ export default function Motion() {
       /* ---------- navbar ---------- */
       const nav = document.querySelector<HTMLElement>(".navbar");
       if (nav) {
+        /* The bar lives in the layout, so it outlives the page. Its hide tween is
+           created from a scroll callback, which this context does not revert: left
+           alone, a bar hidden on the old page stayed hidden on the new one. Every
+           page starts with it showing. */
+        gsap.killTweensOf(nav);
+        gsap.set(nav, { yPercent: 0 });
+        cleanups.push(() => {
+          gsap.killTweensOf(nav);
+          gsap.set(nav, { clearProps: "transform" });
+        });
+
         let hidden = false;
+        const arrived = performance.now();
         ScrollTrigger.create({
           start: 0,
           end: "max",
           onUpdate: (self) => {
             nav.classList.toggle("is-scrolled", self.scroll() > 12);
             if (nav.classList.contains("is-open")) return;
-            const shouldHide = self.direction === 1 && self.scroll() > 240;
+            /* A jump to a hash or a restored scroll position on arrival is not
+               the reader scrolling down, so it must not hide the bar. */
+            const settled = performance.now() - arrived > 1200;
+            const shouldHide = settled && self.direction === 1 && self.scroll() > 240;
             if (shouldHide === hidden) return;
             hidden = shouldHide;
             gsap.to(nav, {
@@ -693,7 +731,7 @@ export default function Motion() {
         </div>
       </div>
       <div className="curtain" ref={curtain} aria-hidden="true">
-        <span className="curtain-square" />
+        <Wordmark className="curtain-logo" />
       </div>
     </>
   );

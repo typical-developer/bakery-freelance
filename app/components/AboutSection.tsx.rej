@@ -1,0 +1,12 @@
+diff a/app/components/AboutSection.tsx b/app/components/AboutSection.tsx	(rejected hunks)
+@@ -1,7 +1,8 @@
++import Link from "next/link";
+ import PhotoCard from "./PhotoCard";
+-import { INSTAGRAM } from "../site";
+ 
+-export default function AboutSection() {
++/** The story. On the home page it links on to /about; on /about itself the link is dropped. */
++export default function AboutSection({ showLink = true }: { showLink?: boolean }) {
+   return (
+     <section className="section section--torn section--peach" id="about">
+       <div className="container split">

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import ContactWidget from "./components/ContactWidget";
 import Footer from "./components/Footer";
+import InlineScript from "./components/InlineScript";
 import Motion from "./components/Motion";
 import Navbar from "./components/Navbar";
 import ParallaxBand from "./components/ParallaxBand";
@@ -52,11 +53,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Scroll-in animations start hidden, so only hide them when JS can reveal them.
             The intro plays once per browser session. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              '(function(){var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("js");try{if(!sessionStorage.getItem("lc-intro")){sessionStorage.setItem("lc-intro","1");d.classList.add("intro-on")}}catch(e){}})()',
-          }}
+        <InlineScript
+          html={
+            '(function(){var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("js");try{if(!sessionStorage.getItem("lc-intro")){sessionStorage.setItem("lc-intro","1");d.classList.add("intro-on")}}catch(e){}})()'
+          }
         />
       </head>
       <body id="top">

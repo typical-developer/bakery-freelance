@@ -1,5 +1,6 @@
 import AboutSection from "./components/AboutSection";
 import CategoriesSection from "./components/CategoriesSection";
+import CreatorSpotlight from "./components/CreatorSpotlight";
 import CtaSection from "./components/CtaSection";
 import HeroSection from "./components/HeroSection";
 import LineupSection from "./components/LineupSection";
@@ -14,6 +15,7 @@ export default function Home() {
       <CategoriesSection />
       <AboutSection />
       <LineupSection />
+      <CreatorSpotlight />
       <TestimonialsSection />
       <CtaSection />
     </>

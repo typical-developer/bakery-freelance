@@ -59,18 +59,22 @@ export const FEATURED_IDS = ["pastry-box", "custom-cake", "brownies"];
 
 export const CATEGORIES = [
   {
+    /** The menu item whose photo (from /public/menu) this card borrows. */
+    itemId: "meat-pies",
     title: "Meat pies",
     body: "Golden, flaky and generously filled. The one everybody orders by the tray.",
     img: "/images/cat-meat-pies.jpg",
     alt: "A tray of golden La Crave meat pies",
   },
   {
+    itemId: "custom-cake",
     title: "Custom cakes",
     body: "Birthdays, weddings and everything in between, built around your moment.",
     img: "/images/cat-cakes.jpg",
     alt: "A custom celebration cake by La Crave",
   },
   {
+    itemId: "banana-bread",
     title: "Banana bread and brownies",
     body: "Comforting loaves and rich, fudgy squares that melt in your mouth.",
     img: "/images/cat-breads.jpg",

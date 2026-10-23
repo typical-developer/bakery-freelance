@@ -48,11 +48,11 @@ export default function HeroSection() {
             </Link>
             <SocialButton network="whatsapp">order on whatsapp</SocialButton>
           </div>
-          <ul className="hero-meta" data-hero-item>
+          {/* <ul className="hero-meta" data-hero-item>
             <li>Baked to order</li>
             <li>Same-day delivery</li>
             <li>Custom cakes</li>
-          </ul>
+          </ul> */}
         </div>
         <div className="hero-media" data-hero-media>
           <PhotoCard

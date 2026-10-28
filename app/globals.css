@@ -164,7 +164,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg);
+  color: var(--ink);
 }
 .eyebrow::before {
   content: "";
@@ -185,7 +185,7 @@ button {
 .eyebrow--bakery svg {
   width: 1.7rem;
   height: 1.7rem;
-  color: var(--accent);
+  color: var(--ink);
 }
 
 /* ---------- layout ---------- */

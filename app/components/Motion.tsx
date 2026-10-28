@@ -260,11 +260,22 @@ export default function Motion() {
       if (playIntro && intro.current) {
         const mark = intro.current.querySelector<HTMLElement>(".intro-mark");
         if (mark) {
+          const finishIntro = () => {
+            root.classList.remove("intro-on");
+            gsap.set(intro.current, { autoAlpha: 0, yPercent: -100, pointerEvents: "none" });
+          };
+
           gsap
-            .timeline({ onComplete: () => root.classList.remove("intro-on") })
+            .timeline({ onComplete: finishIntro })
             .from(mark, { yPercent: 40, scale: 0.85, opacity: 0, duration: 0.95, ease: "expo.out" }, 0.1)
             .to(mark, { yPercent: -60, duration: 0.9, ease: "expo.inOut" }, 1)
             .to(intro.current, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 1);
+
+          /* A failed animation or interrupted tab must never leave the intro blocking the page. */
+          gsap.delayedCall(4, finishIntro);
+        } else {
+          root.classList.remove("intro-on");
+          gsap.set(intro.current, { autoAlpha: 0, pointerEvents: "none" });
         }
       }
 

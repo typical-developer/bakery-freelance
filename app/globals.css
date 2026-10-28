@@ -265,10 +265,30 @@ button {
   z-index: 2;
   border: 0;
 }
-.section--torn + .section,
-.section + .section--torn,
-.section--hero + .section,
-.section + .section--footer { border-top: 0; }
+  .section--torn + .section,
+  .section + .section--torn,
+  .section--hero + .section,
+  .section + .section--footer {
+    border-top: 0;
+    box-shadow: none;
+  }
+
+  /* Let the torn paper edge own the transition between section surfaces. */
+  .section--torn,
+  .section--brand,
+  .section--footer {
+    border: 0;
+    outline: 0;
+  }
+
+  .section--brand + .section,
+  .section + .section--brand,
+  .section--footer + .section,
+  .section + .section--footer {
+    border-top: 0;
+    box-shadow: none;
+  }
+
 /* Brand sections: the brand colour fills the whole band, text goes white. */
 .section--hero,
 .section--footer,

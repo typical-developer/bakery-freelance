@@ -586,23 +586,6 @@ button {
 }
 
 /* ---------- hero ---------- */
-/* The home hero: a photo carousel instead of the flat mint sheet, cut to the
-   same torn shape, with a soft mint wash so the copy stays easy to read. */
-.hero--photos {
-  background-image: none;
-}
-.hero--photos::before {
-  display: none;
-}
-  .hero--photos::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: url("/backgrounds/torn-fiber-bottom.svg") 50% 100% / cover no-repeat;
-}
-
 /* Section labels are intentionally omitted site-wide for a cleaner hierarchy. */
 .eyebrow {
   display: none;
@@ -680,17 +663,12 @@ button {
   gap: 1.75rem;
   justify-items: start;
   max-width: 40rem;
-  color: var(--ink);
-  text-shadow: 0 1px 1px rgb(255 255 255 / 0.28);
 }
 .hero-copy .display-1 {
-  color: var(--ink);
   text-wrap: balance;
 }
 .hero-copy .lead {
-  color: var(--ink-2);
   font-weight: 600;
-  text-shadow: 0 1px 1px rgb(255 255 255 / 0.2);
 }
 .hero-meta {
   display: flex;

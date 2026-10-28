@@ -31,7 +31,8 @@ const navState = {
 const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
   const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
   const square = curtain.querySelector<SVGRectElement>(".curtain-logo rect");
-  gsap.set(curtain, { visibility: "visible", yPercent: 100 });
+  gsap.killTweensOf([curtain, logo, square]);
+  gsap.set(curtain, { visibility: "visible", pointerEvents: "auto", yPercent: 100 });
   gsap.set(logo, { opacity: 0, y: 28, scale: 0.94 });
   gsap.set(square, { rotation: -90, transformOrigin: "50% 50%" });
   gsap
@@ -56,6 +57,7 @@ const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
 
 const liftCurtain = (curtain: HTMLElement) => {
   const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
+  gsap.killTweensOf([curtain, logo]);
   gsap
     .timeline({
       onComplete: () => {
@@ -221,11 +223,13 @@ export default function Motion() {
         router.push(href);
       });
       /* If the route never arrives, don't leave the person staring at pink. */
-      navState.timer = gsap.delayedCall(6, () => {
-        if (!navState.covering) return;
-        navState.covering = false;
-        liftCurtain(el);
-      });
+        navState.timer?.kill();
+        navState.timer = gsap.delayedCall(6, () => {
+          if (!navState.covering) return;
+          navState.covering = false;
+          navState.timer = null;
+          liftCurtain(el);
+        });
     };
 
     /* Capture phase so we run before Next's own <Link> handler, which skips
@@ -267,6 +271,7 @@ export default function Motion() {
       if (covered && curtain.current) {
         navState.covering = false;
         navState.timer?.kill();
+        navState.timer = null;
         liftCurtain(curtain.current);
       }
 

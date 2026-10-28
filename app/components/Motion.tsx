@@ -31,7 +31,8 @@ const navState = {
 const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
   const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
   const square = curtain.querySelector<SVGRectElement>(".curtain-logo rect");
-  gsap.set(curtain, { visibility: "visible", yPercent: 100 });
+  gsap.killTweensOf([curtain, logo, square]);
+  gsap.set(curtain, { visibility: "visible", pointerEvents: "auto", yPercent: 100 });
   gsap.set(logo, { opacity: 0, y: 28, scale: 0.94 });
   gsap.set(square, { rotation: -90, transformOrigin: "50% 50%" });
   gsap
@@ -56,6 +57,7 @@ const coverCurtain = (curtain: HTMLElement, onCovered: () => void) => {
 
 const liftCurtain = (curtain: HTMLElement) => {
   const logo = curtain.querySelector<HTMLElement>(".curtain-logo");
+  gsap.killTweensOf([curtain, logo]);
   gsap
     .timeline({
       onComplete: () => {
@@ -221,11 +223,13 @@ export default function Motion() {
         router.push(href);
       });
       /* If the route never arrives, don't leave the person staring at pink. */
-      navState.timer = gsap.delayedCall(6, () => {
-        if (!navState.covering) return;
-        navState.covering = false;
-        liftCurtain(el);
-      });
+        navState.timer?.kill();
+        navState.timer = gsap.delayedCall(6, () => {
+          if (!navState.covering) return;
+          navState.covering = false;
+          navState.timer = null;
+          liftCurtain(el);
+        });
     };
 
     /* Capture phase so we run before Next's own <Link> handler, which skips
@@ -235,10 +239,11 @@ export default function Motion() {
   }, [router]);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const mm = gsap.matchMedia();
-
-    mm.add("(prefers-reduced-motion: reduce)", () => {
+  const root = document.documentElement;
+  const mm = gsap.matchMedia();
+  const frame = requestAnimationFrame(() => {
+  
+  mm.add("(prefers-reduced-motion: reduce)", () => {
       root.classList.remove("js", "intro-on");
     });
 
@@ -255,11 +260,22 @@ export default function Motion() {
       if (playIntro && intro.current) {
         const mark = intro.current.querySelector<HTMLElement>(".intro-mark");
         if (mark) {
+          const finishIntro = () => {
+            root.classList.remove("intro-on");
+            gsap.set(intro.current, { autoAlpha: 0, yPercent: -100, pointerEvents: "none" });
+          };
+
           gsap
-            .timeline({ onComplete: () => root.classList.remove("intro-on") })
+            .timeline({ onComplete: finishIntro })
             .from(mark, { yPercent: 40, scale: 0.85, opacity: 0, duration: 0.95, ease: "expo.out" }, 0.1)
             .to(mark, { yPercent: -60, duration: 0.9, ease: "expo.inOut" }, 1)
             .to(intro.current, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 1);
+
+          /* A failed animation or interrupted tab must never leave the intro blocking the page. */
+          gsap.delayedCall(4, finishIntro);
+        } else {
+          root.classList.remove("intro-on");
+          gsap.set(intro.current, { autoAlpha: 0, pointerEvents: "none" });
         }
       }
 
@@ -267,6 +283,7 @@ export default function Motion() {
       if (covered && curtain.current) {
         navState.covering = false;
         navState.timer?.kill();
+        navState.timer = null;
         liftCurtain(curtain.current);
       }
 
@@ -720,7 +737,12 @@ export default function Motion() {
       },
     );
 
-    return () => mm.revert();
+    });
+
+  return () => {
+    cancelAnimationFrame(frame);
+    mm.revert();
+  };
   }, [pathname]);
 
   return (

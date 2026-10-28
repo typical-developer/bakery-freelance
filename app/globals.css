@@ -217,7 +217,11 @@ button {
     50%;
 }
 .section--hero {
-  padding-top: clamp(8.5rem, 15vw, 12rem);
+  position: relative;
+  min-height: min(52rem, 100svh);
+  display: grid;
+  align-items: center;
+  padding-top: clamp(7rem, 12vw, 10rem);
   padding-bottom: clamp(7rem, 14vw, 12rem);
   background-image: url("/backgrounds/grain.svg"), url("/backgrounds/torn-brand-bottom.svg");
   background-position:
@@ -227,6 +231,24 @@ button {
   background-size:
     15rem 15rem,
     cover;
+}
+.hero--photos {
+  isolation: isolate;
+  overflow: hidden;
+}
+.hero--photos > .bg-carousel {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  opacity: 1;
+}
+.hero--photos::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgb(43 43 44 / 0.72), rgb(43 43 44 / 0.22));
+  pointer-events: none;
 }
 .section--footer {
   padding-top: clamp(7rem, 14vw, 11rem);
@@ -241,7 +263,32 @@ button {
     cover;
   position: relative;
   z-index: 2;
+  border: 0;
 }
+  .section--torn + .section,
+  .section + .section--torn,
+  .section--hero + .section,
+  .section + .section--footer {
+    border-top: 0;
+    box-shadow: none;
+  }
+
+  /* Let the torn paper edge own the transition between section surfaces. */
+  .section--torn,
+  .section--brand,
+  .section--footer {
+    border: 0;
+    outline: 0;
+  }
+
+  .section--brand + .section,
+  .section + .section--brand,
+  .section--footer + .section,
+  .section + .section--footer {
+    border-top: 0;
+    box-shadow: none;
+  }
+
 /* Brand sections: the brand colour fills the whole band, text goes white. */
 .section--hero,
 .section--footer,
@@ -559,22 +606,11 @@ button {
 }
 
 /* ---------- hero ---------- */
-/* The home hero: a photo carousel instead of the flat mint sheet, cut to the
-   same torn shape, with a soft mint wash so the copy stays easy to read. */
-.hero--photos {
-  background-image: none;
-}
-.hero--photos::before {
+/* Section labels are intentionally omitted site-wide for a cleaner hierarchy. */
+.eyebrow {
   display: none;
 }
-.hero--photos::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: url("/backgrounds/torn-fiber-bottom.svg") 50% 100% / cover no-repeat;
-}
+
 .hero--photos > .container {
   z-index: 2;
 }
@@ -590,12 +626,7 @@ button {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    90deg,
-    rgb(224 247 236 / 0.94) 0%,
-    rgb(224 247 236 / 0.84) 42%,
-    rgb(224 247 236 / 0.4) 100%
-  );
+  background: transparent;
 }
 
 /* ---------- background photo carousel ---------- */
@@ -641,6 +672,7 @@ button {
 }
 
 .hero-grid {
+  min-height: min(42rem, 76svh);
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: clamp(3rem, 7vw, 6rem);
@@ -650,6 +682,13 @@ button {
   display: grid;
   gap: 1.75rem;
   justify-items: start;
+  max-width: 40rem;
+}
+.hero-copy .display-1 {
+  text-wrap: balance;
+}
+.hero-copy .lead {
+  font-weight: 600;
 }
 .hero-meta {
   display: flex;
@@ -1361,6 +1400,10 @@ a.photo-card:focus-visible {
   pointer-events: none;
   will-change: transform;
 }
+.curtain {
+  pointer-events: auto;
+  border-radius: 0;
+}
 html.intro-on .intro {
   display: grid;
   pointer-events: auto;
@@ -1390,12 +1433,31 @@ html.intro-on .intro {
   display: grid;
   visibility: hidden;
   background: var(--yellow);
-  border-radius: 50% 50% 0 0 / 7vh 7vh 0 0;
+  border-radius: 0;
 }
 .curtain-logo {
   width: min(72vw, 24rem);
   height: auto;
   will-change: transform, opacity;
+}
+
+/* ---------- menu browser ---------- */
+.menu-browser { display: grid; gap: clamp(2.5rem, 5vw, 4rem); }
+.menu-controls { display: grid; gap: 1rem; align-items: center; }
+.menu-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.menu-tabs button { border: 1px solid var(--line); border-radius: 999px; padding: 0.65rem 1rem; background: transparent; color: var(--fg); cursor: pointer; font: inherit; }
+.menu-tabs button.is-active, .menu-tabs button:hover { background: var(--brand); border-color: var(--brand); color: var(--white); }
+.menu-search input { width: 100%; border: 1px solid var(--line); border-radius: 999px; padding: 0.8rem 1rem; background: var(--paper); color: var(--ink); font: inherit; }
+.menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; gap: clamp(1.5rem, 3vw, 3rem); }
+.menu-empty { display: grid; gap: 1rem; justify-items: start; max-width: 34rem; padding: clamp(2rem, 5vw, 4rem); background: var(--paper); }
+@media (min-width: 760px) { .menu-controls { grid-template-columns: 1fr minmax(14rem, 20rem); } }
+@media (max-width: 991px) { .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .menu-grid { grid-template-columns: 1fr; }
+  .section--hero { min-height: 100svh; padding-block: 7rem 4rem; }
+  .hero-grid { min-height: auto; }
+  .menu-listing { padding-block: 4rem; }
+  .photo-card { max-width: 100%; }
 }
 
 /* ---------- motion: hidden states (only when GSAP will reveal them) ---------- */
@@ -1467,9 +1529,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
   .hero-bg::after {
     background: linear-gradient(
       180deg,
-      rgb(224 247 236 / 0.92) 0%,
-      rgb(224 247 236 / 0.8) 55%,
-      rgb(224 247 236 / 0.55) 100%
+      rgb(255 255 255 / 0.3) 0%,
+      rgb(255 255 255 / 0.2) 55%,
+      rgb(255 255 255 / 0.08) 100%
     );
   }
   /* Creator videos become a swipeable row: nine stacked 9:16 cards would be a very long scroll. */

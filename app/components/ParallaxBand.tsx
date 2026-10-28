@@ -1,15 +1,15 @@
-import BgCarousel from "./BgCarousel";
+import Image from "next/image";
 import { getGallery } from "../media";
 
-/** The cut-out photo band above the footer: the gallery again, starting
-    part-way through so it never matches the hero. */
+/** A single still photo keeps the band lightweight while preserving its parallax feel. */
 export default function ParallaxBand() {
-  const gallery = getGallery();
+  const image = getGallery()[0];
+
   return (
     <div className="band" data-band>
       <span className="band-tear" data-band-tear aria-hidden="true" />
       <div className="band-img" data-band-img>
-        <BgCarousel images={gallery} start={Math.floor(gallery.length / 2)} interval={6500} />
+        <Image src={image.src} alt={image.alt} fill sizes="100vw" loading="lazy" />
       </div>
     </div>
   );

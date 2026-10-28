@@ -619,9 +619,9 @@ button {
   z-index: 1;
   background: linear-gradient(
     90deg,
-    rgb(224 247 236 / 0.72) 0%,
-    rgb(224 247 236 / 0.5) 42%,
-    rgb(224 247 236 / 0.18) 100%
+    rgb(255 255 255 / 0.34) 0%,
+    rgb(255 255 255 / 0.22) 42%,
+    rgb(255 255 255 / 0.08) 100%
   );
 }
 
@@ -1530,9 +1530,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
   .hero-bg::after {
     background: linear-gradient(
       180deg,
-      rgb(224 247 236 / 0.66) 0%,
-      rgb(224 247 236 / 0.42) 55%,
-      rgb(224 247 236 / 0.16) 100%
+      rgb(255 255 255 / 0.3) 0%,
+      rgb(255 255 255 / 0.2) 55%,
+      rgb(255 255 255 / 0.08) 100%
     );
   }
   /* Creator videos become a swipeable row: nine stacked 9:16 cards would be a very long scroll. */

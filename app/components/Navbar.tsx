@@ -34,7 +34,11 @@ export default function Navbar() {
         >
           <span className="nav-glide" aria-hidden="true" />
           <div className="nav-group">
-            <Link href="/#about" className="nav-link">
+            <Link
+              href="/about"
+              className="nav-link"
+              aria-current={here("/about")}
+            >
               About
             </Link>
             <Link

@@ -164,7 +164,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg);
+  color: var(--ink);
 }
 .eyebrow::before {
   content: "";
@@ -174,13 +174,18 @@ button {
   background: var(--sq);
   transform: scale(var(--sq-s, 1)) rotate(var(--sq-r, 0deg));
 }
-.eyebrow--bakery::before {
+.eyebrow::before {
   display: none;
+}
+.eyebrow svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: 0 0 auto;
 }
 .eyebrow--bakery svg {
   width: 1.7rem;
   height: 1.7rem;
-  color: var(--accent);
+  color: var(--ink);
 }
 
 /* ---------- layout ---------- */
@@ -696,7 +701,6 @@ button {
   margin-block: -3.5rem -2.5rem;
   transform: rotate(-1.5deg);
   background: var(--yellow);
-  border-block: 1.5px solid var(--ink);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -805,9 +809,7 @@ button {
   display: inline-flex;
   align-items: baseline;
   font-variant-numeric: tabular-nums;
-  gap: 0.125rem;
-  font-weight: 600;
-  color: var(--brand);
+  color: var(--ink);
   white-space: nowrap;
 }
 .price small {
@@ -890,6 +892,53 @@ a.photo-card:focus-visible {
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
+}
+
+/* ---------- dedicated pages ---------- */
+.menu-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: clamp(4rem, 8vw, 7rem);
+}
+.menu-tabs a {
+  padding: 0.65rem 1.2rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.1rem;
+  background: var(--white);
+  transition: background-color 0.2s, color 0.2s, translate 0.2s;
+}
+.menu-tabs a:hover { background: var(--yellow); translate: 0 -2px; }
+.menu-category { scroll-margin-top: 7rem; }
+.menu-category + .menu-category { margin-top: clamp(5rem, 10vw, 9rem); }
+.menu-category__head { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 2rem; }
+.menu-category__head .small { margin-bottom: 0.15rem; }
+.menu-note { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1.5rem; margin-top: clamp(4rem, 8vw, 7rem); padding: 1.25rem 1.5rem; border: 1.5px solid var(--ink); border-radius: var(--radius-md); background: var(--mint); }
+.menu-note strong { font-family: var(--font-display), system-ui, sans-serif; font-size: 1.25rem; font-weight: 400; }
+.menu-note span { color: var(--ink-2); }
+.about-story { background: var(--white); }
+.about-story__grid { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(3rem, 8vw, 8rem); align-items: start; }
+.about-story__intro { display: grid; gap: 1.5rem; }
+.about-story__intro .display-2 { color: var(--brand); }
+.about-story__copy { display: grid; gap: 1.5rem; max-width: 38rem; }
+.about-story__copy > p:not(.lead) { font-size: 1.1rem; color: var(--ink-2); }
+.about-values-section { background: var(--peach); }
+.about-values-section .section-head { margin-bottom: clamp(3rem, 6vw, 5rem); }
+.about-process { background: var(--mint); }
+.about-process__head { display: grid; gap: 1.25rem; max-width: 34rem; margin-bottom: clamp(3rem, 6vw, 5rem); }
+.about-process__head .display-2 { color: var(--ink); }
+.about-process__steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; }
+.about-process__step { display: grid; align-content: start; gap: 0.75rem; padding-top: 1rem; }
+.about-process__step > span { font-family: var(--font-display), system-ui, sans-serif; font-size: 1.25rem; }
+.about-process__step h3 { color: var(--ink); font-size: 1.7rem; }
+.about-process__step p { color: var(--ink-2); }
+@media (max-width: 700px) {
+  .menu-category__head, .menu-note { grid-template-columns: 1fr; display: grid; align-items: start; }
+  .menu-note { gap: 0.75rem; }
+  .about-story__grid, .about-process__steps { grid-template-columns: 1fr; }
 }
 
 /* ---------- section specifics ---------- */
@@ -1358,6 +1407,40 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
   to {
     opacity: 1;
   }
+}
+
+/* ---------- about values ---------- */
+.about-values {
+  align-items: stretch;
+}
+.value-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 16rem;
+  padding: 1.75rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.value-card__number {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+.value-card h3 {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-weight: 400;
+  line-height: 0.95;
+  text-transform: lowercase;
+}
+.value-card p {
+  margin: auto 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 /* ---------- responsive ---------- */

@@ -11,6 +11,7 @@ import {
   type PointerEvent,
 } from "react";
 import Arrow from "./Arrow";
+import SectionEyebrow from "./SectionEyebrow";
 
 /* Sample copy: swap for real customer messages before launch. */
 const testimonials = [
@@ -143,9 +144,9 @@ export default function TestimonialsSection() {
     <section className="section">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow" data-fade>
+          <SectionEyebrow icon="testimonials" data-fade>
             Kind words
-          </span>
+          </SectionEyebrow>
           <h2 className="display-2" data-split>
             Love letters AND crumb trails
           </h2>

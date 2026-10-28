@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Arrow from "./Arrow";
 import PhotoCard from "./PhotoCard";
+import SectionEyebrow from "./SectionEyebrow";
 import { getCategories } from "../media";
 
 export default function CategoriesSection() {
@@ -8,9 +9,9 @@ export default function CategoriesSection() {
     <section className="section">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow" data-fade>
-            What we bake
-          </span>
+          <SectionEyebrow icon="menu" data-fade>
+What we bake
+            </SectionEyebrow>
           <h2 className="display-2" data-split>
             From fan-favourite meat pies to celebration cakes
           </h2>

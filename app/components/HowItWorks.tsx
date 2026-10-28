@@ -13,14 +13,16 @@ const steps = [
   },
 ];
 
+import SectionEyebrow from "./SectionEyebrow";
+
 export default function HowItWorks() {
   return (
     <section className="section" style={{ paddingTop: 0 }}>
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow" data-fade>
+          <SectionEyebrow icon="steps" data-fade>
             How it works
-          </span>
+          </SectionEyebrow>
           <h2 className="display-2" data-split>
             from your message to your door
           </h2>

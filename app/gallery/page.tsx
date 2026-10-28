@@ -6,6 +6,7 @@ import PhotoCard from "../components/PhotoCard";
 import SeeMore from "../components/SeeMore";
 import { GALLERY_PAGE_LIMIT, getGallery } from "../media";
 import { WHATSAPP } from "../site";
+import SectionEyebrow from "../components/SectionEyebrow";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -20,9 +21,9 @@ export default function GalleryPage() {
       <section className="section--hero">
         <div className="container">
           <div className="section-head">
-            <span className="eyebrow" data-hero-item>
-              The gallery
-            </span>
+<SectionEyebrow icon="gallery" data-hero-item>
+            The gallery
+          </SectionEyebrow>
             <h1 className="display-1" data-split>
               fresh from the oven
             </h1>

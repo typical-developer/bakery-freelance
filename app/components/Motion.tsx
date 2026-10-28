@@ -239,10 +239,11 @@ export default function Motion() {
   }, [router]);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const mm = gsap.matchMedia();
-
-    mm.add("(prefers-reduced-motion: reduce)", () => {
+  const root = document.documentElement;
+  const mm = gsap.matchMedia();
+  const frame = requestAnimationFrame(() => {
+  
+  mm.add("(prefers-reduced-motion: reduce)", () => {
       root.classList.remove("js", "intro-on");
     });
 
@@ -725,7 +726,12 @@ export default function Motion() {
       },
     );
 
-    return () => mm.revert();
+    });
+
+  return () => {
+    cancelAnimationFrame(frame);
+    mm.revert();
+  };
   }, [pathname]);
 
   return (

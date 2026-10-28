@@ -1,7 +1,7 @@
+import Link from "next/link";
 import PhotoCard from "./PhotoCard";
-import { INSTAGRAM } from "../site";
 
-export default function AboutSection() {
+export default function AboutSection({ showLink = true }: { showLink?: boolean }) {
   return (
     <section className="section section--torn section--brand" id="about">
       <div className="container split">

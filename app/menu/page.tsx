@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Arrow from "../components/Arrow";
 import CtaSection from "../components/CtaSection";
+import HowItWorks from "../components/HowItWorks";
 import PhotoCard from "../components/PhotoCard";
+import SeeMore from "../components/SeeMore";
 import SocialButton from "../components/SocialButton";
-import { MENU } from "../menu-data";
+import { getMenu } from "../media";
 import { WHATSAPP } from "../site";
 
 export const metadata: Metadata = {

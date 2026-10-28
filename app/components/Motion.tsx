@@ -731,7 +731,7 @@ export default function Motion() {
         </div>
       </div>
       <div className="curtain" ref={curtain} aria-hidden="true">
-        <Wordmark className="curtain-logo" />
+        <Logo className="curtain-logo" sizes="(min-width: 640px) 28rem, 70vw" />
       </div>
     </>
   );

@@ -810,9 +810,7 @@ button {
   display: inline-flex;
   align-items: baseline;
   font-variant-numeric: tabular-nums;
-  gap: 0.125rem;
-  font-weight: 600;
-  color: var(--brand);
+  color: var(--ink);
   white-space: nowrap;
 }
 .price small {

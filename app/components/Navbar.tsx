@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Logo from "./Logo";
-import { INSTAGRAM, WHATSAPP } from "../site";
+import { WHATSAPP } from "../site";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -53,9 +53,9 @@ export default function Navbar() {
             <Logo className="logo-mark" sizes="6rem" priority />
           </Link>
           <div className="nav-group">
-            <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="nav-link">
-              Contact
-            </a>
+            <Link href="/gallery" className="nav-link" aria-current={here("/gallery")}>
+              Gallery
+            </Link>
             <a
               href={WHATSAPP}
               target="_blank"

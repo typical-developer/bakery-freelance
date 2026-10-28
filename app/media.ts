@@ -131,7 +131,8 @@ const PLACEHOLDER_GALLERY = [
 /** Gallery photos, falling back to the menu photos and then to the placeholders. */
 export function getGallery(): GalleryImage[] {
   const own = list(GALLERY_DIR, IMAGE);
-  const source = own.length ? own : list(MENU_DIR, IMAGE);
+  const galPhotos = list("images", IMAGE).filter((photo) => /^gal(?:-|\.)/i.test(photo.file));
+  const source = own.length ? own : galPhotos.length ? galPhotos : list(MENU_DIR, IMAGE);
   const srcs = source.length ? source.map((photo) => photo.src) : PLACEHOLDER_GALLERY;
   return srcs.map((src, index) => ({ src, alt: `La Crave bakery photo ${index + 1}` }));
 }

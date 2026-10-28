@@ -1,5 +1,7 @@
 import Link from "next/link";
 import PhotoCard from "./PhotoCard";
+import BgCarousel from "./BgCarousel";
+import { getGallery } from "../media";
 import SocialButton from "./SocialButton";
 
 function Badge() {
@@ -27,8 +29,10 @@ function Badge() {
 }
 
 export default function HeroSection() {
+  const gallery = getGallery();
   return (
-    <section className="section--hero">
+    <section className="section--hero hero--photos">
+      <BgCarousel images={gallery} priority />
       <div className="container hero-grid">
         <div className="hero-copy">
           {/* <span className="eyebrow" data-hero-item>

@@ -28,7 +28,9 @@ export default function CreatorCarousel({ creators }: { creators: Creator[] }) {
   useEffect(() => {
     if (!track.current) return;
     const tween = gsap.to(track.current, { xPercent: -100 * current, duration: 0.8, ease: "expo.inOut", overwrite: "auto" });
-    return () => tween.kill();
+    return () => {
+      tween.kill();
+    };
   }, [current]);
 
   const go = (target: number) => setIndex((target + pages.length) % pages.length);

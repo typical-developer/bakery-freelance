@@ -40,7 +40,7 @@ export default function Navbar() {
             <Link
               href="/menu"
               className="nav-link"
-              aria-current={onMenu ? "page" : undefined}
+              aria-current={here("/menu")}
             >
               Menu
             </Link>

@@ -240,7 +240,7 @@ button {
   position: absolute;
   inset: 0;
   z-index: -2;
-  opacity: 0.18;
+  opacity: 1;
 }
 .hero--photos::after {
   content: "";
@@ -619,9 +619,9 @@ button {
   z-index: 1;
   background: linear-gradient(
     90deg,
-    rgb(224 247 236 / 0.94) 0%,
-    rgb(224 247 236 / 0.84) 42%,
-    rgb(224 247 236 / 0.4) 100%
+    rgb(224 247 236 / 0.72) 0%,
+    rgb(224 247 236 / 0.5) 42%,
+    rgb(224 247 236 / 0.18) 100%
   );
 }
 
@@ -678,6 +678,18 @@ button {
   display: grid;
   gap: 1.75rem;
   justify-items: start;
+  max-width: 40rem;
+  color: var(--ink);
+  text-shadow: 0 1px 1px rgb(255 255 255 / 0.28);
+}
+.hero-copy .display-1 {
+  color: var(--ink);
+  text-wrap: balance;
+}
+.hero-copy .lead {
+  color: var(--ink-2);
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgb(255 255 255 / 0.2);
 }
 .hero-meta {
   display: flex;
@@ -1518,9 +1530,9 @@ html.js :is([data-reveal], [data-fade], [data-split], [data-scrub], [data-hero-i
   .hero-bg::after {
     background: linear-gradient(
       180deg,
-      rgb(224 247 236 / 0.92) 0%,
-      rgb(224 247 236 / 0.8) 55%,
-      rgb(224 247 236 / 0.55) 100%
+      rgb(224 247 236 / 0.66) 0%,
+      rgb(224 247 236 / 0.42) 55%,
+      rgb(224 247 236 / 0.16) 100%
     );
   }
   /* Creator videos become a swipeable row: nine stacked 9:16 cards would be a very long scroll. */

@@ -594,7 +594,7 @@ button {
 .hero--photos::before {
   display: none;
 }
-.hero--photos::after {
+  .hero--photos::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -602,6 +602,12 @@ button {
   pointer-events: none;
   background: url("/backgrounds/torn-fiber-bottom.svg") 50% 100% / cover no-repeat;
 }
+
+/* Section labels are intentionally omitted site-wide for a cleaner hierarchy. */
+.eyebrow {
+  display: none;
+}
+
 .hero--photos > .container {
   z-index: 2;
 }
@@ -617,12 +623,7 @@ button {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    90deg,
-    rgb(255 255 255 / 0.34) 0%,
-    rgb(255 255 255 / 0.22) 42%,
-    rgb(255 255 255 / 0.08) 100%
-  );
+  background: transparent;
 }
 
 /* ---------- background photo carousel ---------- */

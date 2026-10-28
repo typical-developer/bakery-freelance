@@ -8,6 +8,7 @@ import SeeMore from "../components/SeeMore";
 import SocialButton from "../components/SocialButton";
 import { getMenu } from "../media";
 import { WHATSAPP } from "../site";
+import SectionEyebrow from "../components/SectionEyebrow";
 
 export const metadata: Metadata = {
   title: "Menu",
@@ -21,9 +22,9 @@ export default function MenuPage() {
       <section className="section--hero">
         <div className="container">
           <div className="section-head">
-            <span className="eyebrow" data-hero-item>
-              The menu
-            </span>
+<SectionEyebrow icon="menu" data-hero-item>
+            The menu
+          </SectionEyebrow>
             <h1 className="display-1" data-split>
               baked fresh, made to order
             </h1>

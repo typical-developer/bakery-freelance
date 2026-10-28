@@ -2,6 +2,7 @@ import Link from "next/link";
 import Arrow from "./Arrow";
 import PhotoCard from "./PhotoCard";
 import SocialButton from "./SocialButton";
+import SectionEyebrow from "./SectionEyebrow";
 import { FEATURED_IDS, MENU } from "../menu-data";
 import { WHATSAPP } from "../site";
 
@@ -12,9 +13,9 @@ export default function LineupSection() {
       <div className="container">
         <div className="lineup-head">
           <div className="stack">
-            <span className="eyebrow" data-fade>
+            <SectionEyebrow icon="lineup" data-fade>
               Fresh today
-            </span>
+            </SectionEyebrow>
             <h2 className="display-2" data-split>
               today&apos;s sweet lineup
             </h2>

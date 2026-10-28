@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PhotoCard from "./PhotoCard";
+import SectionEyebrow from "./SectionEyebrow";
 
 export default function AboutSection({ showLink = true }: { showLink?: boolean }) {
   return (
@@ -14,9 +15,9 @@ export default function AboutSection({ showLink = true }: { showLink?: boolean }
           />
         </div>
         <div className="stack">
-          <span className="eyebrow" data-fade>
+          <SectionEyebrow icon="story" data-fade>
             Our story
-          </span>
+          </SectionEyebrow>
           <h2 className="display-2" data-split>
             Every craving has a story, and ours started with a tray of meat pies
           </h2>

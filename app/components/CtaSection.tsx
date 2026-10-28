@@ -1,5 +1,6 @@
 import Image from "next/image";
 import SocialButton from "./SocialButton";
+import SectionEyebrow from "./SectionEyebrow";
 
 export default function CtaSection() {
   return (
@@ -17,7 +18,7 @@ export default function CtaSection() {
             </div>
             <div className="cta-copy">
               <div className="stack">
-                <span className="eyebrow">Order today</span>
+                <SectionEyebrow icon="order">Order today</SectionEyebrow>
                 <h2 className="display-2">get the goodies</h2>
                 <p className="lead">
                   Slide into our DMs or send a WhatsApp message and we&apos;ll
